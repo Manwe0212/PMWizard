@@ -14,20 +14,21 @@ The first MVP will explore a simple question:
 
 Initial work will focus on:
 
-- A reusable project data model
+- A reusable, tool-independent canonical project data model
 - Synthetic project datasets
 - Project health metrics
 - Delivery-risk prediction
 - Explainable AI outputs
 - Foundations for future Project & Program Intelligence
 
-## Vision
+## Foundation documents
 
-Read the full foundational vision in [`docs/VISION.md`](docs/VISION.md).
+- [`docs/VISION.md`](docs/VISION.md) — long-term product vision and guiding principles
+- [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) — canonical entities, relationships, evidence, events, health, and security foundations
 
 ## Project status
 
-PMWizard is currently in the **foundation / discovery stage**. The architecture, data model, MVP, and roadmap will be developed openly in this repository.
+PMWizard is currently in the **foundation / discovery stage**. The architecture, MVP, integration model, and roadmap will be developed openly in this repository.
 
 ## Data and privacy
 
