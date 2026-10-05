@@ -8,28 +8,31 @@ The project is designed to evolve from structured Project Health AI into a broad
 
 ## Current focus
 
-The first MVP will explore a simple question:
+The first MVP is centered on **Project Memory + Action & Decision Intelligence**:
 
-> Can structured project data be used to assess project health and identify delivery risk before a project fails?
+> Can PMWizard connect meetings, email, documents, and existing project records to keep Action Items, Decisions, RAID, and supporting evidence current with less manual effort?
 
 Initial work will focus on:
 
 - A reusable, tool-independent canonical project data model
-- Synthetic project datasets
-- Project health metrics
-- Delivery-risk prediction
-- Explainable AI outputs
-- Foundations for future Project & Program Intelligence
+- Meeting and email evidence ingestion
+- Action Item progress detection
+- Decision and RAID identification
+- Entity resolution and duplicate prevention
+- Human-reviewed AI suggestions through a Project Inbox
+- Secure adapters for existing project ecosystems
+- Foundations for later Project Health and predictive intelligence
 
 ## Foundation documents
 
 - [`docs/VISION.md`](docs/VISION.md) — long-term product vision and guiding principles
 - [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) — canonical entities, relationships, evidence, events, health, and security foundations
 - [`docs/HUMAN_IN_THE_LOOP.md`](docs/HUMAN_IN_THE_LOOP.md) — AI suggestion boundaries, human accountability, source authority, and review governance
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — V1 system architecture, connectors, Project Memory, intelligence engine, security, and technology choices
 
 ## Project status
 
-PMWizard is currently in the **foundation / discovery stage**. The architecture, MVP, integration model, and roadmap will be developed openly in this repository.
+PMWizard is currently in the **foundation / early architecture stage**. The next implementation milestone is the Python canonical model and first Project Memory vertical.
 
 ## Data and privacy
 
