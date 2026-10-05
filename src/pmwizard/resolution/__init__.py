@@ -1,0 +1,1 @@
+"""PMWizard resolution module."""
