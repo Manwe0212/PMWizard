@@ -115,7 +115,7 @@ Entities and evidence may contain sensitive information. Every object must be ca
 
 ## 2. Core Entity Model
 
-PMWizard V1 defines sixteen primary entities.
+PMWizard V1 defines seventeen primary entities.
 
 | Domain | Entity | Purpose |
 |---|---|---|
@@ -126,6 +126,7 @@ PMWizard V1 defines sixteen primary entities.
 | Delivery | Milestone | Significant delivery checkpoint or target |
 | Delivery | WorkItem | Generic execution object such as task, story, epic, activity, feature, or deliverable action |
 | Governance | Risk | Uncertain event or condition that may affect objectives |
+| Governance | Assumption | Condition believed to be true for planning and execution, requiring validation over time |
 | Governance | Issue | Current condition already affecting or requiring attention |
 | Governance | Dependency | Relationship in which one object requires another condition, object, team, approval, or outcome |
 | Governance | Decision | Recorded choice, pending choice, rationale, and impact |
@@ -345,7 +346,39 @@ Stakeholder
 Business
 ```
 
-### 3.8 Issue
+### 3.8 Assumption
+
+Represents a planning or delivery condition currently believed to be true but requiring validation.
+
+Suggested fields:
+
+```text
+id
+project_id
+title
+description
+category
+owner
+status
+validation_date
+identified_at
+validated_at
+outcome
+```
+
+Possible states:
+
+```text
+Open
+Validated
+Invalidated
+Converted
+Closed
+```
+
+An invalidated Assumption may create or contribute to a Risk, Issue, Dependency, Decision, or Action Item. PMWizard should preserve that relationship and the supporting evidence.
+
+### 3.9 Issue
 
 Represents an existing problem or condition requiring action.
 
@@ -369,7 +402,7 @@ resolution
 
 A Risk may become an Issue, but the two should remain distinct objects with traceable relationships.
 
-### 3.9 Dependency
+### 3.10 Dependency
 
 Represents a requirement or reliance between project objects or external conditions.
 
@@ -407,7 +440,7 @@ criticality
 
 Dependencies should primarily gain meaning through relationships such as `depends_on`, `blocks`, and `required_for`.
 
-### 3.10 Decision
+### 3.11 Decision
 
 Decisions are first-class project knowledge.
 
@@ -439,7 +472,7 @@ Superseded
 Reversed
 ```
 
-### 3.11 ActionItem
+### 3.12 ActionItem
 
 Represents a concrete follow-up action.
 
@@ -458,7 +491,7 @@ status
 priority
 ```
 
-### 3.12 Person
+### 3.13 Person
 
 Represents a human actor.
 
@@ -478,7 +511,7 @@ external_id
 
 Sensitive employee information should not be required for core project intelligence.
 
-### 3.13 ExternalParty
+### 3.14 ExternalParty
 
 Represents vendors, partners, customers, regulators, or other organizations outside the core project team.
 
@@ -494,7 +527,7 @@ source_system
 external_id
 ```
 
-### 3.14 FinancialRecord
+### 3.15 FinancialRecord
 
 Flexible financial observation linked to a project, workstream, vendor, milestone, or another supported object.
 
@@ -525,7 +558,7 @@ source_system
 external_id
 ```
 
-### 3.15 Evidence
+### 3.16 Evidence
 
 Evidence is the traceable basis for project facts and AI inferences.
 
@@ -564,7 +597,7 @@ permission_scope
 
 The canonical data model should store references and normalized context while respecting source retention and security requirements.
 
-### 3.16 Event
+### 3.17 Event
 
 Represents a change in project state over time.
 
@@ -636,6 +669,8 @@ Milestone → contains → WorkItem
 Risk → impacts → Milestone
 Risk → impacts → Project
 Risk → may_become → Issue
+Assumption → may_create → Risk
+Assumption → may_create → Issue
 
 Issue → blocks → WorkItem
 Issue → impacts → Milestone
