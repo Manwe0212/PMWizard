@@ -25,6 +25,7 @@ Initial work will focus on:
 
 - [`docs/VISION.md`](docs/VISION.md) — long-term product vision and guiding principles
 - [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) — canonical entities, relationships, evidence, events, health, and security foundations
+- [`docs/HUMAN_IN_THE_LOOP.md`](docs/HUMAN_IN_THE_LOOP.md) — AI suggestion boundaries, human accountability, source authority, and review governance
 
 ## Project status
 
