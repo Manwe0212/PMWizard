@@ -32,7 +32,19 @@ Initial work will focus on:
 
 ## Project status
 
-PMWizard is currently in the **foundation / early architecture stage**. The next implementation milestone is the Python canonical model and first Project Memory vertical.
+PMWizard is currently implementing **Project Memory V0**: persistent Projects, Action Items, RAID, Decisions, Evidence, AI Suggestions, Human Reviews, and audit history backed by PostgreSQL.
+
+## Local development
+
+```bash
+cp .env.example .env
+docker compose up -d
+pip install -e ".[dev]"
+alembic upgrade head
+pytest -q
+```
+
+The test suite uses SQLite for fast domain/persistence tests, while CI also validates the Alembic migration against PostgreSQL 16.
 
 ## Data and privacy
 

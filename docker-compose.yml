@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pmwizard
+      POSTGRES_USER: pmwizard
+      POSTGRES_PASSWORD: pmwizard
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pmwizard -d pmwizard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - pmwizard_postgres:/var/lib/postgresql/data
+
+volumes:
+  pmwizard_postgres:
