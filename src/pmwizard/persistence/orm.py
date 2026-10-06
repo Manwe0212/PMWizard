@@ -235,7 +235,7 @@ class AISuggestionORM(Base, TimestampMixin, TenantMixin, ProvenanceMixin):
     model_name: Mapped[str | None] = mapped_column(String(100))
 
 
-class HumanReviewORM(Base, TimestampMixin, TenantMixin):
+class HumanReviewORM(Base, TimestampMixin, TenantMixin, ProvenanceMixin):
     __tablename__ = "human_reviews"
 
     id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
