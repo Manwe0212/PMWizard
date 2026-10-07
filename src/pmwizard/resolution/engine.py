@@ -68,6 +68,8 @@ def _normalize_text(value: str) -> str:
 
 def _stem_token(token: str) -> str:
     """Very small language-agnostic reducer for obvious inflection noise."""
+    if token.endswith("ied") and len(token) > 5:
+        return token[:-3] + "y"
     for suffix in ("ing", "mente", "ados", "adas", "ido", "ida", "ed", "es", "s"):
         if token.endswith(suffix) and len(token) - len(suffix) >= 4:
             return token[: -len(suffix)]
@@ -121,9 +123,9 @@ class ActionItemResolver:
     def __init__(
         self,
         *,
-        match_threshold: float = 0.82,
-        review_threshold: float = 0.45,
-        ambiguity_margin: float = 0.10,
+        match_threshold: float = 0.78,
+        review_threshold: float = 0.30,
+        ambiguity_margin: float = 0.08,
     ) -> None:
         if not 0 <= review_threshold <= match_threshold <= 1:
             raise ValueError("Thresholds must satisfy 0 <= review <= match <= 1")
@@ -208,7 +210,15 @@ class ActionItemResolver:
 
         phrase_match = 1.0 if title and title in query else 0.0
         text_similarity = SequenceMatcher(None, title, query).ratio() if title else 0.0
-        token_overlap = _jaccard(_tokens(query), _tokens(candidate_text))
+        query_tokens = _tokens(query)
+        title_tokens = _tokens(title)
+        candidate_tokens = _tokens(candidate_text)
+        token_overlap = _jaccard(query_tokens, candidate_tokens)
+        title_coverage = (
+            len(query_tokens & title_tokens) / len(title_tokens)
+            if title_tokens
+            else 0.0
+        )
 
         owner_match = 0.0
         if context.owner_id is not None and action.owner_id is not None:
@@ -218,9 +228,10 @@ class ActionItemResolver:
 
         # Lexical evidence intentionally dominates V0. Owner/time are supporting hints.
         score = (
-            0.35 * phrase_match
-            + 0.25 * text_similarity
-            + 0.25 * token_overlap
+            0.25 * phrase_match
+            + 0.35 * title_coverage
+            + 0.10 * text_similarity
+            + 0.15 * token_overlap
             + 0.10 * owner_match
             + 0.05 * temporal_proximity
         )
@@ -229,6 +240,8 @@ class ActionItemResolver:
         reasons: list[str] = []
         if phrase_match:
             reasons.append("action title appears in evidence")
+        if title_coverage >= 0.75:
+            reasons.append("most Action Item keywords appear in evidence")
         if token_overlap >= 0.5:
             reasons.append("strong keyword overlap")
         elif token_overlap >= 0.25:
@@ -245,6 +258,7 @@ class ActionItemResolver:
             score=score,
             breakdown=ScoreBreakdown(
                 phrase_match=phrase_match,
+                title_coverage=round(title_coverage, 4),
                 text_similarity=round(text_similarity, 4),
                 token_overlap=round(token_overlap, 4),
                 owner_match=owner_match,
