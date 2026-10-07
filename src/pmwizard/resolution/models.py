@@ -26,6 +26,7 @@ class ScoreBreakdown(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     phrase_match: float = Field(ge=0.0, le=1.0)
+    title_coverage: float = Field(ge=0.0, le=1.0)
     text_similarity: float = Field(ge=0.0, le=1.0)
     token_overlap: float = Field(ge=0.0, le=1.0)
     owner_match: float = Field(ge=0.0, le=1.0)
