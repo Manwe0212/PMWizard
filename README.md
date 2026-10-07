@@ -29,10 +29,11 @@ Initial work will focus on:
 - [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) — canonical entities, relationships, evidence, events, health, and security foundations
 - [`docs/HUMAN_IN_THE_LOOP.md`](docs/HUMAN_IN_THE_LOOP.md) — AI suggestion boundaries, human accountability, source authority, and review governance
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — V1 system architecture, connectors, Project Memory, intelligence engine, security, and technology choices
+- [`docs/ENTITY_RESOLUTION.md`](docs/ENTITY_RESOLUTION.md) — explainable matching of new evidence to existing project entities
 
 ## Project status
 
-PMWizard is currently implementing **Project Memory V0**: persistent Projects, Action Items, RAID, Decisions, Evidence, AI Suggestions, Human Reviews, and audit history backed by PostgreSQL.
+PMWizard now has **Project Memory V0** and is implementing **Entity Resolution V0**: explainable, tenant-scoped matching of new Evidence to existing open Action Items before semantic/LLM-assisted resolution is introduced.
 
 ## Local development
 
