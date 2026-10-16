@@ -36,13 +36,29 @@ Resolution runs only against Action Items that are:
 
 - inside the same Project;
 - accessible to the current tenant;
-- still open.
+- still open (`not_started`, `in_progress`, `blocked`, `pending_external`, or
+  `ready_for_review`; `completed` and `cancelled` are excluded).
+
+`ProjectMemoryResolutionService` loads candidates using both tenant and project
+filters. Its `tenant_id` must come from trusted application context. It verifies
+that the project belongs to that tenant; it does not authenticate a user, check
+project membership, or evaluate `Evidence.permission_scope`. The caller must
+authorize the user and the source evidence before invoking this service.
+
+`ActionItemResolver` is a pure scoring API, not an authorization boundary. It
+filters supplied items by project and open status, but its domain objects do not
+carry tenant identity. Use the service for persisted candidates and never pass
+unauthorized candidate data to the resolver.
 
 ### Resolution is not project-state mutation
 
 Matching Evidence to an Action Item does not mark the Action Item complete, blocked, or otherwise change governed state.
 
 Progress interpretation remains a separate intelligence step governed by Human Review.
+
+V0 only returns a `ResolutionResult`. It does not persist an Evidence–Action Item
+relationship, update `latest_evidence_id`, create an Action Item, or write review
+or audit records. A caller must handle any later authorized linking separately.
 
 ### Ambiguity is surfaced
 
@@ -90,7 +106,23 @@ Owner match             10%
 Temporal proximity       5%
 ```
 
-The score is intentionally transparent and configurable.
+The score is a weighted lexical heuristic, not a calibrated probability. The six
+weights above are fixed in V0 code. Constructor configuration currently covers
+only `match_threshold`, `review_threshold`, and `ambiguity_margin`.
+
+`ScoreBreakdown` contains unweighted factor values between 0 and 1. Multiply each
+by its documented weight and sum them to reconstruct the score approximately
+(the returned score and continuous factors are rounded to four decimal places).
+The short `reasons` list highlights supporting factors rather than every
+contribution.
+
+Normalization lowercases text, strips accents and replaces punctuation with
+spaces. Exact title matching requires a contiguous sequence of complete
+normalized tokens: `review contract` is not an exact phrase match for
+`review contracts`. Keyword factors separately apply a small English/Spanish
+suffix reducer and stopword list; this is not semantic understanding. Only
+`Evidence.content_excerpt` is scored. Owner hints must be supplied as structured
+`ResolutionContext.owner_id`; names are not inferred from text.
 
 Current default thresholds:
 
@@ -101,6 +133,26 @@ No match:      < 0.30
 
 Ambiguity margin: 0.08
 ```
+
+Thresholds must satisfy `0 <= review_threshold <= match_threshold <= 1`; the
+ambiguity margin must be finite and within `[0, 1]`. A zero margin intentionally
+allows tied scores to meet the separation rule; retain a positive margin when
+ambiguity protection is required. Scores and the difference between the two best
+scores are compared at four-decimal precision, so a margin of exactly `0.08`
+qualifies.
+
+The resolver ranks all eligible candidates by descending score, then by UUID
+string for stable ties. `max_candidates` must be a positive integer (default 5)
+and limits only the returned list: omitted competitors still affect ambiguity.
+Consequently, a result with one returned candidate can still need review due to
+an omitted competitor. Low-scoring candidates may be returned even for
+`no_match`; in that case `best_candidate` is absent. Empty excerpts return
+`no_match` with no candidates.
+
+Temporal proximity uses `effective_at` (falling back to `captured_at`) and the
+nearest of Action Item creation or last progress time: 1.0 within 7 days, 0.7
+within 30, 0.4 within 90, and 0.1 otherwise. Naive timestamps are treated as UTC.
+The example below assumes recent timestamps and no competing candidate.
 
 These values are V0 defaults and should be evaluated with a representative benchmark dataset before production use.
 

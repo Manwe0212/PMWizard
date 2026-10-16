@@ -7,12 +7,14 @@ model-assisted classification.
 
 from __future__ import annotations
 
+import math
 import re
 import unicodedata
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
 
 from pmwizard.models import ActionItem, Evidence
+from pmwizard.models.enums import ActionItemStatus
 
 from .models import (
     ResolutionCandidate,
@@ -129,6 +131,8 @@ class ActionItemResolver:
     ) -> None:
         if not 0 <= review_threshold <= match_threshold <= 1:
             raise ValueError("Thresholds must satisfy 0 <= review <= match <= 1")
+        if not math.isfinite(ambiguity_margin) or not 0 <= ambiguity_margin <= 1:
+            raise ValueError("Ambiguity margin must be finite and between 0 and 1")
         self.match_threshold = match_threshold
         self.review_threshold = review_threshold
         self.ambiguity_margin = ambiguity_margin
@@ -141,6 +145,8 @@ class ActionItemResolver:
         context: ResolutionContext | None = None,
         max_candidates: int = 5,
     ) -> ResolutionResult:
+        if type(max_candidates) is not int or max_candidates < 1:
+            raise ValueError("max_candidates must be a positive integer")
         query_text = (evidence.content_excerpt or "").strip()
         if not query_text:
             return ResolutionResult(
@@ -154,8 +160,9 @@ class ActionItemResolver:
             self._score_candidate(evidence, action, context)
             for action in action_items
             if action.project_id == evidence.project_id
+            and action.status not in {ActionItemStatus.COMPLETED, ActionItemStatus.CANCELLED}
         ]
-        scored.sort(key=lambda candidate: candidate.score, reverse=True)
+        scored.sort(key=lambda candidate: (-candidate.score, str(candidate.entity_id)))
         candidates = scored[:max_candidates]
 
         if not candidates or candidates[0].score < self.review_threshold:
@@ -169,9 +176,10 @@ class ActionItemResolver:
                 ),
             )
 
-        best = candidates[0]
-        second_score = candidates[1].score if len(candidates) > 1 else 0.0
-        margin = best.score - second_score
+        # Limit the returned list only; every eligible competitor affects ambiguity.
+        best = scored[0]
+        second_score = scored[1].score if len(scored) > 1 else 0.0
+        margin = round(best.score - second_score, 4)
 
         if best.score >= self.match_threshold and margin >= self.ambiguity_margin:
             return ResolutionResult(
@@ -208,7 +216,8 @@ class ActionItemResolver:
         description = _normalize_text(action.description or "")
         candidate_text = " ".join(part for part in (title, description) if part)
 
-        phrase_match = 1.0 if title and title in query else 0.0
+        # Padding enforces complete normalized tokens, not partial-word substrings.
+        phrase_match = 1.0 if title and f" {title} " in f" {query} " else 0.0
         text_similarity = SequenceMatcher(None, title, query).ratio() if title else 0.0
         query_tokens = _tokens(query)
         title_tokens = _tokens(title)

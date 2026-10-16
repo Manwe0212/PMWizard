@@ -12,7 +12,11 @@ from .models import ResolutionContext, ResolutionResult
 
 
 class ProjectMemoryResolutionService:
-    """Resolve evidence only against authorized tenant/project memory."""
+    """Load tenant/project-scoped candidates without persisting resolution.
+
+    The caller supplies a trusted tenant ID and authorizes user/project access
+    and source evidence permissions before invoking this service.
+    """
 
     def __init__(
         self,
