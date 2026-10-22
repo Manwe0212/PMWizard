@@ -31,10 +31,11 @@ Initial work will focus on:
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — V1 system architecture, connectors, Project Memory, intelligence engine, security, and technology choices
 - [`docs/ENTITY_RESOLUTION.md`](docs/ENTITY_RESOLUTION.md) — explainable matching of new evidence to existing project entities
 - [`docs/PROGRESS_INTELLIGENCE.md`](docs/PROGRESS_INTELLIGENCE.md) — evidence-backed Action Item progress classification and human-reviewed updates
+- [`docs/INGESTION.md`](docs/INGESTION.md) — deterministic source normalization, deduplication, provenance, and Evidence persistence
 
 ## Project status
 
-PMWizard now has **Project Memory V0** and **Entity Resolution V0**, and is implementing **Progress Intelligence V0**: evidence-backed, human-governed Action Item progress suggestions.
+PMWizard now has **Project Memory V0**, **Entity Resolution V0**, and **Progress Intelligence V0**, and is implementing **Ingestion V0**: an idempotent source-to-Evidence boundary for future connectors.
 
 ## Local development
 

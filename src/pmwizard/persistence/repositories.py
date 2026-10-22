@@ -211,6 +211,43 @@ class ProjectMemoryRepository:
         self.session.flush()
         return evidence
 
+
+    def get_evidence_by_source_identity(
+        self,
+        tenant_id: UUID,
+        project_id: UUID,
+        source_system: str,
+        external_id: str,
+    ) -> Evidence | None:
+        row = self.session.scalar(
+            select(EvidenceORM).where(
+                EvidenceORM.tenant_id == tenant_id,
+                EvidenceORM.project_id == project_id,
+                EvidenceORM.source_system == source_system,
+                EvidenceORM.external_id == external_id,
+            )
+        )
+        return self._evidence_from_row(row) if row is not None else None
+
+    def get_evidence_by_hash(
+        self,
+        tenant_id: UUID,
+        project_id: UUID,
+        content_hash: str,
+        source_system: str,
+        source_type: str,
+    ) -> Evidence | None:
+        row = self.session.scalar(
+            select(EvidenceORM).where(
+                EvidenceORM.tenant_id == tenant_id,
+                EvidenceORM.project_id == project_id,
+                EvidenceORM.content_hash == content_hash,
+                EvidenceORM.source_system == source_system,
+                EvidenceORM.source_type == source_type,
+            )
+        )
+        return self._evidence_from_row(row) if row is not None else None
+
     def add_ai_suggestion(
         self, tenant_id: UUID, suggestion: AISuggestion
     ) -> AISuggestion:
@@ -326,6 +363,26 @@ class ProjectMemoryRepository:
         )
         self.session.add(row)
         self.session.flush()
+
+    @staticmethod
+    def _evidence_from_row(row: EvidenceORM) -> Evidence:
+        return Evidence(
+            id=row.id,
+            project_id=row.project_id,
+            source_type=row.source_type,
+            source_system=row.source_system,
+            source_reference=row.source_reference,
+            external_id=row.external_id,
+            author=row.author,
+            captured_at=row.captured_at,
+            effective_at=row.effective_at,
+            content_excerpt=row.content_excerpt,
+            content_hash=row.content_hash,
+            permission_scope=row.permission_scope,
+            created_at=row.created_at,
+            updated_at=row.updated_at,
+            provenance=Provenance.model_validate(row.provenance),
+        )
 
     @staticmethod
     def _action_from_row(row: ActionItemORM) -> ActionItem:
