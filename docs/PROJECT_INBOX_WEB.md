@@ -20,19 +20,7 @@ HumanReview + Audit + governed Project Memory
 
 ## Why a BFF
 
-The FastAPI V0 expects trusted tenant/user/permission headers. The browser must not be allowed to forge them directly.
-
-Next.js therefore proxies requests server-side. Runtime identity comes from server environment variables:
-
-```text
-PMWIZARD_API_URL
-PMWIZARD_PROJECT_ID
-PMWIZARD_TENANT_ID
-PMWIZARD_USER_ID
-PMWIZARD_PERMISSIONS
-```
-
-This is still a local/demo identity model, not production authentication. OIDC/OAuth middleware is deferred.
+Authentication + Project Selection V0 replaces fixed runtime identity. Next.js now stores the short-lived API token in an HttpOnly cookie and proxies authenticated Bearer requests server-side. Only PMWIZARD_API_URL remains in the Web environment. OIDC/OAuth remains a future identity-provider option.
 
 ## UI capabilities
 
@@ -66,7 +54,7 @@ Open http://localhost:3000.
 
 ## Production boundary
 
-The current environment identity must be replaced by real authenticated session claims before exposing the UI to untrusted users.
+Local password authentication is suitable for V0 development and controlled deployments. Enterprise deployments should replace it with OIDC/Entra-backed identity while preserving the same project-membership authorization boundary.
 
 The browser should never receive Microsoft Graph tokens or PMWizard trusted gateway credentials.
 
