@@ -6,7 +6,7 @@ Domain models remain in pmwizard.models. These ORM classes are storage-specific.
 from datetime import date, datetime, timezone
 from uuid import UUID, uuid4
 
-from sqlalchemy import JSON, Date, DateTime, Float, String, Text, Uuid
+from sqlalchemy import JSON, Boolean, Date, DateTime, Float, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -33,6 +33,37 @@ class TenantMixin:
 
 class ProvenanceMixin:
     provenance: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+
+
+class AppUserORM(Base, TimestampMixin, TenantMixin):
+    __tablename__ = "app_users"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "email", name="uq_app_users_tenant_email"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    email: Mapped[str] = mapped_column(String(320), nullable=False, index=True)
+    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+class ProjectMembershipORM(Base, TimestampMixin, TenantMixin):
+    __tablename__ = "project_memberships"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id",
+            "user_id",
+            "project_id",
+            name="uq_project_memberships_user_project",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    project_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    role: Mapped[str] = mapped_column(String(100), nullable=False, default="member")
+    permissions: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
 
 
 class ProjectORM(Base, TimestampMixin, TenantMixin, ProvenanceMixin):
