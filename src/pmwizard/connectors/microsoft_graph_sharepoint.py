@@ -352,11 +352,16 @@ def _drive_item_author(item: dict[str, Any]) -> str | None:
 
 
 def _compose_document_content(name: str, text: str) -> str:
+    """Preserve file name while removing a literal repeated leading title."""
     name = name.strip()
     text = text.strip()
-    if text.casefold().startswith(name.casefold()):
-        remainder = text[len(name) :].lstrip(" :-\n\t")
-        return f"{name}\n\n{remainder}".strip() if remainder else name
+
+    candidates = [name, PurePosixPath(name).stem.strip()]
+    for candidate in candidates:
+        if candidate and text.casefold().startswith(candidate.casefold()):
+            remainder = text[len(candidate) :].lstrip(" .:-\n\t")
+            return f"{name}\n\n{remainder}".strip() if remainder else name
+
     return f"{name}\n\n{text}".strip()
 
 
