@@ -18,7 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from pmwizard.ingestion import SourceRecord
 
-from .contracts import ConnectorPage, ConnectorTestResult
+from .contracts import ConnectorDescriptor, ConnectorPage, ConnectorTestResult
 
 
 GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0"
@@ -170,6 +170,24 @@ class MicrosoftGraphMailConnector:
     @property
     def connector_key(self) -> str:
         return f"microsoft-graph-mail:{self.config.connection_name}:v0"
+
+    @property
+    def descriptor(self) -> ConnectorDescriptor:
+        return ConnectorDescriptor(
+            source_type="email",
+            source_system="microsoft_graph_mail",
+            display_name=self.config.connection_name,
+            permission_scope=self.config.permission_scope,
+            safe_config={
+                "mailbox": self.config.mailbox,
+                "folder_id": self.config.folder_id,
+                "received_after": (
+                    self.config.received_after.isoformat()
+                    if self.config.received_after is not None
+                    else None
+                ),
+            },
+        )
 
     def test_connection(self) -> ConnectorTestResult:
         url = self._folder_url()

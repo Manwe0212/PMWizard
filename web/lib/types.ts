@@ -196,3 +196,66 @@ export interface ProjectMemorySnapshot {
   dependencies: DependencyView[];
   decisions: DecisionView[];
 }
+
+
+export type SourceHealthStatus =
+  | "healthy"
+  | "attention"
+  | "failed"
+  | "never_synced"
+  | "disabled";
+
+export interface SourceRunView {
+  id: string;
+  status: "success" | "partial" | "failed";
+  started_at: string;
+  finished_at: string;
+  duration_seconds: number;
+  pages_processed: number;
+  fetched: number;
+  ingested: number;
+  duplicates: number;
+  source_changed: number;
+  empty_content: number;
+  skipped: number;
+  errors: Array<Record<string, unknown>>;
+  skips: Array<Record<string, unknown>>;
+  start_checkpoint_present: boolean;
+  end_checkpoint_present: boolean;
+  checkpoint_fingerprint: string | null;
+}
+
+export interface SourceConnectionView {
+  id: string;
+  connector_key: string;
+  source_type: string;
+  source_system: string;
+  display_name: string;
+  permission_scope: string[];
+  safe_config: Record<string, unknown>;
+  is_enabled: boolean;
+  health: SourceHealthStatus;
+  checkpoint_present: boolean;
+  checkpoint_fingerprint: string | null;
+  checkpoint_updated_at: string | null;
+  latest_run: SourceRunView | null;
+  recent_runs: SourceRunView[];
+}
+
+export interface SourcesSummary {
+  total: number;
+  healthy: number;
+  attention: number;
+  failed: number;
+  never_synced: number;
+  disabled: number;
+  total_ingested: number;
+  total_skipped: number;
+  total_errors: number;
+}
+
+export interface SourcesWorkspaceSnapshot {
+  project_id: string;
+  summary: SourcesSummary;
+  sources: SourceConnectionView[];
+}

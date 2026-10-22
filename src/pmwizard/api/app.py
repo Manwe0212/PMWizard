@@ -35,6 +35,7 @@ from pmwizard.memory import (
 )
 from pmwizard.models.enums import ReviewStatus
 from pmwizard.persistence import create_engine_from_url, create_session_factory
+from pmwizard.sources import SourcesWorkspaceService, SourcesWorkspaceSnapshot
 
 from .context import ApiPrincipal
 
@@ -210,6 +211,28 @@ def create_app(
             user_id=principal.user_id,
         )
         return ProjectsResponse(count=len(items), items=items)
+
+    @app.get(
+        "/v1/projects/{project_id}/sources",
+        response_model=SourcesWorkspaceSnapshot,
+    )
+    def get_project_sources(
+        project_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> SourcesWorkspaceSnapshot:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return SourcesWorkspaceService(session).snapshot(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
 
     @app.get(
         "/v1/projects/{project_id}/memory",

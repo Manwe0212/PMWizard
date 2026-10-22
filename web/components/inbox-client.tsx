@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 import { MemoryWorkspace } from "@/components/memory-workspace";
+import { SourcesWorkspace } from "@/components/sources-workspace";
 import type {
   InboxListResponse,
   InboxSuggestionDetail,
@@ -36,7 +37,7 @@ const ACTION_STATUSES = [
 function titleCase(value: string): string {
   return value
     .replaceAll("_", " ")
-    .replace(/w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function confidenceLabel(confidence: number): string {
@@ -99,7 +100,7 @@ export function InboxClient({
   const [editStatus, setEditStatus] = useState("in_progress");
   const [editSummary, setEditSummary] = useState("");
   const [reviewerNote, setReviewerNote] = useState("");
-  const [activeView, setActiveView] = useState<"inbox" | "memory">("inbox");
+  const [activeView, setActiveView] = useState<"inbox" | "memory" | "sources">("inbox");
 
   const loadInbox = useCallback(async () => {
     setLoading(true);
@@ -262,10 +263,13 @@ export function InboxClient({
               <span className="navIcon">◇</span>
               Project Memory
             </button>
-            <button className="navItem" type="button" disabled>
+            <button
+              className={`navItem ${activeView === "sources" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("sources")}
+            >
               <span className="navIcon">↗</span>
               Sources
-              <span className="soon">Soon</span>
             </button>
           </nav>
         </div>
@@ -283,11 +287,19 @@ export function InboxClient({
         <header className="topbar">
           <div>
             <div className="eyebrow">Project workspace</div>
-            <h1>{activeView === "inbox" ? "Project Inbox" : "Project Memory"}</h1>
+            <h1>
+              {activeView === "inbox"
+                ? "Project Inbox"
+                : activeView === "memory"
+                  ? "Project Memory"
+                  : "Sources"}
+            </h1>
             <p>
               {activeView === "inbox"
                 ? "Review evidence-backed updates before they become project truth."
-                : "Inspect the governed project truth produced by authorized review."}
+                : activeView === "memory"
+                  ? "Inspect the governed project truth produced by authorized review."
+                  : "Monitor authorized source health, sync history, and ingestion telemetry."}
             </p>
           </div>
           <div className="topbarControls">
@@ -667,8 +679,10 @@ export function InboxClient({
           </section>
   
           </>
-        ) : (
+        ) : activeView === "memory" ? (
           <MemoryWorkspace projectName={projectName} />
+        ) : (
+          <SourcesWorkspace />
         )}
       </main>
     </div>

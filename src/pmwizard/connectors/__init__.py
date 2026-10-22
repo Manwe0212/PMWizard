@@ -1,11 +1,17 @@
 """PMWizard source connector framework."""
 
-from .checkpoints import CheckpointStore, InMemoryCheckpointStore
+from .checkpoints import (
+    CheckpointStore,
+    InMemoryCheckpointStore,
+    SQLAlchemyCheckpointStore,
+)
 from .contracts import (
+    ConnectorDescriptor,
     ConnectorError,
     ConnectorPage,
     ConnectorRunResult,
     ConnectorRunStatus,
+    ConnectorRunTelemetry,
     ConnectorSkip,
     ConnectorTestResult,
     SourceConnector,
@@ -27,10 +33,12 @@ from .synthetic import SyntheticConnector
 
 __all__ = [
     "CheckpointStore",
+    "ConnectorDescriptor",
     "ConnectorError",
     "ConnectorPage",
     "ConnectorRunResult",
     "ConnectorRunStatus",
+    "ConnectorRunTelemetry",
     "ConnectorRunner",
     "ConnectorSkip",
     "ConnectorTestResult",
@@ -38,6 +46,7 @@ __all__ = [
     "GraphJsonTransport",
     "GraphTransportError",
     "InMemoryCheckpointStore",
+    "SQLAlchemyCheckpointStore",
     "MicrosoftGraphHttpTransport",
     "MicrosoftGraphMailConfig",
     "MicrosoftGraphMailConnector",

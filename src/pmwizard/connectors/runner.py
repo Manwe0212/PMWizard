@@ -11,8 +11,10 @@ from pmwizard.ingestion import EvidenceIngestionService, IngestionOutcome
 
 from .checkpoints import CheckpointStore
 from .contracts import (
+    ConnectorDescriptor,
     ConnectorError,
     ConnectorRunResult,
+    ConnectorRunTelemetry,
     ConnectorRunStatus,
     SourceConnector,
 )
@@ -32,10 +34,12 @@ class ConnectorRunner:
         checkpoint_store: CheckpointStore,
         *,
         ingestion: EvidenceIngestionService | None = None,
+        telemetry: ConnectorRunTelemetry | None = None,
     ) -> None:
         self.session = session
         self.checkpoint_store = checkpoint_store
         self.ingestion = ingestion or EvidenceIngestionService(session)
+        self.telemetry = telemetry
 
     def run(
         self,
@@ -185,7 +189,7 @@ class ConnectorRunner:
                 )
 
         finished_at = datetime.now(timezone.utc)
-        return ConnectorRunResult(
+        result = ConnectorRunResult(
             connector_key=connector.connector_key,
             status=status,
             started_at=started_at,
@@ -202,3 +206,30 @@ class ConnectorRunner:
             skips=skips,
             errors=errors,
         )
+
+        if self.telemetry is not None:
+            descriptor = getattr(connector, "descriptor", None)
+            if descriptor is not None and not isinstance(
+                descriptor,
+                ConnectorDescriptor,
+            ):
+                descriptor = None
+            try:
+                self.telemetry.record_run(
+                    tenant_id=tenant_id,
+                    project_id=project_id,
+                    connector_key=connector.connector_key,
+                    descriptor=descriptor,
+                    result=result,
+                )
+            except Exception as exc:
+                result.errors.append(
+                    ConnectorError(
+                        stage="telemetry",
+                        message=f"{type(exc).__name__}: {exc}",
+                    )
+                )
+                if result.status == ConnectorRunStatus.SUCCESS:
+                    result.status = ConnectorRunStatus.PARTIAL
+
+        return result

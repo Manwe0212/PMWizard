@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pmwizard.ingestion import SourceRecord
 
-from .contracts import ConnectorPage, ConnectorTestResult
+from .contracts import ConnectorDescriptor, ConnectorPage, ConnectorTestResult
 
 
 class SyntheticConnector:
@@ -26,6 +26,16 @@ class SyntheticConnector:
     @property
     def connector_key(self) -> str:
         return self._connector_key
+
+    @property
+    def descriptor(self) -> ConnectorDescriptor:
+        return ConnectorDescriptor(
+            source_type="synthetic",
+            source_system="synthetic",
+            display_name=self._connector_key,
+            permission_scope=["project:read"],
+            safe_config={},
+        )
 
     def test_connection(self) -> ConnectorTestResult:
         return ConnectorTestResult(

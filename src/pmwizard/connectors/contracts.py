@@ -12,6 +12,20 @@ from pydantic import BaseModel, ConfigDict, Field
 from pmwizard.ingestion import SourceRecord
 
 
+class ConnectorDescriptor(BaseModel):
+    """Safe, non-secret metadata for one connector configuration."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source_type: str = Field(min_length=1)
+    source_system: str = Field(min_length=1)
+    display_name: str = Field(min_length=1)
+    permission_scope: list[str] = Field(default_factory=list)
+    safe_config: dict[str, str | int | float | bool | None | list[str]] = Field(
+        default_factory=dict
+    )
+
+
 class ConnectorRunStatus(StrEnum):
     SUCCESS = "success"
     PARTIAL = "partial"
@@ -71,6 +85,20 @@ class ConnectorRunResult(BaseModel):
     skipped: int = 0
     skips: list[ConnectorSkip] = Field(default_factory=list)
     errors: list[ConnectorError] = Field(default_factory=list)
+
+
+@runtime_checkable
+class ConnectorRunTelemetry(Protocol):
+    def record_run(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        connector_key: str,
+        descriptor: ConnectorDescriptor | None,
+        result: ConnectorRunResult,
+    ) -> None:
+        ...
 
 
 @runtime_checkable
