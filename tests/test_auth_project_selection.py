@@ -71,7 +71,7 @@ def _seed_user_and_projects(factory):
         )
         user = auth.create_user(
             tenant_id=tenant_id,
-            email="pm@example.test",
+            email="pm@example.com",
             display_name="Project Manager",
             password="A secure V0 password!",
         )
@@ -102,7 +102,7 @@ def _login(client, tenant_id, password="A secure V0 password!"):
         "/v1/auth/login",
         json={
             "tenant_id": str(tenant_id),
-            "email": "pm@example.test",
+            "email": "pm@example.com",
             "password": password,
         },
     )
@@ -135,7 +135,7 @@ def test_login_returns_short_lived_bearer_token(auth_env) -> None:
     assert payload["token_type"] == "bearer"
     assert payload["expires_in"] == 1800
     assert payload["user"]["id"] == str(user.id)
-    assert payload["user"]["email"] == "pm@example.test"
+    assert payload["user"]["email"] == "pm@example.com"
     assert payload["access_token"]
 
 
