@@ -936,3 +936,28 @@ Project Memory Workspace
 ```
 
 This projection is read-only and tenant/project scoped. It intentionally reuses the same ProjectMembership authorization boundary as Project Inbox. Project Inbox remains the mutation/governance surface; Project Memory is the observation surface.
+
+
+## Sources Workspace V0
+
+Connector operations now have a durable observability path:
+
+```text
+Outlook / SharePoint
+  ↓
+SourceConnector
+  ↓
+ConnectorRunner
+  ├─ SQLAlchemyCheckpointStore → opaque durable cursor
+  └─ SourceTelemetryService → sanitized run history
+  ↓
+Ingestion / Evidence
+  ↓
+GET /v1/projects/{project_id}/sources
+  ↓
+Next.js /api/sources
+  ↓
+Sources Workspace
+```
+
+The raw checkpoint is required for provider delta resumption but is deliberately excluded from the API projection. Only checkpoint presence, update time, and a short SHA-256 fingerprint cross the operational UI boundary.
