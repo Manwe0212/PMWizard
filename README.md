@@ -35,10 +35,11 @@ Initial work will focus on:
 - [`docs/CONNECTORS.md`](docs/CONNECTORS.md) — common connector contract, incremental cursors, checkpoints, run results, and safe retries
 - [`docs/MICROSOFT_GRAPH_MAIL.md`](docs/MICROSOFT_GRAPH_MAIL.md) — read-only Outlook mail delta sync through Microsoft Graph
 - [`docs/SHAREPOINT_DOCUMENTS.md`](docs/SHAREPOINT_DOCUMENTS.md) — versioned SharePoint document-library ingestion and deterministic text extraction
+- [`docs/PROJECT_INBOX_API.md`](docs/PROJECT_INBOX_API.md) — permission-aware human review API for AI suggestions
 
 ## Project status
 
-PMWizard now has the V0 Project Intelligence pipeline, **Connector Framework V0**, and **Microsoft Graph Mail V0**, and is implementing **SharePoint Documents V0** as the second real read-only source adapter.
+PMWizard now has the V0 intelligence and Microsoft ingestion pipeline, and is implementing **Project Inbox V0 + API** as the first human-facing review surface for AI suggestions.
 
 ## Local development
 
@@ -48,6 +49,9 @@ docker compose up -d
 pip install -e ".[dev]"
 alembic upgrade head
 pytest -q
+
+# API (requires PMWIZARD_DATABASE_URL)
+uvicorn pmwizard.api.app:create_default_app --factory --reload
 ```
 
 The test suite uses SQLite for fast domain/persistence tests, while CI also validates the Alembic migration against PostgreSQL 16.
