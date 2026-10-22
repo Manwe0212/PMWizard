@@ -36,7 +36,7 @@ def api_env():
         class_=Session,
         expire_on_commit=False,
     )
-    app = create_app(factory)
+    app = create_app(factory, allow_trusted_headers=True)
     with TestClient(app) as client:
         yield client, factory
 

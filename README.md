@@ -37,10 +37,11 @@ Initial work will focus on:
 - [`docs/SHAREPOINT_DOCUMENTS.md`](docs/SHAREPOINT_DOCUMENTS.md) — versioned SharePoint document-library ingestion and deterministic text extraction
 - [`docs/PROJECT_INBOX_API.md`](docs/PROJECT_INBOX_API.md) — permission-aware human review API for AI suggestions
 - [`docs/PROJECT_INBOX_WEB.md`](docs/PROJECT_INBOX_WEB.md) — responsive Next.js human-review interface and BFF security boundary
+- [`docs/AUTH_PROJECT_SELECTION.md`](docs/AUTH_PROJECT_SELECTION.md) — local authentication, signed sessions, and per-project memberships
 
 ## Project status
 
-PMWizard now has the V0 intelligence, Microsoft ingestion pipeline, and Project Inbox API, and is implementing **Project Inbox Web V0** as the first browser-based human review experience.
+PMWizard now has a complete V0 intelligence-to-review slice and is implementing **Authentication + Project Selection V0** so users sign in and operate only within authorized projects.
 
 ## Local development
 
@@ -51,7 +52,7 @@ pip install -e ".[dev]"
 alembic upgrade head
 pytest -q
 
-# API (requires PMWIZARD_DATABASE_URL)
+# API (requires PMWIZARD_DATABASE_URL + PMWIZARD_AUTH_SECRET)
 uvicorn pmwizard.api.app:create_default_app --factory --reload
 ```
 

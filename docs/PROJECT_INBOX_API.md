@@ -45,23 +45,7 @@ Terminal suggestions can be queried explicitly with the `review_status` query pa
 
 ## Trusted identity context
 
-V0 accepts identity context through:
-
-```text
-X-PMWizard-Tenant-ID
-X-PMWizard-User-ID
-X-PMWizard-Permissions
-```
-
-Example permission header:
-
-```text
-project:read,project:review,microsoft-graph:mail:read
-```
-
-These headers are not a production authentication scheme.
-
-They represent claims that a trusted API gateway or future authentication middleware has already authenticated and authorized. A production deployment must prevent clients from forging them directly.
+Authentication + Project Selection V0 uses Authorization: Bearer <token> for normal API access. Project permissions are loaded from ProjectMembership for the authenticated user. The earlier trusted headers remain available only in explicitly enabled compatibility/test mode.
 
 ## Project permissions
 
