@@ -30,10 +30,11 @@ Initial work will focus on:
 - [`docs/HUMAN_IN_THE_LOOP.md`](docs/HUMAN_IN_THE_LOOP.md) — AI suggestion boundaries, human accountability, source authority, and review governance
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — V1 system architecture, connectors, Project Memory, intelligence engine, security, and technology choices
 - [`docs/ENTITY_RESOLUTION.md`](docs/ENTITY_RESOLUTION.md) — explainable matching of new evidence to existing project entities
+- [`docs/PROGRESS_INTELLIGENCE.md`](docs/PROGRESS_INTELLIGENCE.md) — evidence-backed Action Item progress classification and human-reviewed updates
 
 ## Project status
 
-PMWizard now has **Project Memory V0** and is implementing **Entity Resolution V0**: explainable, tenant-scoped matching of new Evidence to existing open Action Items before semantic/LLM-assisted resolution is introduced.
+PMWizard now has **Project Memory V0** and **Entity Resolution V0**, and is implementing **Progress Intelligence V0**: evidence-backed, human-governed Action Item progress suggestions.
 
 ## Local development
 
