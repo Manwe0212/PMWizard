@@ -38,10 +38,11 @@ Initial work will focus on:
 - [`docs/PROJECT_INBOX_API.md`](docs/PROJECT_INBOX_API.md) — permission-aware human review API for AI suggestions
 - [`docs/PROJECT_INBOX_WEB.md`](docs/PROJECT_INBOX_WEB.md) — responsive Next.js human-review interface and BFF security boundary
 - [`docs/AUTH_PROJECT_SELECTION.md`](docs/AUTH_PROJECT_SELECTION.md) — local authentication, signed sessions, and per-project memberships
+- [`docs/PROJECT_MEMORY_WORKSPACE.md`](docs/PROJECT_MEMORY_WORKSPACE.md) — read-only governed Action Items, RAID, Decisions, and project state
 
 ## Project status
 
-PMWizard now has a complete V0 intelligence-to-review slice and is implementing **Authentication + Project Selection V0** so users sign in and operate only within authorized projects.
+PMWizard now has authenticated, project-scoped intelligence review and is implementing **Project Memory Workspace V0** so governed Action Items, RAID, Decisions, and project state are visible as the resulting source of truth.
 
 ## Local development
 
