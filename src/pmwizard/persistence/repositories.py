@@ -212,6 +212,15 @@ class ProjectMemoryRepository:
         return evidence
 
 
+    def get_evidence(self, tenant_id: UUID, evidence_id: UUID) -> Evidence | None:
+        row = self.session.scalar(
+            select(EvidenceORM).where(
+                EvidenceORM.tenant_id == tenant_id,
+                EvidenceORM.id == evidence_id,
+            )
+        )
+        return self._evidence_from_row(row) if row is not None else None
+
     def get_evidence_by_source_identity(
         self,
         tenant_id: UUID,
@@ -273,6 +282,36 @@ class ProjectMemoryRepository:
         self.session.flush()
         return suggestion
 
+    def list_ai_suggestions(
+        self,
+        tenant_id: UUID,
+        project_id: UUID,
+        *,
+        statuses: list[ReviewStatus] | None = None,
+        limit: int = 100,
+    ) -> list[AISuggestion]:
+        if type(limit) is not int or limit < 1 or limit > 500:
+            raise ValueError("limit must be an integer between 1 and 500")
+
+        query = (
+            select(AISuggestionORM)
+            .where(
+                AISuggestionORM.tenant_id == tenant_id,
+                AISuggestionORM.project_id == project_id,
+            )
+            .order_by(AISuggestionORM.created_at.desc(), AISuggestionORM.id)
+            .limit(limit)
+        )
+        if statuses is not None:
+            query = query.where(
+                AISuggestionORM.review_status.in_(
+                    [status.value for status in statuses]
+                )
+            )
+
+        rows = self.session.scalars(query).all()
+        return [self._suggestion_from_row(row) for row in rows]
+
     def get_ai_suggestion(
         self, tenant_id: UUID, suggestion_id: UUID
     ) -> AISuggestion | None:
@@ -284,23 +323,7 @@ class ProjectMemoryRepository:
         )
         if row is None:
             return None
-        return AISuggestion(
-            id=row.id,
-            project_id=row.project_id,
-            suggestion_type=row.suggestion_type,
-            target_entity_type=row.target_entity_type,
-            target_entity_id=row.target_entity_id,
-            proposed_changes=row.proposed_changes,
-            reason=row.reason,
-            evidence_ids=row.evidence_ids,
-            confidence=row.confidence,
-            review_status=row.review_status,
-            model_provider=row.model_provider,
-            model_name=row.model_name,
-            created_at=row.created_at,
-            updated_at=row.updated_at,
-            provenance=Provenance.model_validate(row.provenance),
-        )
+        return self._suggestion_from_row(row)
 
     def set_suggestion_review_status(
         self, tenant_id: UUID, suggestion_id: UUID, status: ReviewStatus
@@ -363,6 +386,26 @@ class ProjectMemoryRepository:
         )
         self.session.add(row)
         self.session.flush()
+
+    @staticmethod
+    def _suggestion_from_row(row: AISuggestionORM) -> AISuggestion:
+        return AISuggestion(
+            id=row.id,
+            project_id=row.project_id,
+            suggestion_type=row.suggestion_type,
+            target_entity_type=row.target_entity_type,
+            target_entity_id=row.target_entity_id,
+            proposed_changes=row.proposed_changes,
+            reason=row.reason,
+            evidence_ids=row.evidence_ids,
+            confidence=row.confidence,
+            review_status=row.review_status,
+            model_provider=row.model_provider,
+            model_name=row.model_name,
+            created_at=row.created_at,
+            updated_at=row.updated_at,
+            provenance=Provenance.model_validate(row.provenance),
+        )
 
     @staticmethod
     def _evidence_from_row(row: EvidenceORM) -> Evidence:
