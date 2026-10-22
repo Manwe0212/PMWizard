@@ -86,6 +86,7 @@ class ProjectMemoryQueryService:
                     not in {
                         AssumptionStatus.VALIDATED,
                         AssumptionStatus.INVALIDATED,
+                        AssumptionStatus.CONVERTED,
                         AssumptionStatus.CLOSED,
                     }
                     for item in assumptions
