@@ -912,3 +912,8 @@ Audit history
 PMWizard should be easy to connect, difficult to misuse, and explicit about what it knows versus what it infers.
 
 > **Keep your tools. Connect the intelligence between them.**
+
+
+## Authentication V0
+
+PMWizard authenticates local V0 users with Argon2id password hashes and short-lived signed access tokens. Tokens identify tenant/user but do not carry project permissions. Each project request resolves a ProjectMembership from PostgreSQL, keeping authorization project-specific and immediately revocable at the membership layer. The Next.js BFF stores the access token in an HttpOnly cookie and validates project selection against the authenticated project list.
