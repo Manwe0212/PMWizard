@@ -60,3 +60,28 @@ export interface ReviewResponse {
   review_status: ReviewStatus;
   updated_action_item: ActionItemView | null;
 }
+
+
+export interface AppUser {
+  id: string;
+  tenant_id: string;
+  email: string;
+  display_name: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectAccess {
+  project_id: string;
+  name: string;
+  status: string | null;
+  role: string;
+  permissions: string[];
+}
+
+export interface WebSession {
+  user: AppUser;
+  projects: ProjectAccess[];
+  selected_project_id: string | null;
+}
