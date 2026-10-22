@@ -202,17 +202,14 @@ V0 includes:
 
 ```text
 InMemoryCheckpointStore
+SQLAlchemyCheckpointStore
 ```
 
-This is intended for:
+InMemoryCheckpointStore remains useful for tests and local demonstrations.
 
-- unit tests;
-- local demonstrations;
-- validating connector behavior.
+SQLAlchemyCheckpointStore persists opaque provider cursors for durable incremental synchronization. Sources Workspace never returns raw cursor values; it exposes only presence, timestamp, and a short fingerprint.
 
-A durable PostgreSQL checkpoint store should be introduced before production connector scheduling.
-
-The interface is intentionally stable so connector code will not depend on how checkpoints are persisted.
+The CheckpointStore interface remains stable so connector code does not depend on the persistence implementation.
 
 ---
 
@@ -310,14 +307,13 @@ Connector Framework V0 deliberately defers:
 
 - OAuth implementation;
 - token persistence/refresh;
-- durable database checkpoints;
 - scheduled workers;
 - retries with exponential backoff;
 - rate-limit handling;
 - webhook subscriptions;
 - dead-letter queues;
 - connector configuration persistence;
-- production observability.
+- long-term production metrics/alerting.
 
 Those should be added when implementing real source adapters.
 
