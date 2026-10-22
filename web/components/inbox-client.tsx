@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { MemoryWorkspace } from "@/components/memory-workspace";
 import type {
   InboxListResponse,
   InboxSuggestionDetail,
@@ -98,6 +99,7 @@ export function InboxClient({
   const [editStatus, setEditStatus] = useState("in_progress");
   const [editSummary, setEditSummary] = useState("");
   const [reviewerNote, setReviewerNote] = useState("");
+  const [activeView, setActiveView] = useState<"inbox" | "memory">("inbox");
 
   const loadInbox = useCallback(async () => {
     setLoading(true);
@@ -243,15 +245,22 @@ export function InboxClient({
           </div>
 
           <nav className="nav">
-            <button className="navItem active" type="button">
+            <button
+              className={`navItem ${activeView === "inbox" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("inbox")}
+            >
               <span className="navIcon">⌁</span>
               Project Inbox
               {items.length > 0 && <span className="navCount">{items.length}</span>}
             </button>
-            <button className="navItem" type="button" disabled>
+            <button
+              className={`navItem ${activeView === "memory" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("memory")}
+            >
               <span className="navIcon">◇</span>
               Project Memory
-              <span className="soon">Soon</span>
             </button>
             <button className="navItem" type="button" disabled>
               <span className="navIcon">↗</span>
@@ -274,8 +283,12 @@ export function InboxClient({
         <header className="topbar">
           <div>
             <div className="eyebrow">Project workspace</div>
-            <h1>Project Inbox</h1>
-            <p>Review evidence-backed updates before they become project truth.</p>
+            <h1>{activeView === "inbox" ? "Project Inbox" : "Project Memory"}</h1>
+            <p>
+              {activeView === "inbox"
+                ? "Review evidence-backed updates before they become project truth."
+                : "Inspect the governed project truth produced by authorized review."}
+            </p>
           </div>
           <div className="topbarControls">
             <div className="projectPill projectSelectorPill">
@@ -320,336 +333,343 @@ export function InboxClient({
           </div>
         </header>
 
-        <section className="metrics" aria-label="Inbox summary">
-          <div className="metric">
-            <span>Needs attention</span>
-            <strong>{items.length}</strong>
-            <small>Pending and deferred suggestions</small>
-          </div>
-          <div className="metric">
-            <span>Average confidence</span>
-            <strong>
-              {items.length ? `${Math.round(averageConfidence * 100)}%` : "—"}
-            </strong>
-            <small>Across visible suggestions</small>
-          </div>
-          <div className="metric">
-            <span>Deferred</span>
-            <strong>{deferredCount}</strong>
-            <small>Waiting for a later decision</small>
-          </div>
-          <div className="metric governanceMetric">
-            <span>Governance mode</span>
-            <strong>Human</strong>
-            <small>No autonomous state changes</small>
-          </div>
-        </section>
-
-        {error && (
-          <div className="errorBanner" role="alert">
-            <span>!</span>
-            <div>
-              <strong>PMWizard needs attention</strong>
-              <p>{error}</p>
+        {activeView === "inbox" ? (
+          <>
+          <section className="metrics" aria-label="Inbox summary">
+            <div className="metric">
+              <span>Needs attention</span>
+              <strong>{items.length}</strong>
+              <small>Pending and deferred suggestions</small>
             </div>
-            <button type="button" onClick={() => void loadInbox()}>
-              Retry
-            </button>
-          </div>
-        )}
-
-        <section className="workspace">
-          <div className="queuePanel">
-            <div className="panelHeader">
+            <div className="metric">
+              <span>Average confidence</span>
+              <strong>
+                {items.length ? `${Math.round(averageConfidence * 100)}%` : "—"}
+              </strong>
+              <small>Across visible suggestions</small>
+            </div>
+            <div className="metric">
+              <span>Deferred</span>
+              <strong>{deferredCount}</strong>
+              <small>Waiting for a later decision</small>
+            </div>
+            <div className="metric governanceMetric">
+              <span>Governance mode</span>
+              <strong>Human</strong>
+              <small>No autonomous state changes</small>
+            </div>
+          </section>
+  
+          {error && (
+            <div className="errorBanner" role="alert">
+              <span>!</span>
               <div>
-                <h2>Review queue</h2>
-                <p>{items.length} suggestions visible to you</p>
+                <strong>PMWizard needs attention</strong>
+                <p>{error}</p>
               </div>
-              <button
-                className="iconButton"
-                type="button"
-                onClick={() => void loadInbox()}
-                disabled={loading}
-                aria-label="Refresh inbox"
-                title="Refresh inbox"
-              >
-                ↻
+              <button type="button" onClick={() => void loadInbox()}>
+                Retry
               </button>
             </div>
-
-            <div className="queue">
-              {loading ? (
-                <>
-                  <div className="skeletonCard" />
-                  <div className="skeletonCard" />
-                  <div className="skeletonCard" />
-                </>
-              ) : items.length === 0 ? (
-                <div className="emptyState">
-                  <div className="emptyIcon">✓</div>
-                  <h3>Inbox clear</h3>
-                  <p>No authorized suggestions require your attention right now.</p>
+          )}
+  
+          <section className="workspace">
+            <div className="queuePanel">
+              <div className="panelHeader">
+                <div>
+                  <h2>Review queue</h2>
+                  <p>{items.length} suggestions visible to you</p>
+                </div>
+                <button
+                  className="iconButton"
+                  type="button"
+                  onClick={() => void loadInbox()}
+                  disabled={loading}
+                  aria-label="Refresh inbox"
+                  title="Refresh inbox"
+                >
+                  ↻
+                </button>
+              </div>
+  
+              <div className="queue">
+                {loading ? (
+                  <>
+                    <div className="skeletonCard" />
+                    <div className="skeletonCard" />
+                    <div className="skeletonCard" />
+                  </>
+                ) : items.length === 0 ? (
+                  <div className="emptyState">
+                    <div className="emptyIcon">✓</div>
+                    <h3>Inbox clear</h3>
+                    <p>No authorized suggestions require your attention right now.</p>
+                  </div>
+                ) : (
+                  items.map((item) => (
+                    <button
+                      key={item.id}
+                      className={`queueCard ${selectedId === item.id ? "selected" : ""}`}
+                      type="button"
+                      onClick={() => setSelectedId(item.id)}
+                    >
+                      <div className="queueCardTop">
+                        <span className={`statusTag ${item.review_status}`}>
+                          {item.review_status === "deferred" ? "Deferred" : "Review"}
+                        </span>
+                        <span className="confidence">
+                          {Math.round(item.confidence * 100)}%
+                        </span>
+                      </div>
+                      <strong>{titleCase(item.suggestion_type)}</strong>
+                      <p>{item.reason}</p>
+                      <div className="proposedRow">
+                        <span>Suggested</span>
+                        <b>
+                          {typeof item.proposed_changes.status === "string"
+                            ? titleCase(item.proposed_changes.status)
+                            : "Project update"}
+                        </b>
+                      </div>
+                      <div className="queueMeta">
+                        <span>
+                          {item.evidence_count} evidence
+                          {item.evidence_count === 1 ? "" : "s"}
+                        </span>
+                        <span>•</span>
+                        <span>{formatDate(item.created_at)}</span>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+  
+            <div className="detailPanel">
+              {!selectedId ? (
+                <div className="detailEmpty">
+                  <div className="detailEmptyMark">⌁</div>
+                  <h2>Select a suggestion</h2>
+                  <p>Evidence, current state and proposed changes will appear here.</p>
+                </div>
+              ) : detailLoading || !detail ? (
+                <div className="detailLoading">
+                  <div className="skeletonLine wide" />
+                  <div className="skeletonLine" />
+                  <div className="skeletonBlock" />
+                  <div className="skeletonBlock" />
                 </div>
               ) : (
-                items.map((item) => (
-                  <button
-                    key={item.id}
-                    className={`queueCard ${selectedId === item.id ? "selected" : ""}`}
-                    type="button"
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <div className="queueCardTop">
-                      <span className={`statusTag ${item.review_status}`}>
-                        {item.review_status === "deferred" ? "Deferred" : "Review"}
-                      </span>
-                      <span className="confidence">
-                        {Math.round(item.confidence * 100)}%
-                      </span>
-                    </div>
-                    <strong>{titleCase(item.suggestion_type)}</strong>
-                    <p>{item.reason}</p>
-                    <div className="proposedRow">
-                      <span>Suggested</span>
-                      <b>
-                        {typeof item.proposed_changes.status === "string"
-                          ? titleCase(item.proposed_changes.status)
-                          : "Project update"}
-                      </b>
-                    </div>
-                    <div className="queueMeta">
-                      <span>
-                        {item.evidence_count} evidence
-                        {item.evidence_count === 1 ? "" : "s"}
-                      </span>
-                      <span>•</span>
-                      <span>{formatDate(item.created_at)}</span>
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="detailPanel">
-            {!selectedId ? (
-              <div className="detailEmpty">
-                <div className="detailEmptyMark">⌁</div>
-                <h2>Select a suggestion</h2>
-                <p>Evidence, current state and proposed changes will appear here.</p>
-              </div>
-            ) : detailLoading || !detail ? (
-              <div className="detailLoading">
-                <div className="skeletonLine wide" />
-                <div className="skeletonLine" />
-                <div className="skeletonBlock" />
-                <div className="skeletonBlock" />
-              </div>
-            ) : (
-              <>
-                <div className="detailHeader">
-                  <div>
-                    <div className="detailBadges">
-                      <span className={`statusTag ${detail.suggestion.review_status}`}>
-                        {titleCase(detail.suggestion.review_status)}
-                      </span>
-                      <span className="sourceTag">
-                        {detail.suggestion.evidence_sources
-                          .map(sourceLabel)
-                          .join(" + ") || "Evidence"}
-                      </span>
-                    </div>
-                    <h2>
-                      {detail.target_action_item?.title ??
-                        titleCase(detail.suggestion.suggestion_type)}
-                    </h2>
-                    <p>{detail.suggestion.reason}</p>
-                  </div>
-                  <div className="confidenceRing">
-                    <strong>
-                      {Math.round(detail.suggestion.confidence * 100)}%
-                    </strong>
-                    <span>{confidenceLabel(detail.suggestion.confidence)}</span>
-                  </div>
-                </div>
-
-                <div className="comparison">
-                  <div className="stateCard current">
-                    <span>Current state</span>
-                    <strong>
-                      {titleCase(
-                        detail.target_action_item?.status ?? "Not available",
-                      )}
-                    </strong>
-                    <p>
-                      {detail.target_action_item?.progress_summary ||
-                        "No current progress summary."}
-                    </p>
-                  </div>
-                  <div className="stateArrow">→</div>
-                  <div className="stateCard proposed">
-                    <span>PMWizard suggests</span>
-                    <strong>
-                      {typeof detail.suggestion.proposed_changes.status === "string"
-                        ? titleCase(detail.suggestion.proposed_changes.status)
-                        : "Update project memory"}
-                    </strong>
-                    <p>
-                      {typeof detail.suggestion.proposed_changes.progress_summary ===
-                      "string"
-                        ? detail.suggestion.proposed_changes.progress_summary
-                        : "Review proposed changes below."}
-                    </p>
-                  </div>
-                </div>
-
-                <section className="evidenceSection">
-                  <div className="sectionTitle">
+                <>
+                  <div className="detailHeader">
                     <div>
-                      <h3>Supporting evidence</h3>
+                      <div className="detailBadges">
+                        <span className={`statusTag ${detail.suggestion.review_status}`}>
+                          {titleCase(detail.suggestion.review_status)}
+                        </span>
+                        <span className="sourceTag">
+                          {detail.suggestion.evidence_sources
+                            .map(sourceLabel)
+                            .join(" + ") || "Evidence"}
+                        </span>
+                      </div>
+                      <h2>
+                        {detail.target_action_item?.title ??
+                          titleCase(detail.suggestion.suggestion_type)}
+                      </h2>
+                      <p>{detail.suggestion.reason}</p>
+                    </div>
+                    <div className="confidenceRing">
+                      <strong>
+                        {Math.round(detail.suggestion.confidence * 100)}%
+                      </strong>
+                      <span>{confidenceLabel(detail.suggestion.confidence)}</span>
+                    </div>
+                  </div>
+  
+                  <div className="comparison">
+                    <div className="stateCard current">
+                      <span>Current state</span>
+                      <strong>
+                        {titleCase(
+                          detail.target_action_item?.status ?? "Not available",
+                        )}
+                      </strong>
                       <p>
-                        {detail.evidence.length} authorized source
-                        {detail.evidence.length === 1 ? "" : "s"}
+                        {detail.target_action_item?.progress_summary ||
+                          "No current progress summary."}
+                      </p>
+                    </div>
+                    <div className="stateArrow">→</div>
+                    <div className="stateCard proposed">
+                      <span>PMWizard suggests</span>
+                      <strong>
+                        {typeof detail.suggestion.proposed_changes.status === "string"
+                          ? titleCase(detail.suggestion.proposed_changes.status)
+                          : "Update project memory"}
+                      </strong>
+                      <p>
+                        {typeof detail.suggestion.proposed_changes.progress_summary ===
+                        "string"
+                          ? detail.suggestion.proposed_changes.progress_summary
+                          : "Review proposed changes below."}
                       </p>
                     </div>
                   </div>
-
-                  <div className="evidenceList">
-                    {detail.evidence.map((evidence) => (
-                      <article className="evidenceCard" key={evidence.id}>
-                        <div className="evidenceHeader">
-                          <div>
-                            <span className="sourceTag">
-                              {sourceLabel(
-                                evidence.source_system ?? evidence.source_type,
-                              )}
-                            </span>
-                            <strong>{evidence.author || "Unknown author"}</strong>
-                          </div>
-                          <time>{formatDate(evidence.captured_at)}</time>
-                        </div>
-                        <blockquote>
-                          {evidence.content_excerpt || "No excerpt available."}
-                        </blockquote>
-                        {evidence.source_reference && (
-                          <a
-                            href={evidence.source_reference}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Open source ↗
-                          </a>
-                        )}
-                      </article>
-                    ))}
-                  </div>
-                </section>
-
-                {editMode ? (
-                  <form className="editForm" onSubmit={submitEdit}>
-                    <div className="editHeader">
+  
+                  <section className="evidenceSection">
+                    <div className="sectionTitle">
                       <div>
-                        <h3>Edit before applying</h3>
-                        <p>Your values become the governed project state.</p>
+                        <h3>Supporting evidence</h3>
+                        <p>
+                          {detail.evidence.length} authorized source
+                          {detail.evidence.length === 1 ? "" : "s"}
+                        </p>
                       </div>
-                      <button
-                        type="button"
-                        className="textButton"
-                        onClick={() => setEditMode(false)}
-                      >
-                        Cancel
-                      </button>
                     </div>
-
-                    <label>
-                      Status
-                      <select
-                        value={editStatus}
-                        onChange={(event) => setEditStatus(event.target.value)}
-                      >
-                        {ACTION_STATUSES.map((status) => (
-                          <option key={status} value={status}>
-                            {titleCase(status)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label>
-                      Progress summary
-                      <textarea
-                        value={editSummary}
-                        onChange={(event) => setEditSummary(event.target.value)}
-                        rows={4}
-                        required
-                      />
-                    </label>
-
-                    <label>
-                      Reviewer note <span>optional</span>
-                      <textarea
-                        value={reviewerNote}
-                        onChange={(event) => setReviewerNote(event.target.value)}
-                        rows={2}
-                        placeholder="Why did you change the AI proposal?"
-                      />
-                    </label>
-
-                    <button
-                      className="primaryButton full"
-                      type="submit"
-                      disabled={actionLoading}
-                    >
-                      {actionLoading ? "Applying…" : "Apply edited decision"}
-                    </button>
-                  </form>
-                ) : (
-                  <div className="reviewBar">
-                    <div className="reviewCopy">
-                      <strong>Your decision governs Project Memory</strong>
-                      <span>
-                        Accept the proposal, correct it, reject it, or decide later.
-                      </span>
+  
+                    <div className="evidenceList">
+                      {detail.evidence.map((evidence) => (
+                        <article className="evidenceCard" key={evidence.id}>
+                          <div className="evidenceHeader">
+                            <div>
+                              <span className="sourceTag">
+                                {sourceLabel(
+                                  evidence.source_system ?? evidence.source_type,
+                                )}
+                              </span>
+                              <strong>{evidence.author || "Unknown author"}</strong>
+                            </div>
+                            <time>{formatDate(evidence.captured_at)}</time>
+                          </div>
+                          <blockquote>
+                            {evidence.content_excerpt || "No excerpt available."}
+                          </blockquote>
+                          {evidence.source_reference && (
+                            <a
+                              href={evidence.source_reference}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Open source ↗
+                            </a>
+                          )}
+                        </article>
+                      ))}
                     </div>
-                    <div className="reviewActions">
+                  </section>
+  
+                  {editMode ? (
+                    <form className="editForm" onSubmit={submitEdit}>
+                      <div className="editHeader">
+                        <div>
+                          <h3>Edit before applying</h3>
+                          <p>Your values become the governed project state.</p>
+                        </div>
+                        <button
+                          type="button"
+                          className="textButton"
+                          onClick={() => setEditMode(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+  
+                      <label>
+                        Status
+                        <select
+                          value={editStatus}
+                          onChange={(event) => setEditStatus(event.target.value)}
+                        >
+                          {ACTION_STATUSES.map((status) => (
+                            <option key={status} value={status}>
+                              {titleCase(status)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+  
+                      <label>
+                        Progress summary
+                        <textarea
+                          value={editSummary}
+                          onChange={(event) => setEditSummary(event.target.value)}
+                          rows={4}
+                          required
+                        />
+                      </label>
+  
+                      <label>
+                        Reviewer note <span>optional</span>
+                        <textarea
+                          value={reviewerNote}
+                          onChange={(event) => setReviewerNote(event.target.value)}
+                          rows={2}
+                          placeholder="Why did you change the AI proposal?"
+                        />
+                      </label>
+  
                       <button
-                        className="secondaryButton"
-                        type="button"
-                        onClick={() => void submitReview("deferred")}
+                        className="primaryButton full"
+                        type="submit"
                         disabled={actionLoading}
                       >
-                        Defer
+                        {actionLoading ? "Applying…" : "Apply edited decision"}
                       </button>
-                      <button
-                        className="dangerButton"
-                        type="button"
-                        onClick={() => void submitReview("rejected")}
-                        disabled={actionLoading}
-                      >
-                        Reject
-                      </button>
-                      <button
-                        className="secondaryButton"
-                        type="button"
-                        onClick={() => setEditMode(true)}
-                        disabled={actionLoading}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="primaryButton"
-                        type="button"
-                        onClick={() => void submitReview("accepted")}
-                        disabled={actionLoading}
-                      >
-                        {actionLoading ? "Applying…" : "Accept"}
-                      </button>
+                    </form>
+                  ) : (
+                    <div className="reviewBar">
+                      <div className="reviewCopy">
+                        <strong>Your decision governs Project Memory</strong>
+                        <span>
+                          Accept the proposal, correct it, reject it, or decide later.
+                        </span>
+                      </div>
+                      <div className="reviewActions">
+                        <button
+                          className="secondaryButton"
+                          type="button"
+                          onClick={() => void submitReview("deferred")}
+                          disabled={actionLoading}
+                        >
+                          Defer
+                        </button>
+                        <button
+                          className="dangerButton"
+                          type="button"
+                          onClick={() => void submitReview("rejected")}
+                          disabled={actionLoading}
+                        >
+                          Reject
+                        </button>
+                        <button
+                          className="secondaryButton"
+                          type="button"
+                          onClick={() => setEditMode(true)}
+                          disabled={actionLoading}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="primaryButton"
+                          type="button"
+                          onClick={() => void submitReview("accepted")}
+                          disabled={actionLoading}
+                        >
+                          {actionLoading ? "Applying…" : "Accept"}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </section>
+                  )}
+                </>
+              )}
+            </div>
+          </section>
+  
+          </>
+        ) : (
+          <MemoryWorkspace projectName={projectName} />
+        )}
       </main>
     </div>
   );
