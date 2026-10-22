@@ -29,6 +29,22 @@ class SourceTelemetryService:
         self.session = session
         self.repository = SourceRepository(session)
 
+    def register_connection(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        connector_key: str,
+        descriptor: ConnectorDescriptor,
+    ) -> None:
+        self.repository.upsert_connection(
+            tenant_id=tenant_id,
+            project_id=project_id,
+            connector_key=connector_key,
+            descriptor=descriptor,
+        )
+        self.session.commit()
+
     def record_run(
         self,
         *,
