@@ -2,6 +2,7 @@
 
 from .checkpoints import CheckpointStore, InMemoryCheckpointStore
 from .contracts import (
+    ConnectorDescriptor,
     ConnectorError,
     ConnectorPage,
     ConnectorRunResult,
@@ -27,6 +28,7 @@ from .synthetic import SyntheticConnector
 
 __all__ = [
     "CheckpointStore",
+    "ConnectorDescriptor",
     "ConnectorError",
     "ConnectorPage",
     "ConnectorRunResult",
