@@ -35,6 +35,75 @@ class ProvenanceMixin:
     provenance: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
 
 
+class SourceConnectionORM(Base, TimestampMixin, TenantMixin):
+    __tablename__ = "source_connections"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id",
+            "project_id",
+            "connector_key",
+            name="uq_source_connections_project_connector",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    project_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    connector_key: Mapped[str] = mapped_column(String(500), nullable=False)
+    source_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    source_system: Mapped[str] = mapped_column(String(100), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    permission_scope: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
+    safe_config: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+    is_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+class ConnectorCheckpointORM(Base, TimestampMixin, TenantMixin):
+    __tablename__ = "connector_checkpoints"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id",
+            "project_id",
+            "connector_key",
+            name="uq_connector_checkpoints_project_connector",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    project_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    connector_key: Mapped[str] = mapped_column(String(500), nullable=False)
+    cursor: Mapped[str] = mapped_column(Text, nullable=False)
+    fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+
+
+class ConnectorRunORM(Base, TenantMixin):
+    __tablename__ = "connector_runs"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    project_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    source_connection_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True), index=True
+    )
+    connector_key: Mapped[str] = mapped_column(String(500), index=True, nullable=False)
+    status: Mapped[str] = mapped_column(String(50), nullable=False)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    finished_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    pages_processed: Mapped[int] = mapped_column(default=0, nullable=False)
+    fetched: Mapped[int] = mapped_column(default=0, nullable=False)
+    ingested: Mapped[int] = mapped_column(default=0, nullable=False)
+    duplicates: Mapped[int] = mapped_column(default=0, nullable=False)
+    source_changed: Mapped[int] = mapped_column(default=0, nullable=False)
+    empty_content: Mapped[int] = mapped_column(default=0, nullable=False)
+    skipped: Mapped[int] = mapped_column(default=0, nullable=False)
+    skips: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
+    errors: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
+    start_checkpoint_present: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    end_checkpoint_present: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    checkpoint_fingerprint: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, nullable=False
+    )
+
+
 class AppUserORM(Base, TimestampMixin, TenantMixin):
     __tablename__ = "app_users"
     __table_args__ = (
