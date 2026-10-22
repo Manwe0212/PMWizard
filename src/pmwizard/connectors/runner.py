@@ -65,6 +65,8 @@ class ConnectorRunner:
         duplicates = 0
         source_changed = 0
         empty_content = 0
+        skipped = 0
+        skips = []
         errors: list[ConnectorError] = []
         status = ConnectorRunStatus.SUCCESS
         more_remaining = False
@@ -105,6 +107,9 @@ class ConnectorRunner:
                     else ConnectorRunStatus.PARTIAL
                 )
                 break
+
+            skipped += len(page.skips)
+            skips.extend(page.skips)
 
             page_failed = False
             for record in page.records:
@@ -193,5 +198,7 @@ class ConnectorRunner:
             duplicates=duplicates,
             source_changed=source_changed,
             empty_content=empty_content,
+            skipped=skipped,
+            skips=skips,
             errors=errors,
         )
