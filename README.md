@@ -39,10 +39,11 @@ Initial work will focus on:
 - [`docs/PROJECT_INBOX_WEB.md`](docs/PROJECT_INBOX_WEB.md) — responsive Next.js human-review interface and BFF security boundary
 - [`docs/AUTH_PROJECT_SELECTION.md`](docs/AUTH_PROJECT_SELECTION.md) — local authentication, signed sessions, and per-project memberships
 - [`docs/PROJECT_MEMORY_WORKSPACE.md`](docs/PROJECT_MEMORY_WORKSPACE.md) — read-only governed Action Items, RAID, Decisions, and project state
+- [`docs/SOURCES_WORKSPACE.md`](docs/SOURCES_WORKSPACE.md) — durable source health, checkpoints, sync telemetry, skips, and errors
 
 ## Project status
 
-PMWizard now has authenticated, project-scoped intelligence review and is implementing **Project Memory Workspace V0** so governed Action Items, RAID, Decisions, and project state are visible as the resulting source of truth.
+PMWizard now has authenticated Inbox and Project Memory workspaces and is implementing **Sources Workspace V0** so source health, incremental checkpoints, and connector run telemetry are observable without exposing provider secrets.
 
 ## Local development
 
