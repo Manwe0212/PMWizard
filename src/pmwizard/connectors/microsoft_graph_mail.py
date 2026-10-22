@@ -86,6 +86,48 @@ class MicrosoftGraphHttpTransport:
             raise GraphTransportError("Microsoft Graph returned a non-object JSON payload.")
         return parsed
 
+    def get_bytes(
+        self,
+        url: str,
+        *,
+        headers: dict[str, str],
+        max_bytes: int | None = None,
+    ) -> bytes:
+        token = self.token_provider().strip()
+        if not token:
+            raise GraphTransportError("Token provider returned an empty token.")
+        if max_bytes is not None and max_bytes < 1:
+            raise ValueError("max_bytes must be positive when provided")
+
+        request_headers = {
+            "Authorization": f"Bearer {token}",
+            **headers,
+        }
+        request = Request(url, headers=request_headers, method="GET")
+
+        try:
+            with urlopen(request, timeout=self.timeout_seconds) as response:
+                payload = (
+                    response.read(max_bytes + 1)
+                    if max_bytes is not None
+                    else response.read()
+                )
+        except HTTPError as exc:
+            raise GraphTransportError(
+                f"Microsoft Graph returned HTTP {exc.code}.",
+                status_code=exc.code,
+            ) from exc
+        except URLError as exc:
+            raise GraphTransportError(
+                f"Microsoft Graph request failed: {exc.reason}"
+            ) from exc
+
+        if max_bytes is not None and len(payload) > max_bytes:
+            raise GraphTransportError(
+                f"Microsoft Graph file exceeds the {max_bytes}-byte V0 limit."
+            )
+        return payload
+
 
 class MicrosoftGraphMailConfig(BaseModel):
     """One project-scoped Microsoft Graph mail-folder connection."""
