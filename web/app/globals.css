@@ -1515,3 +1515,567 @@ button:disabled {
     margin-top: 35px;
   }
 }
+
+
+.memorySurface {
+  display: grid;
+  gap: 16px;
+}
+
+.memoryHero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(19, 88, 213, 0.04), transparent 45%),
+    white;
+  box-shadow: 0 10px 32px rgba(15, 42, 88, 0.05);
+}
+
+.memoryHero h2 {
+  margin: 10px 0 0;
+  font-size: 23px;
+  letter-spacing: -0.03em;
+}
+
+.memoryHero p {
+  max-width: 760px;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.memoryTruthBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 7px;
+  background: #eaf2ff;
+  color: var(--blue);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.memoryStatus {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 7px;
+  background: #f1f5f9;
+  color: #526174;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.memoryStatus.good {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.memoryStatus.bad {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.memoryStatus.working {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.memoryStatus.neutral {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.memoryMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.memoryMetric {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: white;
+  padding: 15px 16px;
+}
+
+.memoryMetric > span {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.memoryMetric strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 25px;
+  letter-spacing: -0.04em;
+}
+
+.memoryMetric small {
+  color: #8c99aa;
+  font-size: 9px;
+}
+
+.memoryMetric.risk {
+  border-color: #fecaca;
+  background: #fffafa;
+}
+
+.memoryMetric.risk strong {
+  color: var(--red);
+}
+
+.memoryMetric.good {
+  border-color: #ccebd7;
+  background: #fbfffc;
+}
+
+.memoryMetric.good strong {
+  color: var(--green);
+}
+
+.memoryMetric.attention strong {
+  color: var(--amber);
+}
+
+.memoryOverview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fbfcfe;
+  overflow: hidden;
+}
+
+.memoryOverviewItem {
+  min-width: 0;
+  padding: 12px 15px;
+  border-right: 1px solid var(--line);
+}
+
+.memoryOverviewItem:last-child {
+  border-right: 0;
+}
+
+.memoryOverviewItem span,
+.memoryOverviewItem strong {
+  display: block;
+}
+
+.memoryOverviewItem span {
+  color: var(--muted);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 800;
+}
+
+.memoryOverviewItem strong {
+  margin-top: 5px;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memoryTabs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-bottom: 1px solid var(--line);
+  padding: 0 2px;
+}
+
+.memoryTabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  padding: 10px 11px;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.memoryTabs button.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+.memoryTabs button span {
+  min-width: 19px;
+  border-radius: 999px;
+  background: #eef2f7;
+  padding: 2px 5px;
+  color: #65758d;
+  font-size: 8px;
+}
+
+.memoryTabs button.active span {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.memoryContent {
+  min-height: 360px;
+}
+
+.memoryTableWrap {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: white;
+}
+
+.memoryTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.memoryTable th,
+.memoryTable td {
+  text-align: left;
+  padding: 11px 13px;
+  border-bottom: 1px solid #edf1f6;
+  vertical-align: top;
+}
+
+.memoryTable th {
+  color: #78869a;
+  background: #f8fafc;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.memoryTable td {
+  color: #435168;
+  font-size: 10px;
+}
+
+.memoryTable td:first-child {
+  width: 30%;
+}
+
+.memoryTable td strong,
+.memoryTable td span {
+  display: block;
+}
+
+.memoryTable td strong {
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.memoryTable td:first-child span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.memoryTable .progressCell {
+  min-width: 220px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.raidGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.raidColumn {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: white;
+  overflow: hidden;
+}
+
+.raidHeader {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 13px;
+  border-bottom: 1px solid var(--line);
+  background: #f9fbfd;
+}
+
+.raidCode {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-weight: 850;
+  font-size: 10px;
+}
+
+.raidHeader strong,
+.raidHeader span {
+  display: block;
+}
+
+.raidHeader strong {
+  font-size: 10px;
+}
+
+.raidHeader span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.raidList {
+  padding: 8px;
+  display: grid;
+  gap: 7px;
+}
+
+.raidCard {
+  border: 1px solid #edf1f6;
+  border-radius: 9px;
+  padding: 10px;
+}
+
+.raidCardTop,
+.decisionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.raidCardTop > span:first-child {
+  color: #7c8999;
+  font-size: 8px;
+}
+
+.raidCard > strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 10px;
+}
+
+.raidCard > p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.raidEmpty {
+  padding: 20px;
+  text-align: center;
+  color: #9aa6b5;
+  font-size: 9px;
+}
+
+.decisionTimeline {
+  display: grid;
+  gap: 10px;
+  position: relative;
+}
+
+.decisionTimeline::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: #dbe3ef;
+}
+
+.decisionCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: 21px 1fr;
+  gap: 10px;
+}
+
+.decisionMarker {
+  width: 9px;
+  height: 9px;
+  margin: 13px 0 0 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 0 4px #eaf2ff;
+  z-index: 1;
+}
+
+.decisionBody {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  padding: 12px 13px;
+}
+
+.decisionHeader span:first-child {
+  color: #8b97a8;
+  font-size: 8px;
+}
+
+.decisionHeader h3 {
+  margin: 3px 0 0;
+  font-size: 11px;
+}
+
+.decisionBody > p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.decisionRationale,
+.decisionImpact {
+  margin-top: 9px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.decisionRationale span,
+.decisionImpact span {
+  color: #79879b;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.decisionRationale p,
+.decisionImpact p {
+  margin: 4px 0 0;
+  color: #4d5d72;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.memoryGovernanceNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #d8e5fb;
+  border-radius: 11px;
+  background: #f8fbff;
+  padding: 10px 12px;
+}
+
+.memoryGovernanceNote .governanceDot {
+  margin-top: 4px;
+}
+
+.memoryGovernanceNote strong {
+  display: block;
+  color: #33445d;
+  font-size: 9px;
+}
+
+.memoryGovernanceNote p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.memoryEmpty,
+.memoryError {
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+  color: var(--muted);
+}
+
+.memoryEmpty strong,
+.memoryError h2 {
+  margin: 11px 0 0;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.memoryEmpty span,
+.memoryError p {
+  margin-top: 4px;
+  max-width: 360px;
+  font-size: 9px;
+}
+
+.memoryError .primaryButton {
+  margin-top: 12px;
+}
+
+.memoryLoading {
+  display: grid;
+  gap: 14px;
+}
+
+.memorySkeletonLarge {
+  height: 360px;
+}
+
+@media (max-width: 960px) {
+  .memoryMetricGrid,
+  .memoryOverview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .memoryOverviewItem:nth-child(2) {
+    border-right: 0;
+  }
+
+  .memoryOverviewItem:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 700px) {
+  .memoryHero {
+    display: grid;
+  }
+
+  .memoryMetricGrid,
+  .memoryOverview,
+  .raidGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .memoryOverviewItem,
+  .memoryOverviewItem:nth-child(2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .memoryOverviewItem:last-child {
+    border-bottom: 0;
+  }
+
+  .memoryTabs {
+    overflow-x: auto;
+  }
+}

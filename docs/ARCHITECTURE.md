@@ -917,3 +917,22 @@ PMWizard should be easy to connect, difficult to misuse, and explicit about what
 ## Authentication V0
 
 PMWizard authenticates local V0 users with Argon2id password hashes and short-lived signed access tokens. Tokens identify tenant/user but do not carry project permissions. Each project request resolves a ProjectMembership from PostgreSQL, keeping authorization project-specific and immediately revocable at the membership layer. The Next.js BFF stores the access token in an HttpOnly cookie and validates project selection against the authenticated project list.
+
+
+## Project Memory Workspace V0
+
+The governed-state read path is now explicit:
+
+```text
+ProjectMemory tables
+  ↓
+ProjectMemoryQueryService
+  ↓
+GET /v1/projects/{project_id}/memory
+  ↓
+Next.js /api/memory BFF
+  ↓
+Project Memory Workspace
+```
+
+This projection is read-only and tenant/project scoped. It intentionally reuses the same ProjectMembership authorization boundary as Project Inbox. Project Inbox remains the mutation/governance surface; Project Memory is the observation surface.
