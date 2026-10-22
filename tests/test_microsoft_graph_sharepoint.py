@@ -179,7 +179,7 @@ def test_plain_text_file_maps_to_versioned_source_record() -> None:
     assert record.source_system == "microsoft_graph_sharepoint"
     assert record.external_id == 'item-1:"etag-1"'
     assert record.author == "pm@example.test"
-    assert record.content == "Meeting Notes.txt\n\nAction Item A was completed."
+    assert record.content == "Meeting Notes\n\nAction Item A was completed."
     assert record.captured_at == NOW
     assert transport.byte_calls[0][0].endswith(
         "/drives/drive-123/items/item-1/content"
@@ -203,7 +203,7 @@ def test_docx_text_is_extracted_deterministically() -> None:
     )
 
     assert page.records[0].content == (
-        "Weekly Minutes.docx\n\n"
+        "Weekly Minutes\n\n"
         "Verify API access\nCompleted today"
     )
 
