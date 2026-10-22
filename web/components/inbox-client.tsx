@@ -6,12 +6,20 @@ import type {
   InboxListResponse,
   InboxSuggestionDetail,
   InboxSuggestionSummary,
+  ProjectAccess,
   ReviewResponse,
   ReviewStatus,
 } from "@/lib/types";
 
 type Props = {
   projectId: string;
+  projectName: string;
+  projects: ProjectAccess[];
+  userName: string;
+  userEmail: string;
+  onProjectChange: (projectId: string) => Promise<void>;
+  onLogout: () => Promise<void>;
+  projectSwitching: boolean;
 };
 
 const ACTION_STATUSES = [
@@ -69,7 +77,16 @@ async function jsonRequest<T>(
   return payload as T;
 }
 
-export function InboxClient({ projectId }: Props) {
+export function InboxClient({
+  projectId,
+  projectName,
+  projects,
+  userName,
+  userEmail,
+  onProjectChange,
+  onLogout,
+  projectSwitching,
+}: Props) {
   const [items, setItems] = useState<InboxSuggestionSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<InboxSuggestionDetail | null>(null);
@@ -213,11 +230,6 @@ export function InboxClient({ projectId }: Props) {
     });
   }
 
-  const shortProjectId =
-    projectId.length > 18
-      ? `${projectId.slice(0, 8)}…${projectId.slice(-5)}`
-      : projectId;
-
   return (
     <div className="appShell">
       <aside className="sidebar">
@@ -265,11 +277,45 @@ export function InboxClient({ projectId }: Props) {
             <h1>Project Inbox</h1>
             <p>Review evidence-backed updates before they become project truth.</p>
           </div>
-          <div className="projectPill">
-            <span className="projectDot" />
-            <div>
-              <small>Project</small>
-              <strong title={projectId}>{shortProjectId}</strong>
+          <div className="topbarControls">
+            <div className="projectPill projectSelectorPill">
+              <span className="projectDot" />
+              <div>
+                <small>Project</small>
+                <select
+                  className="projectSelect"
+                  value={projectId}
+                  disabled={projectSwitching}
+                  aria-label="Select project"
+                  onChange={(event) =>
+                    void onProjectChange(event.target.value)
+                  }
+                >
+                  {projects.map((project) => (
+                    <option key={project.project_id} value={project.project_id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="accountPill" title={userEmail}>
+              <div className="accountAvatar">
+                {userName.trim().slice(0, 1).toUpperCase()}
+              </div>
+              <div>
+                <small>Signed in</small>
+                <strong>{userName}</strong>
+              </div>
+              <button
+                type="button"
+                className="logoutButton"
+                onClick={() => void onLogout()}
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                ↪
+              </button>
             </div>
           </div>
         </header>
