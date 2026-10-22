@@ -262,12 +262,7 @@ class MicrosoftGraphMailConnector:
         subject_text = subject.strip() if isinstance(subject, str) else ""
 
         body_text = _message_body_text(item)
-        parts: list[str] = []
-        if subject_text:
-            parts.append(f"Subject: {subject_text}")
-        if body_text:
-            parts.append(body_text)
-        content = "\n\n".join(parts).strip()
+        content = _compose_message_content(subject_text, body_text)
 
         author = _message_author(item)
         web_link = item.get("webLink")
@@ -300,6 +295,25 @@ def _parse_graph_datetime(value: str) -> datetime:
             f"Microsoft Graph returned a timezone-naive datetime: {value}"
         )
     return parsed
+
+
+def _compose_message_content(subject: str, body: str) -> str:
+    """Combine subject/body while removing only an exact leading duplication."""
+    if not subject:
+        return body.strip()
+    if not body:
+        return subject.strip()
+
+    subject = subject.strip()
+    body = body.strip()
+
+    if body.casefold().startswith(subject.casefold()):
+        remainder = body[len(subject) :].lstrip(" :-\n\t")
+        if remainder:
+            return f"{subject}\n\n{remainder}"
+        return subject
+
+    return f"{subject}\n\n{body}"
 
 
 def _message_body_text(item: dict[str, Any]) -> str:
