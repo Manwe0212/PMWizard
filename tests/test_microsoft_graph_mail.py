@@ -172,8 +172,8 @@ def test_text_body_maps_to_source_record() -> None:
     assert record.author == "pm@example.test"
     assert record.source_reference == "https://outlook.office.com/mail/msg-1"
     assert record.content == (
-        "Subject: Verify API access\n\n"
-        "Verify API access was completed today."
+        "Verify API access\n\n"
+        "was completed today."
     )
     assert record.captured_at == NOW
     assert record.permission_scope == ["microsoft-graph:mail:read"]
