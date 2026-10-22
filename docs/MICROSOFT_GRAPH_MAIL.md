@@ -199,10 +199,12 @@ V0 intentionally does not parse arbitrary HTML.
 Canonical content is:
 
 ```text
-Subject: <message subject>
+<message subject>
 
 <plain-text body or preview>
 ```
+
+If the body begins with the exact same subject text, V0 removes that one literal duplicate before composing the Evidence. This is representation-level cleanup rather than semantic summarization.
 
 This gives Entity Resolution useful title/context text while keeping source normalization deterministic.
 
