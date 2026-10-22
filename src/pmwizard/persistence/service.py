@@ -79,6 +79,30 @@ class ProjectMemoryService:
         if suggestion.project_id != review.project_id:
             raise ValueError("Review project does not match suggestion project")
 
+        if suggestion.review_status not in {
+            ReviewStatus.PENDING,
+            ReviewStatus.DEFERRED,
+        }:
+            raise ValueError(
+                f"Suggestion is already terminal: {suggestion.review_status.value}"
+            )
+        if review.status == ReviewStatus.PENDING:
+            raise ValueError("A human review cannot set status back to pending")
+        if review.status == ReviewStatus.EDITED and not review.final_changes:
+            raise ValueError("Edited reviews require final_changes")
+        if review.status != ReviewStatus.EDITED and review.final_changes:
+            raise ValueError("final_changes are only valid for edited reviews")
+        if (
+            review.status == ReviewStatus.EDITED
+            and suggestion.target_entity_type == "ActionItem"
+        ):
+            unsupported = set(review.final_changes) - self._ACTION_ITEM_EDITABLE_FIELDS
+            if unsupported:
+                raise ValueError(
+                    "Unsupported ActionItem review fields: "
+                    + ", ".join(sorted(unsupported))
+                )
+
         self.repository.add_human_review(tenant_id, review)
         self.repository.set_suggestion_review_status(
             tenant_id, suggestion.id, review.status

@@ -610,7 +610,15 @@ Defer
 View evidence
 ```
 
-A review creates a durable human_review record.
+Project Inbox V0 exposes this workflow through FastAPI:
+
+```text
+GET  /v1/projects/{project_id}/inbox
+GET  /v1/projects/{project_id}/inbox/{suggestion_id}
+POST /v1/projects/{project_id}/inbox/{suggestion_id}/review
+```
+
+The API requires trusted tenant/user context, explicit project permissions, and visibility to all supporting Evidence before surfacing a suggestion. A review creates a durable human_review record.
 
 Accepted or edited suggestions may update governed state. Rejected suggestions remain valuable evaluation data.
 
