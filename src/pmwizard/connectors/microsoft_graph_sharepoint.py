@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from pmwizard.ingestion import SourceRecord
 
-from .contracts import ConnectorPage, ConnectorSkip, ConnectorTestResult
+from .contracts import ConnectorDescriptor, ConnectorPage, ConnectorSkip, ConnectorTestResult
 from .microsoft_graph_mail import GRAPH_BASE_URL, GraphTransportError
 
 
@@ -97,6 +97,21 @@ class MicrosoftGraphSharePointConnector:
     @property
     def connector_key(self) -> str:
         return f"microsoft-graph-sharepoint:{self.config.connection_name}:v0"
+
+    @property
+    def descriptor(self) -> ConnectorDescriptor:
+        return ConnectorDescriptor(
+            source_type="document",
+            source_system="microsoft_graph_sharepoint",
+            display_name=self.config.connection_name,
+            permission_scope=self.config.permission_scope,
+            safe_config={
+                "drive_id": self.config.drive_id,
+                "initial_sync_mode": self.config.initial_sync_mode,
+                "supported_extensions": self.config.supported_extensions,
+                "max_file_bytes": self.config.max_file_bytes,
+            },
+        )
 
     def test_connection(self) -> ConnectorTestResult:
         drive_id = quote(self.config.drive_id, safe="")
