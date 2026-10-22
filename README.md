@@ -33,10 +33,11 @@ Initial work will focus on:
 - [`docs/PROGRESS_INTELLIGENCE.md`](docs/PROGRESS_INTELLIGENCE.md) — evidence-backed Action Item progress classification and human-reviewed updates
 - [`docs/INGESTION.md`](docs/INGESTION.md) — deterministic source normalization, deduplication, provenance, and Evidence persistence
 - [`docs/CONNECTORS.md`](docs/CONNECTORS.md) — common connector contract, incremental cursors, checkpoints, run results, and safe retries
+- [`docs/MICROSOFT_GRAPH_MAIL.md`](docs/MICROSOFT_GRAPH_MAIL.md) — read-only Outlook mail delta sync through Microsoft Graph
 
 ## Project status
 
-PMWizard now has **Project Memory V0**, **Entity Resolution V0**, **Progress Intelligence V0**, and **Ingestion V0**, and is implementing **Connector Framework V0** for provider-independent incremental source synchronization.
+PMWizard now has the V0 Project Intelligence pipeline plus **Connector Framework V0**, and is implementing **Microsoft Graph Mail V0** as the first real read-only source adapter.
 
 ## Local development
 
