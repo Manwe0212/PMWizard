@@ -251,13 +251,13 @@ Adapters should not decide whether something is a Risk, whether an Action Item i
 
 Microsoft Graph is the preferred initial integration boundary for Microsoft 365 capabilities.
 
-Microsoft Graph Mail V0 implements read-only, folder-scoped Outlook ingestion through message delta queries. It preserves Graph continuation/delta URLs as connector checkpoints and maps newly created messages into the common SourceRecord → Ingestion pipeline.
+Microsoft Graph Mail V0 implements read-only, folder-scoped Outlook ingestion through message delta queries. SharePoint Documents V0 adds read-only, document-library-scoped drive delta synchronization, versioned Evidence identities, deterministic text/DOCX extraction, and explicit skip reporting for unsupported content. Both adapters preserve Graph continuation/delta URLs as connector checkpoints and feed the common SourceRecord → Ingestion pipeline.
 
 Potential V1 sources:
 
 ```text
 Outlook       ← Graph Mail V0 implemented
-SharePoint
+SharePoint     ← Documents V0 implemented
 Microsoft 365 files
 ```
 
