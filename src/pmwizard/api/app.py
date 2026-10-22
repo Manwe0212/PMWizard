@@ -29,6 +29,10 @@ from pmwizard.inbox import (
     ReviewCommand,
     ReviewResponse,
 )
+from pmwizard.memory import (
+    ProjectMemoryQueryService,
+    ProjectMemorySnapshot,
+)
 from pmwizard.models.enums import ReviewStatus
 from pmwizard.persistence import create_engine_from_url, create_session_factory
 
@@ -206,6 +210,28 @@ def create_app(
             user_id=principal.user_id,
         )
         return ProjectsResponse(count=len(items), items=items)
+
+    @app.get(
+        "/v1/projects/{project_id}/memory",
+        response_model=ProjectMemorySnapshot,
+    )
+    def get_project_memory(
+        project_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> ProjectMemorySnapshot:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return ProjectMemoryQueryService(session).snapshot(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
 
     @app.get(
         "/v1/projects/{project_id}/inbox",
