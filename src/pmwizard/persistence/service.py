@@ -21,6 +21,7 @@ class ProjectMemoryService:
         "status",
         "progress_summary",
         "last_progress_date",
+        "latest_evidence_id",
         "completed_at",
         "due_date",
         "priority",
