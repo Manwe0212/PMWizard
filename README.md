@@ -34,10 +34,11 @@ Initial work will focus on:
 - [`docs/INGESTION.md`](docs/INGESTION.md) — deterministic source normalization, deduplication, provenance, and Evidence persistence
 - [`docs/CONNECTORS.md`](docs/CONNECTORS.md) — common connector contract, incremental cursors, checkpoints, run results, and safe retries
 - [`docs/MICROSOFT_GRAPH_MAIL.md`](docs/MICROSOFT_GRAPH_MAIL.md) — read-only Outlook mail delta sync through Microsoft Graph
+- [`docs/SHAREPOINT_DOCUMENTS.md`](docs/SHAREPOINT_DOCUMENTS.md) — versioned SharePoint document-library ingestion and deterministic text extraction
 
 ## Project status
 
-PMWizard now has the V0 Project Intelligence pipeline plus **Connector Framework V0**, and is implementing **Microsoft Graph Mail V0** as the first real read-only source adapter.
+PMWizard now has the V0 Project Intelligence pipeline, **Connector Framework V0**, and **Microsoft Graph Mail V0**, and is implementing **SharePoint Documents V0** as the second real read-only source adapter.
 
 ## Local development
 

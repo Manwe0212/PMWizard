@@ -25,12 +25,20 @@ class ConnectorTestResult(BaseModel):
     message: str
 
 
+class ConnectorSkip(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    external_id: str | None = None
+    reason: str
+
+
 class ConnectorPage(BaseModel):
     """One incrementally fetched page from a source connector."""
 
     model_config = ConfigDict(extra="forbid")
 
     records: list[SourceRecord] = Field(default_factory=list)
+    skips: list[ConnectorSkip] = Field(default_factory=list)
     next_cursor: str | None = None
     has_more: bool = False
 
@@ -60,6 +68,8 @@ class ConnectorRunResult(BaseModel):
     duplicates: int = 0
     source_changed: int = 0
     empty_content: int = 0
+    skipped: int = 0
+    skips: list[ConnectorSkip] = Field(default_factory=list)
     errors: list[ConnectorError] = Field(default_factory=list)
 
 

@@ -153,6 +153,8 @@ ingested
 duplicates
 source_changed
 empty_content
+skipped
+skips
 errors
 ```
 
@@ -188,7 +190,7 @@ Examples:
 - `has_more=true` without a continuation cursor → `contract`;
 - maximum-page guard reached → `runner`.
 
-Errors are surfaced rather than silently discarded.
+Errors are surfaced rather than silently discarded. Connectors may also report non-fatal `skips` for source items that were intentionally not converted to SourceRecord, such as unsupported SharePoint file formats or size-limited files.
 
 ---
 
