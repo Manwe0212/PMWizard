@@ -48,7 +48,7 @@ Delta items with the deleted facet do not delete historical PMWizard Evidence. T
 - source_reference: SharePoint webUrl
 - author: lastModifiedBy user when available
 - captured_at/effective_at: lastModifiedDateTime
-- content: file name + extracted source text
+- content: file-name stem + extracted source text
 - permission_scope: configured authorized scope
 
 ## Human governance
