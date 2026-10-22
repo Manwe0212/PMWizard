@@ -21,6 +21,7 @@ from pmwizard.persistence import (
     create_session_factory,
 )
 from pmwizard.persistence.orm import AISuggestionORM
+from pmwizard.resolution import ResolutionContext
 
 
 NOW = datetime(2026, 10, 21, 18, 0, tzinfo=timezone.utc)
@@ -336,6 +337,7 @@ def test_pipeline_does_not_create_suggestion_without_progress_signal(session) ->
 
 def test_pipeline_does_not_create_suggestion_for_conflicting_progress(session) -> None:
     tenant_id = uuid4()
+    owner_id = uuid4()
     memory = ProjectMemoryService(session)
     project = memory.create_project(tenant_id, Project(name="Conflicting Progress"))
     memory.add_action_item(
@@ -343,6 +345,7 @@ def test_pipeline_does_not_create_suggestion_for_conflicting_progress(session) -
         ActionItem(
             project_id=project.id,
             title="Review legal clauses",
+            owner_id=owner_id,
             status=ActionItemStatus.IN_PROGRESS,
             created_at=NOW,
         ),
@@ -358,6 +361,7 @@ def test_pipeline_does_not_create_suggestion_for_conflicting_progress(session) -
     result = ProgressIntelligenceService(session).analyze_evidence(
         tenant_id,
         evidence,
+        context=ResolutionContext(owner_id=owner_id),
     )
 
     assert result.outcome == ProgressPipelineOutcome.AMBIGUOUS_PROGRESS
