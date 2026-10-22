@@ -32,10 +32,11 @@ Initial work will focus on:
 - [`docs/ENTITY_RESOLUTION.md`](docs/ENTITY_RESOLUTION.md) — explainable matching of new evidence to existing project entities
 - [`docs/PROGRESS_INTELLIGENCE.md`](docs/PROGRESS_INTELLIGENCE.md) — evidence-backed Action Item progress classification and human-reviewed updates
 - [`docs/INGESTION.md`](docs/INGESTION.md) — deterministic source normalization, deduplication, provenance, and Evidence persistence
+- [`docs/CONNECTORS.md`](docs/CONNECTORS.md) — common connector contract, incremental cursors, checkpoints, run results, and safe retries
 
 ## Project status
 
-PMWizard now has **Project Memory V0**, **Entity Resolution V0**, and **Progress Intelligence V0**, and is implementing **Ingestion V0**: an idempotent source-to-Evidence boundary for future connectors.
+PMWizard now has **Project Memory V0**, **Entity Resolution V0**, **Progress Intelligence V0**, and **Ingestion V0**, and is implementing **Connector Framework V0** for provider-independent incremental source synchronization.
 
 ## Local development
 
