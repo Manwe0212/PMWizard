@@ -209,20 +209,27 @@ PMWizard stores normalized representations, source references, relationships, ev
 
 ## 4. Connector / Adapter Layer
 
-Every source integrates through a common connector contract.
+Every source integrates through a common read-only connector contract.
 
-A conceptual interface:
+Connector Framework V0 uses a provider-independent interface:
 
 ```python
-class Connector:
-    def authenticate(self): ...
-    def test_connection(self): ...
-    def get_projects(self): ...
-    def get_items(self): ...
-    def get_documents(self): ...
-    def get_changes(self): ...
-    def get_permissions(self): ...
+class SourceConnector(Protocol):
+    @property
+    def connector_key(self) -> str: ...
+
+    def test_connection(self) -> ConnectorTestResult: ...
+
+    def fetch_page(
+        self,
+        *,
+        project_id: UUID,
+        cursor: str | None,
+        limit: int,
+    ) -> ConnectorPage: ...
 ```
+
+A `ConnectorPage` contains canonical `SourceRecord` objects plus an opaque continuation cursor. `ConnectorRunner` passes those records into Ingestion V0 and advances a tenant/project/connector-scoped checkpoint only after the whole page succeeds. This makes retries safe because ingestion is idempotent.
 
 Initial adapters should include:
 
