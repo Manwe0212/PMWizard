@@ -321,7 +321,7 @@ def test_pipeline_does_not_create_suggestion_without_progress_signal(session) ->
     )
     evidence = memory.add_evidence(
         tenant_id,
-        _evidence(project.id, "Review contract was discussed today."),
+        _evidence(project.id, "Review contract"),
     )
 
     result = ProgressIntelligenceService(session).analyze_evidence(
@@ -351,7 +351,7 @@ def test_pipeline_does_not_create_suggestion_for_conflicting_progress(session) -
         tenant_id,
         _evidence(
             project.id,
-            "Review legal clauses was completed but two clauses remain unresolved.",
+            "Review legal clauses completed but remain unresolved.",
         ),
     )
 
