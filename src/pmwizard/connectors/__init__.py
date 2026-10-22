@@ -9,6 +9,13 @@ from .contracts import (
     ConnectorTestResult,
     SourceConnector,
 )
+from .microsoft_graph_mail import (
+    GraphJsonTransport,
+    GraphTransportError,
+    MicrosoftGraphHttpTransport,
+    MicrosoftGraphMailConfig,
+    MicrosoftGraphMailConnector,
+)
 from .runner import ConnectorRunner
 from .synthetic import SyntheticConnector
 
@@ -20,7 +27,12 @@ __all__ = [
     "ConnectorRunStatus",
     "ConnectorRunner",
     "ConnectorTestResult",
+    "GraphJsonTransport",
+    "GraphTransportError",
     "InMemoryCheckpointStore",
+    "MicrosoftGraphHttpTransport",
+    "MicrosoftGraphMailConfig",
+    "MicrosoftGraphMailConnector",
     "SourceConnector",
     "SyntheticConnector",
 ]
