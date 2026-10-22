@@ -36,10 +36,11 @@ Initial work will focus on:
 - [`docs/MICROSOFT_GRAPH_MAIL.md`](docs/MICROSOFT_GRAPH_MAIL.md) — read-only Outlook mail delta sync through Microsoft Graph
 - [`docs/SHAREPOINT_DOCUMENTS.md`](docs/SHAREPOINT_DOCUMENTS.md) — versioned SharePoint document-library ingestion and deterministic text extraction
 - [`docs/PROJECT_INBOX_API.md`](docs/PROJECT_INBOX_API.md) — permission-aware human review API for AI suggestions
+- [`docs/PROJECT_INBOX_WEB.md`](docs/PROJECT_INBOX_WEB.md) — responsive Next.js human-review interface and BFF security boundary
 
 ## Project status
 
-PMWizard now has the V0 intelligence and Microsoft ingestion pipeline, and is implementing **Project Inbox V0 + API** as the first human-facing review surface for AI suggestions.
+PMWizard now has the V0 intelligence, Microsoft ingestion pipeline, and Project Inbox API, and is implementing **Project Inbox Web V0** as the first browser-based human review experience.
 
 ## Local development
 
