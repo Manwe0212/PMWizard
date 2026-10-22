@@ -88,6 +88,20 @@ class ConnectorRunResult(BaseModel):
 
 
 @runtime_checkable
+class ConnectorRunTelemetry(Protocol):
+    def record_run(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        connector_key: str,
+        descriptor: ConnectorDescriptor | None,
+        result: ConnectorRunResult,
+    ) -> None:
+        ...
+
+
+@runtime_checkable
 class SourceConnector(Protocol):
     """Read-only source adapter that emits canonical SourceRecords."""
 
