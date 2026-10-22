@@ -48,9 +48,14 @@ class ProgressAssessment(BaseModel):
 def _normalize(value: str) -> str:
     value = unicodedata.normalize("NFKD", value)
     value = "".join(char for char in value if not unicodedata.combining(char))
-    value = value.lower()
+    value = value.lower().replace("’", "'")
+    value = re.sub(r"[^a-z0-9']+", " ", value)
     value = re.sub(r"\s+", " ", value)
     return value.strip()
+
+
+def _contains_phrase(text: str, phrase: str) -> bool:
+    return f" {phrase} " in f" {text} "
 
 
 _SIGNAL_PATTERNS: dict[ActionItemStatus, tuple[tuple[str, float], ...]] = {
@@ -80,6 +85,9 @@ _SIGNAL_PATTERNS: dict[ActionItemStatus, tuple[tuple[str, float], ...]] = {
         ("no podemos avanzar", 0.96),
         ("no puede avanzar", 0.96),
         ("sin poder avanzar", 0.94),
+        ("remain unresolved", 0.93),
+        ("still unresolved", 0.93),
+        ("siguen sin resolver", 0.93),
     ),
     ActionItemStatus.PENDING_EXTERNAL: (
         ("waiting for", 0.92),
@@ -148,14 +156,15 @@ class ActionItemProgressClassifier:
         signals: list[ProgressSignal] = []
 
         completion_negated = any(
-            phrase in text for phrase in _NEGATED_COMPLETION_PATTERNS
+            _contains_phrase(text, phrase)
+            for phrase in _NEGATED_COMPLETION_PATTERNS
         )
 
         for status, patterns in _SIGNAL_PATTERNS.items():
             if status == ActionItemStatus.COMPLETED and completion_negated:
                 continue
             for phrase, confidence in patterns:
-                if phrase in text:
+                if _contains_phrase(text, phrase):
                     signals.append(
                         ProgressSignal(
                             status=status,
