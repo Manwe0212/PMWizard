@@ -42,10 +42,11 @@ Initial work will focus on:
 - [`docs/SOURCES_WORKSPACE.md`](docs/SOURCES_WORKSPACE.md) — durable source health, checkpoints, sync telemetry, skips, and errors
 - [`docs/PROJECT_HEALTH.md`](docs/PROJECT_HEALTH.md) — deterministic, explainable project health scoring and assessment coverage
 - [`docs/HEALTH_HISTORY_TRENDS.md`](docs/HEALTH_HISTORY_TRENDS.md) — persisted health snapshots, trend direction, factor deltas, and driver changes
+- [`docs/PROGRAM_PORTFOLIO_INTELLIGENCE.md`](docs/PROGRAM_PORTFOLIO_INTELLIGENCE.md) — authorized Program/Portfolio rollups, attention ranking, and cross-project signals
 
 ## Project status
 
-PMWizard now has explainable Project Health and is implementing **Health History + Trends V0** so PMs can see whether project health is improving, stable, or deteriorating over captured snapshots.
+PMWizard now has longitudinal Project Health and is implementing **Program & Portfolio Intelligence V0** to roll authorized Project health, trends, hierarchy, and repeated RAID signals into an explainable cross-project view.
 
 ## Local development
 

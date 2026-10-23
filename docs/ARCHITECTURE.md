@@ -1011,3 +1011,37 @@ GET Project Health remains side-effect free.
 Snapshot capture requires project review permission and stores the scoring model version, factor scores, drivers, coverage, and complete health payload.
 
 Trend compares the latest two captured snapshots using a deterministic ±3 score threshold and separately reports factor deltas, coverage delta, and new/resolved drivers.
+
+
+## Program & Portfolio Intelligence V0
+
+Cross-project intelligence is an authorization-filtered read projection:
+
+```text
+Authenticated User
+       ↓
+ProjectMembership(project:read)
+       ↓
+authorized Project IDs only
+       ↓
+Project Health + Health History
+       ↓
+ProgramPortfolioIntelligenceService
+       ├─ Portfolio → Program → Project rollups
+       ├─ attention ranking
+       └─ exact-title repeated Risk/Dependency signals
+       ↓
+GET /v1/intelligence/overview
+       ↓
+Next.js /api/intelligence/overview
+       ↓
+Program & Portfolio Workspace
+```
+
+Portfolio and Program are now first-class canonical/storage entities, but Projects remain the primary governed intelligence boundary.
+
+The rollup never counts or infers the existence of Projects outside the authenticated user's readable memberships.
+
+Rollup Health averages only reliably scored Projects and separately reports average assessment coverage. Coverage below 35% forces the rollup band to `insufficient_data` even when a provisional numeric average exists.
+
+Cross-project RAID V0 is deliberately conservative: only exact normalized active titles repeated across at least two authorized Projects are surfaced. Semantic relationship discovery remains deferred and should enter through governed AI proposals rather than hidden inference.

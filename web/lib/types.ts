@@ -353,3 +353,79 @@ export interface HealthSnapshotCaptureResponse {
   created: boolean;
   snapshot: HealthHistoryPoint;
 }
+
+
+export interface RollupSummary {
+  projects_total: number;
+  projects_scored: number;
+  score: number | null;
+  band: ProjectHealthBand;
+  average_coverage_percent: number;
+  green: number;
+  amber: number;
+  red: number;
+  insufficient_data: number;
+  improving: number;
+  stable: number;
+  deteriorating: number;
+  insufficient_history: number;
+}
+
+export interface ProjectRollupItem {
+  project_id: string;
+  name: string;
+  status: string | null;
+  priority: string | null;
+  program_id: string | null;
+  program_name: string | null;
+  portfolio_id: string | null;
+  portfolio_name: string | null;
+  health_score: number | null;
+  health_band: ProjectHealthBand;
+  health_coverage_percent: number;
+  trend_direction: TrendDirection;
+  trend_score_delta: number | null;
+  top_drivers: string[];
+}
+
+export interface ProgramRollup {
+  id: string;
+  name: string;
+  description: string | null;
+  status: string | null;
+  portfolio_id: string | null;
+  portfolio_name: string | null;
+  summary: RollupSummary;
+  projects: ProjectRollupItem[];
+}
+
+export interface PortfolioRollup {
+  id: string;
+  name: string;
+  description: string | null;
+  status: string | null;
+  strategic_objectives: string[];
+  summary: RollupSummary;
+  programs: ProgramRollup[];
+  direct_projects: ProjectRollupItem[];
+}
+
+export interface CrossProjectSignal {
+  signal_type: "risk" | "dependency";
+  title: string;
+  project_count: number;
+  project_ids: string[];
+  project_names: string[];
+  statuses: string[];
+  severity_labels: string[];
+  explanation: string;
+}
+
+export interface ProgramPortfolioOverview {
+  summary: RollupSummary;
+  portfolios: PortfolioRollup[];
+  standalone_programs: ProgramRollup[];
+  standalone_projects: ProjectRollupItem[];
+  attention_projects: ProjectRollupItem[];
+  cross_project_signals: CrossProjectSignal[];
+}

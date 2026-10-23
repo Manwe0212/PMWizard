@@ -3587,3 +3587,577 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+
+.portfolioSurface {
+  display: grid;
+  gap: 16px;
+}
+
+.portfolioHero {
+  display: grid;
+  grid-template-columns: 132px 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(19, 88, 213, 0.08), transparent 28%),
+    white;
+  box-shadow: 0 10px 32px rgba(15, 42, 88, 0.05);
+}
+
+.portfolioRollupScore {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+}
+
+.portfolioScoreRing {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  background: conic-gradient(#94a3b8 0 100%, #edf1f6 0);
+}
+
+.portfolioScoreRing::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: white;
+}
+
+.portfolioScoreRing.green {
+  background: conic-gradient(#168a4b 0 100%, #edf1f6 0);
+}
+
+.portfolioScoreRing.amber {
+  background: conic-gradient(#d59b17 0 100%, #edf1f6 0);
+}
+
+.portfolioScoreRing.red {
+  background: conic-gradient(#c63b32 0 100%, #edf1f6 0);
+}
+
+.portfolioScoreRing.insufficient_data {
+  background: conic-gradient(#8a98aa 0 100%, #edf1f6 0);
+}
+
+.portfolioScoreRing > div {
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.portfolioScoreRing strong {
+  font-size: 31px;
+  letter-spacing: -0.05em;
+}
+
+.portfolioScoreRing span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.portfolioHeroCopy h2 {
+  margin: 10px 0 0;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.portfolioHeroCopy > p {
+  margin: 6px 0 0;
+  max-width: 790px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.portfolioMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portfolioMainGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+  gap: 12px;
+}
+
+.portfolioPanel,
+.portfolioHierarchy {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  padding: 15px;
+}
+
+.portfolioPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.portfolioPanelHeader h3,
+.portfolioPanelHeader p {
+  margin: 0;
+}
+
+.portfolioPanelHeader h3 {
+  font-size: 11px;
+}
+
+.portfolioPanelHeader p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.portfolioPanelHeader > span {
+  min-width: 24px;
+  border-radius: 999px;
+  background: #eef2f7;
+  padding: 3px 6px;
+  text-align: center;
+  color: #64748b;
+  font-size: 8px;
+}
+
+.attentionProjectList,
+.crossSignalList {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.attentionProject {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 5px 1fr auto;
+  gap: 10px;
+  align-items: stretch;
+  border: 1px solid #edf1f6;
+  border-radius: 10px;
+  background: #fbfcfe;
+  color: var(--ink);
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+}
+
+.attentionProject:hover {
+  border-color: #a8c3f7;
+  background: white;
+}
+
+.attentionBand {
+  min-height: 78px;
+  background: #94a3b8;
+}
+
+.attentionBand.green {
+  background: var(--green);
+}
+
+.attentionBand.amber {
+  background: #d59b17;
+}
+
+.attentionBand.red {
+  background: var(--red);
+}
+
+.attentionProjectCopy {
+  padding: 10px 0;
+  min-width: 0;
+}
+
+.attentionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.attentionTitleRow > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+}
+
+.attentionProjectCopy > span,
+.attentionProjectCopy > small {
+  display: block;
+}
+
+.attentionProjectCopy > span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.attentionProjectCopy > small {
+  margin-top: 6px;
+  color: #728096;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.attentionScore {
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  gap: 4px;
+  padding: 10px 11px 10px 3px;
+}
+
+.attentionScore > strong {
+  font-size: 21px;
+  letter-spacing: -0.04em;
+}
+
+.trendMini {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 3px 5px;
+  background: #eef2f7;
+  color: #64748b;
+  font-size: 7px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.trendMini.improving {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.trendMini.deteriorating {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.trendMini.stable {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.crossSignal {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 9px;
+  border: 1px solid #edf1f6;
+  border-radius: 10px;
+  background: #fbfcfe;
+  padding: 10px;
+}
+
+.crossSignalIcon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--red-soft);
+  color: var(--red);
+  font-weight: 850;
+  font-size: 10px;
+}
+
+.crossSignalIcon.dependency {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.crossSignalTitle {
+  display: flex;
+  justify-content: space-between;
+  gap: 9px;
+  align-items: flex-start;
+}
+
+.crossSignalTitle strong {
+  font-size: 9px;
+}
+
+.crossSignalTitle span {
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #64748b;
+  padding: 2px 5px;
+  font-size: 7px;
+  white-space: nowrap;
+}
+
+.crossSignal p,
+.crossSignal small {
+  margin: 0;
+}
+
+.crossSignal p {
+  margin-top: 3px;
+  color: #5e6e83;
+  font-size: 8px;
+}
+
+.crossSignal small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 7px;
+}
+
+.portfolioHierarchyList {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.portfolioGroup,
+.programGroup,
+.standaloneProjectGroup {
+  border: 1px solid #e5ebf3;
+  border-radius: 12px;
+  background: #fbfcfe;
+  padding: 13px;
+}
+
+.portfolioGroup {
+  border-color: #d8e5fb;
+  background: #f9fbff;
+}
+
+.programGroup {
+  background: white;
+}
+
+.programGroup.standaloneProgram {
+  border-color: #d8e5fb;
+}
+
+.hierarchyGroupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.hierarchyGroupHeader h4,
+.hierarchyGroupHeader p {
+  margin: 0;
+}
+
+.hierarchyGroupHeader h4 {
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+.hierarchyGroupHeader p {
+  margin-top: 3px;
+  max-width: 600px;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.hierarchyType {
+  color: var(--blue);
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 850;
+}
+
+.rollupMini {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 2px 7px;
+  justify-items: end;
+  align-items: center;
+}
+
+.rollupMini > strong {
+  font-size: 17px;
+  letter-spacing: -0.04em;
+}
+
+.rollupMini > small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 7px;
+}
+
+.objectiveChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.objectiveChips span {
+  border-radius: 999px;
+  background: white;
+  border: 1px solid #d8e5fb;
+  padding: 4px 7px;
+  color: #526581;
+  font-size: 7px;
+}
+
+.programGrid {
+  display: grid;
+  gap: 10px;
+  margin-top: 11px;
+}
+
+.directProjects {
+  margin-top: 11px;
+}
+
+.directProjectsLabel {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 800;
+}
+
+.portfolioProjectTable {
+  display: grid;
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.portfolioProjectRow {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto 45px 115px 48px;
+  gap: 9px;
+  align-items: center;
+  border: 1px solid #edf1f6;
+  border-radius: 8px;
+  background: #fbfcfe;
+  color: var(--ink);
+  padding: 8px 9px;
+  text-align: left;
+}
+
+.portfolioProjectRow:hover {
+  background: white;
+  border-color: #a8c3f7;
+}
+
+.portfolioProjectRow > div > strong,
+.portfolioProjectRow > div > span {
+  display: block;
+}
+
+.portfolioProjectRow > div > strong {
+  font-size: 9px;
+}
+
+.portfolioProjectRow > div > span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 7px;
+}
+
+.projectRollupScore {
+  text-align: right;
+  font-size: 14px;
+}
+
+.portfolioProjectRow > b {
+  color: var(--blue);
+  font-size: 7px;
+  white-space: nowrap;
+}
+
+.executiveEmpty {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+}
+
+.executiveEmpty strong,
+.executiveEmpty span {
+  display: block;
+}
+
+.executiveEmpty strong {
+  margin-top: 8px;
+  font-size: 9px;
+}
+
+.executiveEmpty span {
+  margin-top: 3px;
+  max-width: 300px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.portfolioScopePill strong {
+  font-size: 10px;
+}
+
+@media (max-width: 1050px) {
+  .portfolioMetricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .portfolioMainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolioProjectRow {
+    grid-template-columns: minmax(160px, 1fr) auto 45px 100px;
+  }
+
+  .portfolioProjectRow > b {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .portfolioHero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .portfolioRollupScore {
+    justify-items: start;
+  }
+
+  .portfolioMetricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolioProjectRow {
+    grid-template-columns: 1fr auto;
+  }
+
+  .portfolioProjectRow .projectRollupScore,
+  .portfolioProjectRow .trendMini {
+    display: none;
+  }
+
+  .hierarchyGroupHeader {
+    display: grid;
+  }
+
+  .rollupMini {
+    justify-items: start;
+  }
+}

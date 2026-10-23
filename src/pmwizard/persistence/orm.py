@@ -160,6 +160,39 @@ class ProjectMembershipORM(Base, TimestampMixin, TenantMixin):
     permissions: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
 
 
+class PortfolioORM(Base, TimestampMixin, TenantMixin, ProvenanceMixin):
+    __tablename__ = "portfolios"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    owner_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True))
+    status: Mapped[str | None] = mapped_column(String(100))
+    start_date: Mapped[date | None] = mapped_column(Date)
+    end_date: Mapped[date | None] = mapped_column(Date)
+    strategic_objectives: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
+    source_system: Mapped[str | None] = mapped_column(String(100))
+    external_id: Mapped[str | None] = mapped_column(String(255))
+
+
+class ProgramORM(Base, TimestampMixin, TenantMixin, ProvenanceMixin):
+    __tablename__ = "programs"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    portfolio_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True), index=True
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    program_manager_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True))
+    status: Mapped[str | None] = mapped_column(String(100))
+    start_date: Mapped[date | None] = mapped_column(Date)
+    end_date: Mapped[date | None] = mapped_column(Date)
+    objectives: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
+    source_system: Mapped[str | None] = mapped_column(String(100))
+    external_id: Mapped[str | None] = mapped_column(String(255))
+
+
 class ProjectORM(Base, TimestampMixin, TenantMixin, ProvenanceMixin):
     __tablename__ = "projects"
 

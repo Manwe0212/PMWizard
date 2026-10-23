@@ -42,6 +42,10 @@ from pmwizard.memory import (
 )
 from pmwizard.models.enums import ReviewStatus
 from pmwizard.persistence import create_engine_from_url, create_session_factory
+from pmwizard.portfolio import (
+    ProgramPortfolioIntelligenceService,
+    ProgramPortfolioOverview,
+)
 from pmwizard.sources import SourcesWorkspaceService, SourcesWorkspaceSnapshot
 
 from .context import ApiPrincipal
@@ -218,6 +222,37 @@ def create_app(
             user_id=principal.user_id,
         )
         return ProjectsResponse(count=len(items), items=items)
+
+    @app.get(
+        "/v1/intelligence/overview",
+        response_model=ProgramPortfolioOverview,
+    )
+    def get_program_portfolio_intelligence(
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> ProgramPortfolioOverview:
+        if principal.auth_method == "trusted_headers":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    "Program and Portfolio Intelligence requires Bearer "
+                    "authentication so project memberships can be resolved."
+                ),
+            )
+
+        project_access = AuthRepository(session).list_project_access(
+            tenant_id=principal.tenant_id,
+            user_id=principal.user_id,
+        )
+        authorized_project_ids = {
+            item.project_id
+            for item in project_access
+            if "project:read" in item.permissions
+        }
+        return ProgramPortfolioIntelligenceService(session).overview(
+            tenant_id=principal.tenant_id,
+            authorized_project_ids=authorized_project_ids,
+        )
 
     @app.get(
         "/v1/projects/{project_id}/health/history",

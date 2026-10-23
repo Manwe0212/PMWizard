@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 import { HealthWorkspace } from "@/components/health-workspace";
 import { MemoryWorkspace } from "@/components/memory-workspace";
+import { PortfolioWorkspace } from "@/components/portfolio-workspace";
 import { SourcesWorkspace } from "@/components/sources-workspace";
 import type {
   InboxListResponse,
@@ -102,7 +103,7 @@ export function InboxClient({
   const [editSummary, setEditSummary] = useState("");
   const [reviewerNote, setReviewerNote] = useState("");
   const [activeView, setActiveView] = useState<
-    "health" | "inbox" | "memory" | "sources"
+    "portfolio" | "health" | "inbox" | "memory" | "sources"
   >("inbox");
 
   const loadInbox = useCallback(async () => {
@@ -255,6 +256,14 @@ export function InboxClient({
 
           <nav className="nav">
             <button
+              className={`navItem ${activeView === "portfolio" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("portfolio")}
+            >
+              <span className="navIcon">▦</span>
+              Program & Portfolio
+            </button>
+            <button
               className={`navItem ${activeView === "health" ? "active" : ""}`}
               type="button"
               onClick={() => setActiveView("health")}
@@ -302,48 +311,64 @@ export function InboxClient({
       <main className="main">
         <header className="topbar">
           <div>
-            <div className="eyebrow">Project workspace</div>
+            <div className="eyebrow">
+              {activeView === "portfolio" ? "Cross-project workspace" : "Project workspace"}
+            </div>
             <h1>
-              {activeView === "health"
-                ? "Project Health"
-                : activeView === "inbox"
-                  ? "Project Inbox"
-                  : activeView === "memory"
-                    ? "Project Memory"
-                    : "Sources"}
+              {activeView === "portfolio"
+                ? "Program & Portfolio"
+                : activeView === "health"
+                  ? "Project Health"
+                  : activeView === "inbox"
+                    ? "Project Inbox"
+                    : activeView === "memory"
+                      ? "Project Memory"
+                      : "Sources"}
             </h1>
             <p>
-              {activeView === "health"
-                ? "Understand project health through deterministic, explainable signals."
-                : activeView === "inbox"
-                  ? "Review evidence-backed updates before they become project truth."
-                  : activeView === "memory"
-                    ? "Inspect the governed project truth produced by authorized review."
-                    : "Monitor authorized source health, sync history, and ingestion telemetry."}
+              {activeView === "portfolio"
+                ? "Roll up authorized project health, trends, hierarchy, and shared signals."
+                : activeView === "health"
+                  ? "Understand project health through deterministic, explainable signals."
+                  : activeView === "inbox"
+                    ? "Review evidence-backed updates before they become project truth."
+                    : activeView === "memory"
+                      ? "Inspect the governed project truth produced by authorized review."
+                      : "Monitor authorized source health, sync history, and ingestion telemetry."}
             </p>
           </div>
           <div className="topbarControls">
-            <div className="projectPill projectSelectorPill">
-              <span className="projectDot" />
-              <div>
-                <small>Project</small>
-                <select
-                  className="projectSelect"
-                  value={projectId}
-                  disabled={projectSwitching}
-                  aria-label="Select project"
-                  onChange={(event) =>
-                    void onProjectChange(event.target.value)
-                  }
-                >
-                  {projects.map((project) => (
-                    <option key={project.project_id} value={project.project_id}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
+            {activeView === "portfolio" ? (
+              <div className="projectPill portfolioScopePill">
+                <span className="projectDot" />
+                <div>
+                  <small>Scope</small>
+                  <strong>{projects.length} authorized projects</strong>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="projectPill projectSelectorPill">
+                <span className="projectDot" />
+                <div>
+                  <small>Project</small>
+                  <select
+                    className="projectSelect"
+                    value={projectId}
+                    disabled={projectSwitching}
+                    aria-label="Select project"
+                    onChange={(event) =>
+                      void onProjectChange(event.target.value)
+                    }
+                  >
+                    {projects.map((project) => (
+                      <option key={project.project_id} value={project.project_id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
             <div className="accountPill" title={userEmail}>
               <div className="accountAvatar">
                 {userName.trim().slice(0, 1).toUpperCase()}
@@ -365,7 +390,14 @@ export function InboxClient({
           </div>
         </header>
 
-        {activeView === "health" ? (
+        {activeView === "portfolio" ? (
+          <PortfolioWorkspace
+            onOpenProject={async (nextProjectId) => {
+              await onProjectChange(nextProjectId);
+              setActiveView("health");
+            }}
+          />
+        ) : activeView === "health" ? (
           <HealthWorkspace canCapture={canReviewProject} />
         ) : activeView === "inbox" ? (
           <>
