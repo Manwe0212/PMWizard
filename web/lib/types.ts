@@ -259,3 +259,51 @@ export interface SourcesWorkspaceSnapshot {
   summary: SourcesSummary;
   sources: SourceConnectionView[];
 }
+
+
+export type ProjectHealthBand =
+  | "green"
+  | "amber"
+  | "red"
+  | "insufficient_data";
+
+export type CoverageBand = "low" | "medium" | "high";
+
+export type HealthSignalSeverity =
+  | "positive"
+  | "info"
+  | "warning"
+  | "critical";
+
+export interface HealthSignal {
+  severity: HealthSignalSeverity;
+  title: string;
+  detail: string;
+  penalty: number;
+  entity_type: string | null;
+  entity_ids: string[];
+}
+
+export interface HealthFactor {
+  key: string;
+  name: string;
+  weight: number;
+  available: boolean;
+  score: number | null;
+  band: ProjectHealthBand;
+  signals: HealthSignal[];
+}
+
+export interface ProjectHealthSnapshot {
+  project_id: string;
+  project_name: string;
+  assessed_on: string;
+  score: number | null;
+  band: ProjectHealthBand;
+  coverage_percent: number;
+  coverage_band: CoverageBand;
+  available_weight: number;
+  explanation: string;
+  factors: HealthFactor[];
+  key_drivers: HealthSignal[];
+}

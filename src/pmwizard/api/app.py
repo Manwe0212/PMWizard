@@ -22,6 +22,7 @@ from pmwizard.auth.schemas import (
     MeResponse,
     ProjectsResponse,
 )
+from pmwizard.health import ProjectHealthService, ProjectHealthSnapshot
 from pmwizard.inbox import (
     InboxListResponse,
     InboxSuggestionDetail,
@@ -211,6 +212,28 @@ def create_app(
             user_id=principal.user_id,
         )
         return ProjectsResponse(count=len(items), items=items)
+
+    @app.get(
+        "/v1/projects/{project_id}/health",
+        response_model=ProjectHealthSnapshot,
+    )
+    def get_project_health(
+        project_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> ProjectHealthSnapshot:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return ProjectHealthService(session).snapshot(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
 
     @app.get(
         "/v1/projects/{project_id}/sources",
