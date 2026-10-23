@@ -1,6 +1,6 @@
 """Add Program and Portfolio structure tables.
 
-Revision ID: 0005_program_portfolio_intelligence_v0
+Revision ID: 0005_program_portfolio_v0
 Revises: 0004_health_history_trends_v0
 Create Date: 2026-10-23
 """
@@ -11,7 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision: str = "0005_program_portfolio_intelligence_v0"
+revision: str = "0005_program_portfolio_v0"
 down_revision: Union[str, None] = "0004_health_history_trends_v0"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
