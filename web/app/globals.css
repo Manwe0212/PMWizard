@@ -3233,3 +3233,357 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+
+.healthCaptureMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #ccebd7;
+  border-radius: 10px;
+  background: var(--green-soft);
+  color: #24643b;
+  padding: 9px 11px;
+  font-size: 9px;
+}
+
+.healthCaptureMessage > span {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: white;
+  color: var(--green);
+  font-weight: 850;
+}
+
+.trendBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #eef2f7;
+  color: #64748b;
+}
+
+.trendBadge.improving {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.trendBadge.stable {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.trendBadge.deteriorating {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.trendBadge.insufficient_history {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.healthTrendPanel {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  padding: 16px;
+}
+
+.healthTrendHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.healthTrendHeader h3,
+.healthTrendHeader p {
+  margin: 0;
+}
+
+.healthTrendHeader h3 {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.healthTrendHeader p {
+  margin-top: 3px;
+  max-width: 720px;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.healthTrendGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(230px, 0.7fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.healthChartCard,
+.trendChangeCard {
+  border: 1px solid #edf1f6;
+  border-radius: 11px;
+  background: #fbfcfe;
+}
+
+.healthChartCard {
+  min-height: 260px;
+  padding: 10px 12px 6px;
+}
+
+.healthChart {
+  width: 100%;
+}
+
+.healthChart svg {
+  display: block;
+  width: 100%;
+  height: 230px;
+  overflow: visible;
+}
+
+.healthChartGrid {
+  stroke: #e8edf4;
+  stroke-width: 1;
+}
+
+.healthChartThreshold {
+  stroke-width: 1.2;
+  stroke-dasharray: 5 5;
+}
+
+.healthChartThreshold.amber {
+  stroke: #d59b17;
+}
+
+.healthChartThreshold.red {
+  stroke: #c63b32;
+}
+
+.healthChartAxis,
+.healthChartDate {
+  fill: #8a98aa;
+  font-size: 9px;
+}
+
+.healthChartPath {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.healthChartPoint {
+  stroke: white;
+  stroke-width: 2;
+  fill: #94a3b8;
+}
+
+.healthChartPoint.green {
+  fill: var(--green);
+}
+
+.healthChartPoint.amber {
+  fill: #d59b17;
+}
+
+.healthChartPoint.red {
+  fill: var(--red);
+}
+
+.healthChartPoint.insufficient_data {
+  fill: #94a3b8;
+}
+
+.healthChartEmpty {
+  min-height: 230px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+  color: var(--muted);
+}
+
+.healthChartEmpty strong,
+.healthChartEmpty span {
+  display: block;
+}
+
+.healthChartEmpty strong {
+  margin-top: 9px;
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.healthChartEmpty span {
+  margin-top: 3px;
+  max-width: 330px;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.trendChangeCard {
+  padding: 13px;
+}
+
+.trendDeltaHero {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.trendDeltaHero > span,
+.trendDeltaHero > strong,
+.trendDeltaHero > small {
+  display: block;
+}
+
+.trendDeltaHero > span {
+  color: var(--muted);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 800;
+}
+
+.trendDeltaHero > strong {
+  margin-top: 5px;
+  font-size: 28px;
+  letter-spacing: -0.05em;
+}
+
+.trendDeltaHero > strong.improving {
+  color: var(--green);
+}
+
+.trendDeltaHero > strong.deteriorating {
+  color: var(--red);
+}
+
+.trendDeltaHero > strong.stable {
+  color: var(--blue);
+}
+
+.trendDeltaHero > small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.factorDeltaList {
+  display: grid;
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.factorDeltaList > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  background: white;
+  padding: 7px 8px;
+}
+
+.factorDeltaList span {
+  color: #56667c;
+  font-size: 8px;
+}
+
+.factorDeltaList strong {
+  color: #64748b;
+  font-size: 9px;
+}
+
+.factorDeltaList strong.up {
+  color: var(--green);
+}
+
+.factorDeltaList strong.down {
+  color: var(--red);
+}
+
+.factorDeltaList .trendNoDelta {
+  display: block;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.45;
+  background: transparent;
+  padding: 6px 0;
+}
+
+.trendDriverChanges {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.trendDriverChanges > div > span {
+  display: block;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.trendChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.trendChips b,
+.trendChips small {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: 7px;
+}
+
+.trendChips b.new {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.trendChips b.resolved {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.trendChips small {
+  background: #f1f5f9;
+  color: #7d8a9d;
+}
+
+@media (max-width: 900px) {
+  .healthTrendGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .healthTrendHeader {
+    display: grid;
+  }
+
+  .trendDriverChanges {
+    grid-template-columns: 1fr;
+  }
+}
