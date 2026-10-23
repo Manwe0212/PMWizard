@@ -328,7 +328,10 @@ class ProgramPortfolioIntelligenceService:
         if len(project_ids) < 2:
             return []
 
-        groups: dict[tuple[str, str], list[tuple[UUID, str, str | None]]] = defaultdict(list)
+        groups: dict[
+            tuple[str, str],
+            list[tuple[UUID, str, str | None, str]],
+        ] = defaultdict(list)
 
         risks = self.session.scalars(
             select(RiskORM).where(
@@ -341,7 +344,7 @@ class ProgramPortfolioIntelligenceService:
             key = self._normalize_title(row.title)
             if key:
                 groups[("risk", key)].append(
-                    (row.project_id, row.status, row.impact)
+                    (row.project_id, row.status, row.impact, row.title)
                 )
 
         dependencies = self.session.scalars(
@@ -361,42 +364,29 @@ class ProgramPortfolioIntelligenceService:
             key = self._normalize_title(row.title)
             if key:
                 groups[("dependency", key)].append(
-                    (row.project_id, row.status, row.criticality)
+                    (row.project_id, row.status, row.criticality, row.title)
                 )
 
         signals: list[CrossProjectSignal] = []
-        for (signal_type, _), entries in groups.items():
+        for (signal_type, _normalized_title), entries in groups.items():
             distinct_project_ids = sorted(
-                {project_id for project_id, _, _ in entries},
+                {project_id for project_id, _, _, _ in entries},
                 key=str,
             )
             if len(distinct_project_ids) < 2:
                 continue
 
-            title = next(
-                (
-                    row.title
-                    for row in (risks if signal_type == "risk" else dependencies)
-                    if self._normalize_title(row.title) == self._normalize_title(
-                        next(
-                            card_title
-                            for card_title in [row.title]
-                        )
-                    )
-                    and row.project_id in distinct_project_ids
-                ),
-                "Shared signal",
-            )
+            title = entries[0][3]
             project_names = [
                 cards_by_id[project_id].name
                 for project_id in distinct_project_ids
                 if project_id in cards_by_id
             ]
-            statuses = sorted({status for _, status, _ in entries})
+            statuses = sorted({status for _, status, _, _ in entries})
             severity_labels = sorted(
                 {
                     severity
-                    for _, _, severity in entries
+                    for _, _, severity, _ in entries
                     if severity is not None and severity.strip()
                 }
             )
