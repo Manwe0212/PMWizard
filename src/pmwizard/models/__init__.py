@@ -8,6 +8,8 @@ from .project import Project
 from .relationship import Relationship
 
 __all__ = [
+    "Portfolio",
+    "Program",
     "ActionItem",
     "AISuggestion",
     "Assumption",
@@ -24,3 +26,5 @@ __all__ = [
     "Relationship",
     "Risk",
 ]
+
+from .structure import Portfolio, Program
