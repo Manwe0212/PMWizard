@@ -307,3 +307,49 @@ export interface ProjectHealthSnapshot {
   factors: HealthFactor[];
   key_drivers: HealthSignal[];
 }
+
+
+export type TrendDirection =
+  | "improving"
+  | "stable"
+  | "deteriorating"
+  | "insufficient_history";
+
+export interface HealthHistoryPoint {
+  id: string;
+  captured_at: string;
+  captured_by: string | null;
+  capture_source: string;
+  model_version: string;
+  score: number | null;
+  band: ProjectHealthBand;
+  coverage_percent: number;
+  coverage_band: CoverageBand;
+  factor_scores: Record<string, number | null>;
+  key_drivers: HealthSignal[];
+}
+
+export interface HealthTrendSummary {
+  direction: TrendDirection;
+  from_snapshot_id: string | null;
+  to_snapshot_id: string | null;
+  score_delta: number | null;
+  coverage_delta: number | null;
+  factor_deltas: Record<string, number>;
+  new_drivers: string[];
+  resolved_drivers: string[];
+  elapsed_hours: number | null;
+  explanation: string;
+}
+
+export interface ProjectHealthHistory {
+  project_id: string;
+  count: number;
+  points: HealthHistoryPoint[];
+  trend: HealthTrendSummary;
+}
+
+export interface HealthSnapshotCaptureResponse {
+  created: boolean;
+  snapshot: HealthHistoryPoint;
+}

@@ -187,6 +187,11 @@ export function InboxClient({
     [items],
   );
 
+  const canReviewProject =
+    projects
+      .find((project) => project.project_id === projectId)
+      ?.permissions.includes("project:review") ?? false;
+
   async function submitReview(
     status: ReviewStatus,
     finalChanges: Record<string, unknown> = {},
@@ -361,7 +366,7 @@ export function InboxClient({
         </header>
 
         {activeView === "health" ? (
-          <HealthWorkspace />
+          <HealthWorkspace canCapture={canReviewProject} />
         ) : activeView === "inbox" ? (
           <>
           <section className="metrics" aria-label="Inbox summary">

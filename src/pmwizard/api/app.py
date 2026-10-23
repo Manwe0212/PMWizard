@@ -22,7 +22,13 @@ from pmwizard.auth.schemas import (
     MeResponse,
     ProjectsResponse,
 )
-from pmwizard.health import ProjectHealthService, ProjectHealthSnapshot
+from pmwizard.health import (
+    HealthSnapshotCaptureResponse,
+    ProjectHealthHistory,
+    ProjectHealthHistoryService,
+    ProjectHealthService,
+    ProjectHealthSnapshot,
+)
 from pmwizard.inbox import (
     InboxListResponse,
     InboxSuggestionDetail,
@@ -212,6 +218,55 @@ def create_app(
             user_id=principal.user_id,
         )
         return ProjectsResponse(count=len(items), items=items)
+
+    @app.get(
+        "/v1/projects/{project_id}/health/history",
+        response_model=ProjectHealthHistory,
+    )
+    def get_project_health_history(
+        project_id: UUID,
+        limit: int = Query(default=90, ge=2, le=365),
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> ProjectHealthHistory:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return ProjectHealthHistoryService(session).history(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                limit=limit,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+    @app.post(
+        "/v1/projects/{project_id}/health/snapshots",
+        response_model=HealthSnapshotCaptureResponse,
+    )
+    def capture_project_health_snapshot(
+        project_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> HealthSnapshotCaptureResponse:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            return ProjectHealthHistoryService(session).capture(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                captured_by=principal.user_id,
+                capture_source="manual",
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
 
     @app.get(
         "/v1/projects/{project_id}/health",

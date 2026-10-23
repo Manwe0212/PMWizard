@@ -984,3 +984,30 @@ Sources ─────────┘
 The health engine does not persist an opaque RAG label. It recomputes Delivery, RAID, Decisions, and Sources factor scores from current governed data and returns the signals/penalties that produced them.
 
 Missing factors are excluded from weighted scoring and reduce assessment coverage rather than being treated as healthy.
+
+
+## Health History + Trends V0
+
+Project Health history adds an explicit persistence boundary without turning reads into writes:
+
+```text
+Project Memory + Sources
+        ↓
+ProjectHealthService
+        ↓
+current live Health
+        ↓ explicit capture
+ProjectHealthHistoryService
+        ↓
+project_health_snapshots
+        ↓
+History / Trend API
+        ↓
+Next.js Health timeline
+```
+
+GET Project Health remains side-effect free.
+
+Snapshot capture requires project review permission and stores the scoring model version, factor scores, drivers, coverage, and complete health payload.
+
+Trend compares the latest two captured snapshots using a deterministic ±3 score threshold and separately reports factor deltas, coverage delta, and new/resolved drivers.

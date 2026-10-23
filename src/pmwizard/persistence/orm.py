@@ -35,6 +35,31 @@ class ProvenanceMixin:
     provenance: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
 
 
+class ProjectHealthSnapshotORM(Base, TenantMixin):
+    __tablename__ = "project_health_snapshots"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    project_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    captured_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), index=True, nullable=False
+    )
+    captured_by: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True))
+    capture_source: Mapped[str] = mapped_column(String(50), nullable=False)
+    model_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    score: Mapped[int | None] = mapped_column(nullable=True)
+    band: Mapped[str] = mapped_column(String(50), nullable=False)
+    coverage_percent: Mapped[int] = mapped_column(nullable=False)
+    coverage_band: Mapped[str] = mapped_column(String(50), nullable=False)
+    available_weight: Mapped[int] = mapped_column(nullable=False)
+    factor_scores: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+    key_drivers: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
+    snapshot_payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+    state_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, nullable=False
+    )
+
+
 class SourceConnectionORM(Base, TimestampMixin, TenantMixin):
     __tablename__ = "source_connections"
     __table_args__ = (
