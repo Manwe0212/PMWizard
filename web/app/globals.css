@@ -2665,3 +2665,571 @@ button:disabled {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+.healthSurface {
+  display: grid;
+  gap: 16px;
+}
+
+.healthHero {
+  display: grid;
+  grid-template-columns: 132px 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(19, 88, 213, 0.08), transparent 26%),
+    white;
+  box-shadow: 0 10px 32px rgba(15, 42, 88, 0.05);
+}
+
+.healthScoreColumn {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+}
+
+.healthScoreRing {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  background: conic-gradient(#94a3b8 0 100%, #edf1f6 0);
+}
+
+.healthScoreRing::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: white;
+}
+
+.healthScoreRing.green {
+  background: conic-gradient(#168a4b 0 100%, #edf1f6 0);
+}
+
+.healthScoreRing.amber {
+  background: conic-gradient(#d59b17 0 100%, #edf1f6 0);
+}
+
+.healthScoreRing.red {
+  background: conic-gradient(#c63b32 0 100%, #edf1f6 0);
+}
+
+.healthScoreRing.insufficient_data {
+  background: conic-gradient(#8a98aa 0 100%, #edf1f6 0);
+}
+
+.healthScoreRing > div {
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.healthScoreRing strong {
+  font-size: 31px;
+  letter-spacing: -0.05em;
+}
+
+.healthScoreRing span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.healthBandBadge,
+.coverageBadge {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.healthBandBadge.green {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.healthBandBadge.amber {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.healthBandBadge.red {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.healthBandBadge.insufficient_data {
+  background: #eef2f7;
+  color: #64748b;
+}
+
+.coverageBadge.high {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.coverageBadge.medium {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.coverageBadge.low {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.healthHeroCopy h2 {
+  margin: 10px 0 0;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.healthHeroCopy > p {
+  margin: 6px 0 0;
+  max-width: 780px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.coverageRow {
+  margin-top: 17px;
+  display: grid;
+  grid-template-columns: 135px minmax(140px, 320px) 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.coverageRow > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.coverageRow span,
+.coverageRow small {
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.coverageRow strong {
+  font-size: 10px;
+}
+
+.coverageTrack,
+.factorScoreTrack,
+.weightTrack {
+  height: 6px;
+  border-radius: 999px;
+  background: #edf1f6;
+  overflow: hidden;
+}
+
+.coverageTrack > span {
+  display: block;
+  height: 100%;
+  background: var(--blue);
+  border-radius: inherit;
+}
+
+.healthFactorGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.healthFactorCard {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: white;
+  padding: 14px;
+  min-width: 0;
+}
+
+.healthFactorCard.red {
+  border-color: #f2c8c5;
+}
+
+.healthFactorCard.amber {
+  border-color: #eadcb4;
+}
+
+.healthFactorTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.healthFactorTop span {
+  color: var(--muted);
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.healthFactorTop h3 {
+  margin: 4px 0 0;
+  font-size: 12px;
+}
+
+.healthFactorTop > strong {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.factorScoreTrack {
+  margin-top: 11px;
+}
+
+.factorScoreTrack > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #94a3b8;
+}
+
+.factorScoreTrack > span.green {
+  background: var(--green);
+}
+
+.factorScoreTrack > span.amber {
+  background: #d59b17;
+}
+
+.factorScoreTrack > span.red {
+  background: var(--red);
+}
+
+.factorSignals {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.factorSignal {
+  display: grid;
+  grid-template-columns: 7px 1fr auto;
+  gap: 7px;
+  align-items: start;
+}
+
+.signalDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 4px;
+  background: #94a3b8;
+}
+
+.signalDot.positive {
+  background: var(--green);
+}
+
+.signalDot.warning {
+  background: #d59b17;
+}
+
+.signalDot.critical {
+  background: var(--red);
+}
+
+.factorSignal strong,
+.factorSignal p {
+  margin: 0;
+}
+
+.factorSignal strong {
+  display: block;
+  font-size: 8px;
+}
+
+.factorSignal p {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.factorSignal > b {
+  color: var(--red);
+  font-size: 8px;
+}
+
+.factorUnavailable {
+  display: block;
+  margin-top: 10px;
+  color: #8b98a9;
+  font-size: 8px;
+  font-style: italic;
+}
+
+.healthLowerGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+  gap: 12px;
+}
+
+.healthPanel {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: white;
+  padding: 15px;
+}
+
+.healthPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.healthPanelHeader h3,
+.healthPanelHeader p {
+  margin: 0;
+}
+
+.healthPanelHeader h3 {
+  font-size: 11px;
+}
+
+.healthPanelHeader p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.healthPanelHeader > span {
+  min-width: 22px;
+  border-radius: 999px;
+  background: #eef2f7;
+  padding: 3px 6px;
+  text-align: center;
+  color: #64748b;
+  font-size: 8px;
+}
+
+.healthDriverList {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.healthDriver {
+  display: grid;
+  grid-template-columns: 31px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #edf1f6;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.driverIcon {
+  width: 31px;
+  height: 31px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-weight: 850;
+  font-size: 11px;
+}
+
+.driverIcon.critical {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.driverTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.driverTitleRow strong {
+  font-size: 9px;
+}
+
+.driverTitleRow span {
+  border-radius: 999px;
+  background: #f1f5f9;
+  padding: 2px 5px;
+  color: #718096;
+  font-size: 7px;
+}
+
+.healthDriver p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.healthDriver > b {
+  color: var(--red);
+  font-size: 10px;
+}
+
+.healthEmpty {
+  min-height: 230px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+}
+
+.healthEmpty strong,
+.healthEmpty span {
+  display: block;
+}
+
+.healthEmpty strong {
+  margin-top: 9px;
+  font-size: 10px;
+}
+
+.healthEmpty span {
+  margin-top: 3px;
+  max-width: 300px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.weightList {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.weightRow {
+  display: grid;
+  grid-template-columns: 110px 1fr 32px;
+  gap: 9px;
+  align-items: center;
+}
+
+.weightRow strong,
+.weightRow span {
+  display: block;
+}
+
+.weightRow strong {
+  font-size: 8px;
+}
+
+.weightRow span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 7px;
+}
+
+.weightTrack > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--blue);
+}
+
+.weightRow > b {
+  text-align: right;
+  font-size: 8px;
+}
+
+.healthThresholds {
+  margin-top: 18px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.healthThresholds > div {
+  display: grid;
+  grid-template-columns: 8px 1fr;
+  gap: 2px 6px;
+  align-items: center;
+}
+
+.thresholdDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  grid-row: span 2;
+}
+
+.thresholdDot.green {
+  background: var(--green);
+}
+
+.thresholdDot.amber {
+  background: #d59b17;
+}
+
+.thresholdDot.red {
+  background: var(--red);
+}
+
+.healthThresholds strong {
+  font-size: 8px;
+}
+
+.healthThresholds small {
+  color: var(--muted);
+  font-size: 7px;
+}
+
+.healthGovernanceNote {
+  margin-top: 14px;
+  border-radius: 9px;
+  background: #f8fbff;
+  border: 1px solid #d8e5fb;
+  padding: 9px 10px;
+  color: #58677b;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+@media (max-width: 1050px) {
+  .healthFactorGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .healthLowerGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .healthHero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .healthScoreColumn {
+    justify-items: start;
+  }
+
+  .coverageRow {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .healthFactorGrid {
+    grid-template-columns: 1fr;
+  }
+}
