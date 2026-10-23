@@ -310,7 +310,7 @@ export function PortfolioWorkspace({ onOpenProject }: Props) {
           <p>
             Program and Portfolio Intelligence is computed only from project
             memberships carrying project:read. Counts and shared signals never
-            reveal projects outside the current user's authorized scope.
+            reveal projects outside the current authorized scope.
           </p>
         </div>
       </div>
