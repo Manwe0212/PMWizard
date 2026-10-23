@@ -41,10 +41,11 @@ Initial work will focus on:
 - [`docs/PROJECT_MEMORY_WORKSPACE.md`](docs/PROJECT_MEMORY_WORKSPACE.md) — read-only governed Action Items, RAID, Decisions, and project state
 - [`docs/SOURCES_WORKSPACE.md`](docs/SOURCES_WORKSPACE.md) — durable source health, checkpoints, sync telemetry, skips, and errors
 - [`docs/PROJECT_HEALTH.md`](docs/PROJECT_HEALTH.md) — deterministic, explainable project health scoring and assessment coverage
+- [`docs/HEALTH_HISTORY_TRENDS.md`](docs/HEALTH_HISTORY_TRENDS.md) — persisted health snapshots, trend direction, factor deltas, and driver changes
 
 ## Project status
 
-PMWizard now has authenticated Inbox, Project Memory, and Sources workspaces and is implementing **Project Health V0** to turn governed delivery, RAID, Decisions, and Source signals into an explainable health assessment.
+PMWizard now has explainable Project Health and is implementing **Health History + Trends V0** so PMs can see whether project health is improving, stable, or deteriorating over captured snapshots.
 
 ## Local development
 
