@@ -40,10 +40,11 @@ Initial work will focus on:
 - [`docs/AUTH_PROJECT_SELECTION.md`](docs/AUTH_PROJECT_SELECTION.md) — local authentication, signed sessions, and per-project memberships
 - [`docs/PROJECT_MEMORY_WORKSPACE.md`](docs/PROJECT_MEMORY_WORKSPACE.md) — read-only governed Action Items, RAID, Decisions, and project state
 - [`docs/SOURCES_WORKSPACE.md`](docs/SOURCES_WORKSPACE.md) — durable source health, checkpoints, sync telemetry, skips, and errors
+- [`docs/PROJECT_HEALTH.md`](docs/PROJECT_HEALTH.md) — deterministic, explainable project health scoring and assessment coverage
 
 ## Project status
 
-PMWizard now has authenticated Inbox and Project Memory workspaces and is implementing **Sources Workspace V0** so source health, incremental checkpoints, and connector run telemetry are observable without exposing provider secrets.
+PMWizard now has authenticated Inbox, Project Memory, and Sources workspaces and is implementing **Project Health V0** to turn governed delivery, RAID, Decisions, and Source signals into an explainable health assessment.
 
 ## Local development
 
