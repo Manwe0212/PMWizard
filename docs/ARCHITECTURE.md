@@ -961,3 +961,26 @@ Sources Workspace
 ```
 
 The raw checkpoint is required for provider delta resumption but is deliberately excluded from the API projection. Only checkpoint presence, update time, and a short SHA-256 fingerprint cross the operational UI boundary.
+
+
+## Project Health V0
+
+Project Health is a read-only deterministic projection over governed state:
+
+```text
+Project Memory ──┐
+                 ├─ ProjectHealthService
+Sources ─────────┘
+                        ↓
+             Explainable scoring rules
+                        ↓
+       GET /v1/projects/{project_id}/health
+                        ↓
+              Next.js /api/health
+                        ↓
+             Project Health Workspace
+```
+
+The health engine does not persist an opaque RAG label. It recomputes Delivery, RAID, Decisions, and Sources factor scores from current governed data and returns the signals/penalties that produced them.
+
+Missing factors are excluded from weighted scoring and reduce assessment coverage rather than being treated as healthy.
