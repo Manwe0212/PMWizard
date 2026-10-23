@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { HealthWorkspace } from "@/components/health-workspace";
 import { MemoryWorkspace } from "@/components/memory-workspace";
 import { SourcesWorkspace } from "@/components/sources-workspace";
 import type {
@@ -100,7 +101,9 @@ export function InboxClient({
   const [editStatus, setEditStatus] = useState("in_progress");
   const [editSummary, setEditSummary] = useState("");
   const [reviewerNote, setReviewerNote] = useState("");
-  const [activeView, setActiveView] = useState<"inbox" | "memory" | "sources">("inbox");
+  const [activeView, setActiveView] = useState<
+    "health" | "inbox" | "memory" | "sources"
+  >("inbox");
 
   const loadInbox = useCallback(async () => {
     setLoading(true);
@@ -247,6 +250,14 @@ export function InboxClient({
 
           <nav className="nav">
             <button
+              className={`navItem ${activeView === "health" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("health")}
+            >
+              <span className="navIcon">◉</span>
+              Project Health
+            </button>
+            <button
               className={`navItem ${activeView === "inbox" ? "active" : ""}`}
               type="button"
               onClick={() => setActiveView("inbox")}
@@ -288,18 +299,22 @@ export function InboxClient({
           <div>
             <div className="eyebrow">Project workspace</div>
             <h1>
-              {activeView === "inbox"
-                ? "Project Inbox"
-                : activeView === "memory"
-                  ? "Project Memory"
-                  : "Sources"}
+              {activeView === "health"
+                ? "Project Health"
+                : activeView === "inbox"
+                  ? "Project Inbox"
+                  : activeView === "memory"
+                    ? "Project Memory"
+                    : "Sources"}
             </h1>
             <p>
-              {activeView === "inbox"
-                ? "Review evidence-backed updates before they become project truth."
-                : activeView === "memory"
-                  ? "Inspect the governed project truth produced by authorized review."
-                  : "Monitor authorized source health, sync history, and ingestion telemetry."}
+              {activeView === "health"
+                ? "Understand project health through deterministic, explainable signals."
+                : activeView === "inbox"
+                  ? "Review evidence-backed updates before they become project truth."
+                  : activeView === "memory"
+                    ? "Inspect the governed project truth produced by authorized review."
+                    : "Monitor authorized source health, sync history, and ingestion telemetry."}
             </p>
           </div>
           <div className="topbarControls">
@@ -345,7 +360,9 @@ export function InboxClient({
           </div>
         </header>
 
-        {activeView === "inbox" ? (
+        {activeView === "health" ? (
+          <HealthWorkspace />
+        ) : activeView === "inbox" ? (
           <>
           <section className="metrics" aria-label="Inbox summary">
             <div className="metric">
