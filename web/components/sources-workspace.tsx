@@ -292,7 +292,7 @@ function CreateSourcePanel({
           ? {
               mailbox: mailbox.trim(),
               folder_id: folderId.trim(),
-              received_after: receivedAfter.trim() || null,
+              received_after: toIsoUtc(receivedAfter),
             }
           : {
               drive_id: driveId.trim(),
@@ -539,7 +539,7 @@ function SourceDetail({
         ? {
             mailbox: mailbox.trim(),
             folder_id: folderId.trim(),
-            received_after: receivedAfter.trim() || null,
+            received_after: toIsoUtc(receivedAfter),
           }
         : {
             drive_id: driveId.trim(),
@@ -1078,4 +1078,12 @@ function toLocalDateTime(value: unknown): string {
   if (Number.isNaN(date.getTime())) return "";
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
   return local.toISOString().slice(0, 16);
+}
+
+
+function toIsoUtc(value: string): string | null {
+  if (!value.trim()) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
 }
