@@ -331,6 +331,7 @@ def create_app(
                 tenant_id=principal.tenant_id,
                 project_id=project_id,
                 command=command,
+                permissions=permissions,
             )
         except LookupError as exc:
             raise HTTPException(
