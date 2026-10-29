@@ -14,7 +14,9 @@ from pmwizard.connectors import (
 
 from .repository import SourceRepository
 from .schemas import (
+    BindSourceCredentialRequest,
     SourceConnectionView,
+    SourceCredentialStatus,
     SourceHealthStatus,
     SourceRunView,
     SourcesSummary,
@@ -64,6 +66,53 @@ class SourceTelemetryService:
         self.session.commit()
 
 
+class SourceCredentialService:
+    """Bind opaque runtime references without reading secret material."""
+
+    def __init__(self, session: Session) -> None:
+        self.session = session
+        self.repository = SourceRepository(session)
+
+    def bind(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        source_connection_id: UUID,
+        command: BindSourceCredentialRequest,
+    ) -> SourceCredentialStatus:
+        row = self.repository.bind_credential_reference(
+            tenant_id=tenant_id,
+            project_id=project_id,
+            source_connection_id=source_connection_id,
+            credential_ref=command.credential_ref,
+        )
+        self.session.commit()
+        return SourceCredentialStatus(
+            source_connection_id=row.id,
+            credential_configured=True,
+        )
+
+    def clear(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        source_connection_id: UUID,
+    ) -> SourceCredentialStatus:
+        row = self.repository.bind_credential_reference(
+            tenant_id=tenant_id,
+            project_id=project_id,
+            source_connection_id=source_connection_id,
+            credential_ref=None,
+        )
+        self.session.commit()
+        return SourceCredentialStatus(
+            source_connection_id=row.id,
+            credential_configured=False,
+        )
+
+
 class SourcesWorkspaceService:
     def __init__(self, session: Session) -> None:
         self.session = session
@@ -106,6 +155,7 @@ class SourcesWorkspaceService:
                     permission_scope=connection.permission_scope,
                     safe_config=connection.safe_config,
                     is_enabled=connection.is_enabled,
+                    credential_configured=bool(connection.credential_ref),
                     health=self._health(connection.is_enabled, latest),
                     checkpoint_present=checkpoint is not None,
                     checkpoint_fingerprint=(
