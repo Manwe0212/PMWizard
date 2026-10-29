@@ -44,10 +44,11 @@ Initial work will focus on:
 - [`docs/HEALTH_HISTORY_TRENDS.md`](docs/HEALTH_HISTORY_TRENDS.md) — persisted health snapshots, trend direction, factor deltas, and driver changes
 - [`docs/PROGRAM_PORTFOLIO_INTELLIGENCE.md`](docs/PROGRAM_PORTFOLIO_INTELLIGENCE.md) — authorized Program/Portfolio rollups, attention ranking, and cross-project signals
 - [`docs/EXECUTIVE_DASHBOARD.md`](docs/EXECUTIVE_DASHBOARD.md) — authenticated executive landing view for Health, Inbox, RAID, Decisions, Sources, and cross-project attention
+- [`docs/AI_STATUS_REPORTS.md`](docs/AI_STATUS_REPORTS.md) — grounded structured AI drafting with fact citations, validation, and provider abstraction
 
 ## Project status
 
-PMWizard now has Project, Program, and Portfolio Intelligence and is implementing **Executive Dashboard V0** as the authenticated command center for Health, review workload, critical RAID, pending Decisions, and Source operations.
+PMWizard now has an executive cross-project command center and is implementing **AI Status Report Generator V0** so governed Project Memory, deterministic Health, captured Trends, and Source telemetry can produce fact-cited human-reviewable status drafts.
 
 ## Local development
 
