@@ -207,7 +207,7 @@ def test_generator_accepts_structured_grounded_draft(report_env) -> None:
         StatusReportContent(
             executive_summary=[
                 ReportStatement(
-                    text="Project Health is amber with 70% assessment coverage.",
+                    text="Project Health is currently assessed from governed project data.",
                     fact_ids=["HEALTH-001"],
                 )
             ],
@@ -359,7 +359,7 @@ def test_status_report_api_returns_valid_grounded_draft(report_env) -> None:
         StatusReportContent(
             executive_summary=[
                 ReportStatement(
-                    text="The project has 70% assessment coverage.",
+                    text="Project Health is currently assessed from governed project data.",
                     fact_ids=["HEALTH-001"],
                 )
             ]
