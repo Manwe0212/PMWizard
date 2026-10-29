@@ -429,3 +429,73 @@ export interface ProgramPortfolioOverview {
   attention_projects: ProjectRollupItem[];
   cross_project_signals: CrossProjectSignal[];
 }
+
+
+export interface ExecutiveSummary {
+  health: RollupSummary;
+  projects_needing_attention: number;
+  pending_inbox: number;
+  deferred_inbox: number;
+  critical_raid: number;
+  pending_decisions: number;
+  source_failures: number;
+  source_attention: number;
+  cross_project_signals: number;
+}
+
+export interface ExecutiveInboxItem {
+  suggestion_id: string;
+  project_id: string;
+  project_name: string;
+  suggestion_type: string;
+  review_status: ReviewStatus;
+  reason: string;
+  confidence: number;
+  created_at: string;
+}
+
+export interface ExecutiveRAIDItem {
+  entity_type: "Risk" | "Assumption" | "Issue" | "Dependency";
+  entity_id: string;
+  project_id: string;
+  project_name: string;
+  title: string;
+  status: string;
+  severity: string;
+  due_date: string | null;
+  reason: string;
+}
+
+export interface ExecutiveDecisionItem {
+  decision_id: string;
+  project_id: string;
+  project_name: string;
+  title: string;
+  status: string;
+  review_date: string | null;
+  expected_impact: string | null;
+}
+
+export interface ExecutiveSourceAlert {
+  source_id: string;
+  project_id: string;
+  project_name: string;
+  display_name: string;
+  source_system: string;
+  health: SourceHealthStatus;
+  latest_status: string | null;
+  latest_finished_at: string | null;
+  error_count: number;
+  skipped: number;
+}
+
+export interface ExecutiveDashboardSnapshot {
+  generated_at: string;
+  summary: ExecutiveSummary;
+  attention_projects: ProjectRollupItem[];
+  inbox_items: ExecutiveInboxItem[];
+  critical_raid: ExecutiveRAIDItem[];
+  pending_decisions: ExecutiveDecisionItem[];
+  source_alerts: ExecutiveSourceAlert[];
+  cross_project_signals: CrossProjectSignal[];
+}

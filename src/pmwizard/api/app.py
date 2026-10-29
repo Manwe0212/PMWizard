@@ -22,6 +22,7 @@ from pmwizard.auth.schemas import (
     MeResponse,
     ProjectsResponse,
 )
+from pmwizard.executive import ExecutiveDashboardService, ExecutiveDashboardSnapshot
 from pmwizard.health import (
     HealthSnapshotCaptureResponse,
     ProjectHealthHistory,
@@ -222,6 +223,42 @@ def create_app(
             user_id=principal.user_id,
         )
         return ProjectsResponse(count=len(items), items=items)
+
+    @app.get(
+        "/v1/executive/dashboard",
+        response_model=ExecutiveDashboardSnapshot,
+    )
+    def get_executive_dashboard(
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> ExecutiveDashboardSnapshot:
+        if principal.auth_method == "trusted_headers":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    "Executive Dashboard requires Bearer authentication so "
+                    "project memberships and evidence permissions can be resolved."
+                ),
+            )
+
+        project_access = AuthRepository(session).list_project_access(
+            tenant_id=principal.tenant_id,
+            user_id=principal.user_id,
+        )
+        project_permissions_map = {
+            item.project_id: set(item.permissions)
+            for item in project_access
+        }
+        project_names = {
+            item.project_id: item.name
+            for item in project_access
+        }
+
+        return ExecutiveDashboardService(session).snapshot(
+            tenant_id=principal.tenant_id,
+            project_permissions=project_permissions_map,
+            project_names=project_names,
+        )
 
     @app.get(
         "/v1/intelligence/overview",

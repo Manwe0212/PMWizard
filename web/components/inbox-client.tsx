@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { ExecutiveDashboard } from "@/components/executive-dashboard";
 import { HealthWorkspace } from "@/components/health-workspace";
 import { MemoryWorkspace } from "@/components/memory-workspace";
 import { PortfolioWorkspace } from "@/components/portfolio-workspace";
@@ -103,8 +104,8 @@ export function InboxClient({
   const [editSummary, setEditSummary] = useState("");
   const [reviewerNote, setReviewerNote] = useState("");
   const [activeView, setActiveView] = useState<
-    "portfolio" | "health" | "inbox" | "memory" | "sources"
-  >("inbox");
+    "executive" | "portfolio" | "health" | "inbox" | "memory" | "sources"
+  >("executive");
 
   const loadInbox = useCallback(async () => {
     setLoading(true);
@@ -256,6 +257,14 @@ export function InboxClient({
 
           <nav className="nav">
             <button
+              className={`navItem ${activeView === "executive" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("executive")}
+            >
+              <span className="navIcon">⌂</span>
+              Executive Dashboard
+            </button>
+            <button
               className={`navItem ${activeView === "portfolio" ? "active" : ""}`}
               type="button"
               onClick={() => setActiveView("portfolio")}
@@ -312,12 +321,18 @@ export function InboxClient({
         <header className="topbar">
           <div>
             <div className="eyebrow">
-              {activeView === "portfolio" ? "Cross-project workspace" : "Project workspace"}
+              {activeView === "executive"
+                ? "Executive workspace"
+                : activeView === "portfolio"
+                  ? "Cross-project workspace"
+                  : "Project workspace"}
             </div>
             <h1>
-              {activeView === "portfolio"
-                ? "Program & Portfolio"
-                : activeView === "health"
+              {activeView === "executive"
+                ? "Executive Dashboard"
+                : activeView === "portfolio"
+                  ? "Program & Portfolio"
+                  : activeView === "health"
                   ? "Project Health"
                   : activeView === "inbox"
                     ? "Project Inbox"
@@ -326,9 +341,11 @@ export function InboxClient({
                       : "Sources"}
             </h1>
             <p>
-              {activeView === "portfolio"
-                ? "Roll up authorized project health, trends, hierarchy, and shared signals."
-                : activeView === "health"
+              {activeView === "executive"
+                ? "See what requires attention across your authorized project landscape."
+                : activeView === "portfolio"
+                  ? "Roll up authorized project health, trends, hierarchy, and shared signals."
+                  : activeView === "health"
                   ? "Understand project health through deterministic, explainable signals."
                   : activeView === "inbox"
                     ? "Review evidence-backed updates before they become project truth."
@@ -338,7 +355,7 @@ export function InboxClient({
             </p>
           </div>
           <div className="topbarControls">
-            {activeView === "portfolio" ? (
+            {activeView === "executive" || activeView === "portfolio" ? (
               <div className="projectPill portfolioScopePill">
                 <span className="projectDot" />
                 <div>
@@ -390,7 +407,14 @@ export function InboxClient({
           </div>
         </header>
 
-        {activeView === "portfolio" ? (
+        {activeView === "executive" ? (
+          <ExecutiveDashboard
+            onOpenProject={async (nextProjectId, target) => {
+              await onProjectChange(nextProjectId);
+              setActiveView(target);
+            }}
+          />
+        ) : activeView === "portfolio" ? (
           <PortfolioWorkspace
             onOpenProject={async (nextProjectId) => {
               await onProjectChange(nextProjectId);
