@@ -46,10 +46,11 @@ Initial work will focus on:
 - [`docs/EXECUTIVE_DASHBOARD.md`](docs/EXECUTIVE_DASHBOARD.md) — authenticated executive landing view for Health, Inbox, RAID, Decisions, Sources, and cross-project attention
 - [`docs/AI_STATUS_REPORTS.md`](docs/AI_STATUS_REPORTS.md) — grounded structured AI drafting with fact citations, validation, and provider abstraction
 - [`docs/AUTOMATION_SCHEDULER.md`](docs/AUTOMATION_SCHEDULER.md) — durable interval scheduling, leases, worker execution, run history, and automated Health snapshots
+- [`docs/SECURE_SOURCE_RUNTIME.md`](docs/SECURE_SOURCE_RUNTIME.md) — opaque credential references, runtime secret resolution, and scheduled Outlook/SharePoint delta sync
 
 ## Project status
 
-PMWizard now has grounded AI status-report drafting and is implementing **Automation & Scheduler V0** so recurring intelligence work can run durably through PostgreSQL-backed schedules, expiring worker leases, and persisted execution history.
+PMWizard now has durable background automation and is implementing **Secure Source Runtime + Scheduled Source Sync V0** so Outlook and SharePoint can resume incremental ingestion automatically without persisting provider secrets.
 
 ## Local development
 

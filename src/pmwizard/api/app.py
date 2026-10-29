@@ -66,7 +66,13 @@ from pmwizard.reports import (
     StatusReportRequest,
     UngroundedStatusReportError,
 )
-from pmwizard.sources import SourcesWorkspaceService, SourcesWorkspaceSnapshot
+from pmwizard.sources import (
+    BindSourceCredentialRequest,
+    SourceCredentialService,
+    SourceCredentialStatus,
+    SourcesWorkspaceService,
+    SourcesWorkspaceSnapshot,
+)
 
 from .context import ApiPrincipal
 
@@ -557,6 +563,58 @@ def create_app(
             return SourcesWorkspaceService(session).snapshot(
                 tenant_id=principal.tenant_id,
                 project_id=project_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+    @app.put(
+        "/v1/projects/{project_id}/sources/{source_connection_id}/credential",
+        response_model=SourceCredentialStatus,
+    )
+    def bind_project_source_credential(
+        project_id: UUID,
+        source_connection_id: UUID,
+        command: BindSourceCredentialRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> SourceCredentialStatus:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            return SourceCredentialService(session).bind(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                source_connection_id=source_connection_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+    @app.delete(
+        "/v1/projects/{project_id}/sources/{source_connection_id}/credential",
+        response_model=SourceCredentialStatus,
+    )
+    def clear_project_source_credential(
+        project_id: UUID,
+        source_connection_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> SourceCredentialStatus:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            return SourceCredentialService(session).clear(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                source_connection_id=source_connection_id,
             )
         except LookupError as exc:
             raise HTTPException(

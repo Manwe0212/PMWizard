@@ -790,7 +790,7 @@ export function InboxClient({
         ) : activeView === "memory" ? (
           <MemoryWorkspace projectName={projectName} />
         ) : (
-          <SourcesWorkspace />
+          <SourcesWorkspace canManage={canReviewProject} />
         )}
       </main>
     </div>

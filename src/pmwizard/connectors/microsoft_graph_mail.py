@@ -163,13 +163,19 @@ class MicrosoftGraphMailConnector:
         self,
         config: MicrosoftGraphMailConfig,
         transport: GraphJsonTransport,
+        *,
+        connector_key_override: str | None = None,
     ) -> None:
         self.config = config
         self.transport = transport
+        self.connector_key_override = connector_key_override
 
     @property
     def connector_key(self) -> str:
-        return f"microsoft-graph-mail:{self.config.connection_name}:v0"
+        return (
+            self.connector_key_override
+            or f"microsoft-graph-mail:{self.config.connection_name}:v0"
+        )
 
     @property
     def descriptor(self) -> ConnectorDescriptor:

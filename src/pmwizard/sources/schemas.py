@@ -7,7 +7,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from pmwizard.connectors import ConnectorRunStatus
 
@@ -53,6 +53,7 @@ class SourceConnectionView(BaseModel):
     permission_scope: list[str]
     safe_config: dict[str, Any]
     is_enabled: bool
+    credential_configured: bool = False
     health: SourceHealthStatus
     checkpoint_present: bool
     checkpoint_fingerprint: str | None = None
@@ -81,3 +82,36 @@ class SourcesWorkspaceSnapshot(BaseModel):
     project_id: UUID
     summary: SourcesSummary
     sources: list[SourceConnectionView]
+
+
+class BindSourceCredentialRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    credential_ref: str = Field(min_length=5, max_length=68)
+
+    @field_validator("credential_ref")
+    @classmethod
+    def _validate_ref(cls, value: str) -> str:
+        value = value.strip()
+        if not value.startswith("env:"):
+            raise ValueError("credential_ref must use env:ALIAS")
+        alias = value[4:]
+        if (
+            not alias
+            or len(alias) > 64
+            or any(
+                character not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+                for character in alias
+            )
+        ):
+            raise ValueError(
+                "credential_ref alias must use uppercase letters, digits, or underscores"
+            )
+        return value
+
+
+class SourceCredentialStatus(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source_connection_id: UUID
+    credential_configured: bool

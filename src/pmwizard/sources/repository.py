@@ -92,6 +92,40 @@ class SourceRepository:
             )
         )
 
+    def get_connection_by_id(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        source_connection_id: UUID,
+    ) -> SourceConnectionORM | None:
+        return self.session.scalar(
+            select(SourceConnectionORM).where(
+                SourceConnectionORM.tenant_id == tenant_id,
+                SourceConnectionORM.project_id == project_id,
+                SourceConnectionORM.id == source_connection_id,
+            )
+        )
+
+    def bind_credential_reference(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        source_connection_id: UUID,
+        credential_ref: str | None,
+    ) -> SourceConnectionORM:
+        row = self.get_connection_by_id(
+            tenant_id=tenant_id,
+            project_id=project_id,
+            source_connection_id=source_connection_id,
+        )
+        if row is None:
+            raise LookupError("Source connection not found")
+        row.credential_ref = credential_ref
+        self.session.flush()
+        return row
+
     def list_connections(
         self,
         *,

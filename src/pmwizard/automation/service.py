@@ -7,12 +7,15 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from pmwizard.sources import SourceRepository
+
 from .repository import AutomationRepository
 from .schemas import (
     AutomationRunStatus,
     AutomationScheduleView,
     AutomationsSummary,
     AutomationsWorkspaceSnapshot,
+    AutomationTaskType,
     AutomationTrigger,
     CreateAutomationScheduleRequest,
     RunNowResponse,
@@ -39,6 +42,12 @@ class AutomationScheduleService:
             self._aware(command.start_at)
             if command.start_at is not None
             else timestamp + timedelta(minutes=command.interval_minutes)
+        )
+        config = self._validated_config(
+            tenant_id=tenant_id,
+            project_id=project_id,
+            task_type=command.task_type,
+            config=command.config,
         )
         row = self.repository.create_schedule(
             tenant_id=tenant_id,
@@ -176,6 +185,57 @@ class AutomationScheduleService:
             ),
             schedules=views,
         )
+
+    def _validated_config(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        task_type: AutomationTaskType,
+        config: dict,
+    ) -> dict:
+        if task_type == AutomationTaskType.HEALTH_SNAPSHOT:
+            if config:
+                raise ValueError(
+                    "health_snapshot does not accept task config"
+                )
+            return {}
+
+        if task_type == AutomationTaskType.SOURCE_SYNC:
+            if set(config) != {"source_connection_id"}:
+                raise ValueError(
+                    "source_sync requires only source_connection_id"
+                )
+            raw_source_id = config.get("source_connection_id")
+            if not isinstance(raw_source_id, str):
+                raise ValueError(
+                    "source_connection_id must be a UUID string"
+                )
+            try:
+                source_connection_id = UUID(raw_source_id)
+            except ValueError as exc:
+                raise ValueError(
+                    "source_connection_id must be a valid UUID"
+                ) from exc
+
+            source = SourceRepository(self.session).get_connection_by_id(
+                tenant_id=tenant_id,
+                project_id=project_id,
+                source_connection_id=source_connection_id,
+            )
+            if source is None:
+                raise LookupError("Source connection not found")
+            if not source.is_enabled:
+                raise ValueError(
+                    "Source connection must be enabled before scheduling sync"
+                )
+            if not source.credential_ref:
+                raise ValueError(
+                    "Source connection requires a runtime credential binding"
+                )
+            return {"source_connection_id": str(source_connection_id)}
+
+        raise ValueError(f"Unsupported automation task type: {task_type}")
 
     def _view(
         self,

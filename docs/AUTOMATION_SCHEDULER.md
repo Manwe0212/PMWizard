@@ -4,7 +4,7 @@
 
 Automation & Scheduler allows PMWizard to perform recurring intelligence work without making interactive API requests execute background jobs.
 
-V0 automates deterministic Project Health snapshot capture.
+V0 automates deterministic Project Health snapshot capture and secure incremental Source synchronization.
 
 The architecture is intentionally lightweight:
 
@@ -26,39 +26,39 @@ automation_runs
 
 No Celery, Kafka, Kubernetes, or external scheduler is required.
 
-## V0 task
+## V0 tasks
 
-The first supported task is:
+Supported task types are:
 
 ```text
 health_snapshot
+source_sync
 ```
 
-It calls the existing `ProjectHealthHistoryService.capture()` with:
+### health_snapshot
+
+Calls `ProjectHealthHistoryService.capture()` with:
 
 ```text
 captured_by = null
 capture_source = automation
 ```
 
-This means automated snapshots remain distinguishable from manual PM captures.
+Automated snapshots remain distinguishable from manual PM captures.
 
-## Why Source Sync is not exposed yet
+### source_sync
 
-The scheduler has a handler abstraction designed for additional task types.
+Stores only:
 
-However, scheduling a production Source sync requires a secure runtime resolver for:
+```json
+{
+  "source_connection_id": "..."
+}
+```
 
-- connector configuration;
-- credentials/tokens;
-- tenant/project ownership;
-- provider-specific refresh behavior.
+At execution time the worker resolves the Source's runtime credential through the secure Source runtime, reconstructs Outlook/SharePoint with the original connector key, and executes the existing durable ConnectorRunner.
 
-The current Sources workspace deliberately stores only safe connection metadata.
-
-V0 therefore does not expose a Source Sync schedule that would pretend those secrets are available.
-
-A future Source Sync handler can plug into the same worker once credential resolution is production-safe.
+No token, client secret, or credential reference is copied into the Automation schedule.
 
 ## Persistence
 
@@ -329,13 +329,12 @@ AutomationClaim
 AutomationExecutor
       ↓
 AutomationHandler registry
-      ↓
-HealthSnapshotAutomationHandler
+      ├─ HealthSnapshotAutomationHandler
+      └─ SourceSyncAutomationHandler
 ```
 
 Future handlers can include:
 
-- Source Sync;
 - grounded Status Report generation;
 - Progress Intelligence refresh;
 - notification delivery;
@@ -385,7 +384,7 @@ They do not:
 - worker heartbeats;
 - lease renewal;
 - retry/backoff policies;
-- Source Sync credential resolver;
+- additional cloud SecretProvider adapters;
 - scheduled AI Status Reports;
 - Program/Portfolio jobs;
 - notification delivery;

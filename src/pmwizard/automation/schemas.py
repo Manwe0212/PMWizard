@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class AutomationTaskType(StrEnum):
     HEALTH_SNAPSHOT = "health_snapshot"
+    SOURCE_SYNC = "source_sync"
 
 
 class AutomationRunStatus(StrEnum):

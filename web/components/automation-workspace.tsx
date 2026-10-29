@@ -6,6 +6,8 @@ import type {
   AutomationRunView,
   AutomationScheduleView,
   AutomationsWorkspaceSnapshot,
+  SourceConnectionView,
+  SourcesWorkspaceSnapshot,
 } from "@/lib/types";
 
 type Props = {
@@ -63,9 +65,18 @@ async function loadAutomations(): Promise<AutomationsWorkspaceSnapshot> {
   );
 }
 
+async function loadSources(): Promise<SourcesWorkspaceSnapshot> {
+  return readJson(
+    await fetch("/api/sources", {
+      cache: "no-store",
+    }),
+  );
+}
+
 export function AutomationWorkspace({ canManage }: Props) {
   const [snapshot, setSnapshot] =
     useState<AutomationsWorkspaceSnapshot | null>(null);
+  const [sources, setSources] = useState<SourceConnectionView[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -76,7 +87,12 @@ export function AutomationWorkspace({ canManage }: Props) {
     setLoading(true);
     setError(null);
     try {
-      setSnapshot(await loadAutomations());
+      const [automations, sourceSnapshot] = await Promise.all([
+        loadAutomations(),
+        loadSources(),
+      ]);
+      setSnapshot(automations);
+      setSources(sourceSnapshot.sources);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -98,6 +114,43 @@ export function AutomationWorkspace({ canManage }: Props) {
         (schedule) => schedule.task_type === "health_snapshot",
       ) ?? false,
     [snapshot],
+  );
+
+  const scheduledSourceIds = useMemo(
+    () =>
+      new Set(
+        (snapshot?.schedules ?? [])
+          .filter((schedule) => schedule.task_type === "source_sync")
+          .map((schedule) => String(schedule.config.source_connection_id ?? "")),
+      ),
+    [snapshot],
+  );
+
+  const schedulableSources = useMemo(
+    () =>
+      sources.filter(
+        (source) =>
+          source.is_enabled &&
+          source.credential_configured &&
+          ["microsoft_graph_mail", "microsoft_graph_sharepoint"].includes(
+            source.source_system,
+          ) &&
+          !scheduledSourceIds.has(source.id),
+      ),
+    [sources, scheduledSourceIds],
+  );
+
+  const blockedSources = useMemo(
+    () =>
+      sources.filter(
+        (source) =>
+          source.is_enabled &&
+          ["microsoft_graph_mail", "microsoft_graph_sharepoint"].includes(
+            source.source_system,
+          ) &&
+          !source.credential_configured,
+      ),
+    [sources],
   );
 
   async function createHealthSchedule() {
@@ -123,6 +176,38 @@ export function AutomationWorkspace({ canManage }: Props) {
         requestError instanceof Error
           ? requestError.message
           : "Unable to create automation.",
+      );
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function createSourceSync(source: SourceConnectionView) {
+    if (!canManage) return;
+    setCreating(true);
+    setError(null);
+    try {
+      await readJson(
+        await fetch("/api/automations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: `Sync ${source.display_name}`,
+            task_type: "source_sync",
+            interval_minutes: 60,
+            enabled: true,
+            config: {
+              source_connection_id: source.id,
+            },
+          }),
+        }),
+      );
+      await load();
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to create Source sync automation.",
       );
     } finally {
       setCreating(false);
@@ -301,6 +386,58 @@ export function AutomationWorkspace({ canManage }: Props) {
                 >
                   {creating ? "Creating…" : "Enable automation"}
                 </button>
+              </div>
+            </section>
+          )}
+
+          {(schedulableSources.length > 0 || blockedSources.length > 0) && (
+            <section className="automationSourceSetup">
+              <div className="portfolioPanelHeader">
+                <div>
+                  <h3>Scheduled Source sync</h3>
+                  <p>
+                    Resume Outlook / SharePoint delta checkpoints automatically using
+                    worker-only runtime credentials.
+                  </p>
+                </div>
+                <span>{schedulableSources.length}</span>
+              </div>
+
+              <div className="automationSourceGrid">
+                {schedulableSources.map((source) => (
+                  <article className="automationSourceCard" key={source.id}>
+                    <div>
+                      <span className="automationSetupIcon">
+                        {source.source_type === "email" ? "✉" : "▣"}
+                      </span>
+                      <div>
+                        <strong>{source.display_name}</strong>
+                        <small>{titleCase(source.source_system)}</small>
+                      </div>
+                    </div>
+                    <button
+                      className="primaryButton"
+                      type="button"
+                      disabled={!canManage || creating}
+                      onClick={() => void createSourceSync(source)}
+                    >
+                      {creating ? "Creating…" : "Schedule hourly sync"}
+                    </button>
+                  </article>
+                ))}
+
+                {blockedSources.map((source) => (
+                  <article className="automationSourceCard blocked" key={source.id}>
+                    <div>
+                      <span className="automationSetupIcon">!</span>
+                      <div>
+                        <strong>{source.display_name}</strong>
+                        <small>Runtime credential required in Sources</small>
+                      </div>
+                    </div>
+                    <span className="automationQueuedBadge">Not ready</span>
+                  </article>
+                ))}
               </div>
             </section>
           )}
@@ -486,6 +623,10 @@ function ScheduleCard({
 }
 
 function RunRow({ run }: { run: AutomationRunView }) {
+  const ingested =
+    typeof run.summary.ingested === "number"
+      ? String(run.summary.ingested)
+      : null;
   const score =
     typeof run.summary.score === "number"
       ? String(run.summary.score)
@@ -510,6 +651,11 @@ function RunRow({ run }: { run: AutomationRunView }) {
           <>
             <strong>{score}</strong>
             <span>{band}</span>
+          </>
+        ) : ingested !== null ? (
+          <>
+            <strong>{ingested}</strong>
+            <span>Ingested</span>
           </>
         ) : (
           <>
