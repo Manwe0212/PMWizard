@@ -5455,3 +5455,138 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+
+.sourceFacts {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.sourceCredentialSection {
+  border: 1px solid #dce7f8;
+  border-radius: 11px;
+  background: #fbfdff;
+  padding: 12px;
+}
+
+.sourceCredentialControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+  margin-top: 10px;
+}
+
+.sourceCredentialControls label {
+  min-width: 250px;
+  flex: 1 1 320px;
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sourceCredentialControls input {
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+  padding: 0 9px;
+  font-size: 9px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.sourceCredentialHint {
+  margin-top: 9px;
+  border-top: 1px solid #e7edf5;
+  padding-top: 8px;
+  color: #66778d;
+  font-size: 7px;
+  line-height: 1.45;
+}
+
+.sourceCredentialHint code {
+  border-radius: 4px;
+  background: #edf3fb;
+  padding: 2px 4px;
+  color: #42546d;
+}
+
+.automationSourceSetup {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  padding: 15px;
+}
+
+.automationSourceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.automationSourceCard {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #e5edf7;
+  border-radius: 10px;
+  background: #fbfdff;
+  padding: 10px;
+}
+
+.automationSourceCard.blocked {
+  border-style: dashed;
+  background: #fffdf8;
+}
+
+.automationSourceCard > div {
+  min-width: 0;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+.automationSourceCard strong,
+.automationSourceCard small {
+  display: block;
+}
+
+.automationSourceCard strong {
+  overflow: hidden;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.automationSourceCard small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 7px;
+}
+
+@media (max-width: 1000px) {
+  .sourceFacts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .automationSourceGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .sourceFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .sourceCredentialControls,
+  .automationSourceCard {
+    display: grid;
+  }
+}
