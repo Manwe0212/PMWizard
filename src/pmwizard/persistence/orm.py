@@ -125,6 +125,7 @@ class SourceConnectionORM(Base, TimestampMixin, TenantMixin):
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
     permission_scope: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
     safe_config: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+    credential_ref: Mapped[str | None] = mapped_column(String(255))
     is_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
 
