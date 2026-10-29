@@ -177,6 +177,7 @@ def test_grounding_packet_uses_governed_state_not_pending_suggestions(
             tenant_id=tenant_id,
             project_id=project.id,
             lookback_days=7,
+            permissions={"project:read", "project:review"},
             as_of=NOW,
         )
 
@@ -246,6 +247,7 @@ def test_generator_accepts_structured_grounded_draft(report_env) -> None:
                 lookback_days=7,
                 audience=StatusReportAudience.EXECUTIVE,
             ),
+            permissions={"project:read", "project:review"},
             as_of=NOW,
         )
 
@@ -283,6 +285,7 @@ def test_generator_rejects_unknown_fact_id(report_env) -> None:
                 tenant_id=tenant_id,
                 project_id=project.id,
                 command=StatusReportRequest(),
+                permissions={"project:read", "project:review"},
                 as_of=NOW,
             )
 
@@ -309,6 +312,7 @@ def test_generator_rejects_numeric_claim_not_in_cited_facts(report_env) -> None:
                 tenant_id=tenant_id,
                 project_id=project.id,
                 command=StatusReportRequest(),
+                permissions={"project:read", "project:review"},
                 as_of=NOW,
             )
 
