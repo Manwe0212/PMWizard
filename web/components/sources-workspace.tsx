@@ -1,5 +1,6 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type {
@@ -282,7 +283,7 @@ function CreateSourcePanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit(event: React.FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError(null);
