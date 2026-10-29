@@ -1,3 +1,4 @@
+from .admin import SourceConnectionAdminService
 """Durable source observability and Sources Workspace."""
 
 from .factory import create_durable_connector_runner
@@ -12,6 +13,7 @@ from .schemas import (
     SourcesSummary,
     SourcesWorkspaceSnapshot,
 )
+from .test_worker import SourceConnectionTestWorker
 from .service import (
     SourceCredentialService,
     SourceTelemetryService,
@@ -20,6 +22,8 @@ from .service import (
 
 __all__ = [
     "BindSourceCredentialRequest",
+    "SourceConnectionAdminService",
+    "SourceConnectionTestWorker",
     "SourceConnectionView",
     "SourceCredentialService",
     "SourceCredentialStatus",
