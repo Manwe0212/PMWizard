@@ -1078,3 +1078,36 @@ Critical RAID rules are deterministic. Pending Decisions come from governed Proj
 Trusted-header compatibility mode is deliberately unavailable for the cross-project endpoint because complete ProjectMembership resolution is required to prevent tenant enumeration.
 
 The authenticated Web application opens Executive Dashboard by default, with actionable rows routing users into Project Health, Inbox, Memory, or Sources.
+
+
+## AI Status Report Generator V0
+
+Status Report generation introduces a provider-neutral generative layer without changing the source-of-truth boundary:
+
+```text
+Authorized Project
+       ↓
+Project Memory + Health + History + Sources
+       ↓
+StatusReportGroundingService
+       ↓
+finite GroundFact ledger
+       ↓
+StructuredGenerationProvider
+       ↓
+StatusReportContent
+       ↓
+fact-id + numeric grounding validation
+       ↓
+human-reviewable draft
+```
+
+Pending Project Inbox suggestions are deliberately excluded. Only governed state and deterministic operational projections enter the Grounding Packet.
+
+Canonical facts may carry provenance Evidence IDs, but those IDs are filtered against the caller's permission scopes before they enter either the model input or API response.
+
+The provider boundary is `StructuredGenerationProvider`. The first runtime adapter uses OpenAI Responses Structured Outputs; tests inject a fake provider and perform no external model calls.
+
+Generation requires `project:read` and `project:review`. The result is not written back to Project Memory and is not automatically distributed.
+
+V0 validates that every generated statement cites known GroundFact IDs and rejects numerical values not present in the cited facts. This is a grounding guardrail, not a replacement for human review.
