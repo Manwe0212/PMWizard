@@ -149,6 +149,10 @@ class CreateSourceConnectionRequest(BaseModel):
     ]
     display_name: str = Field(min_length=1, max_length=255)
     safe_config: dict[str, Any]
+    permission_scope: list[str] = Field(
+        default_factory=lambda: ["project:read"],
+        min_length=1,
+    )
     enabled: bool = True
 
     @field_validator("display_name")
@@ -159,12 +163,21 @@ class CreateSourceConnectionRequest(BaseModel):
             raise ValueError("display_name must not be empty")
         return value
 
+    @field_validator("permission_scope")
+    @classmethod
+    def _normalize_scope(cls, values: list[str]) -> list[str]:
+        normalized = sorted({item.strip() for item in values if item.strip()})
+        if not normalized:
+            raise ValueError("permission_scope must contain at least one value")
+        return normalized
+
 
 class UpdateSourceConnectionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     display_name: str | None = Field(default=None, min_length=1, max_length=255)
     safe_config: dict[str, Any] | None = None
+    permission_scope: list[str] | None = Field(default=None, min_length=1)
     enabled: bool | None = None
 
     @field_validator("display_name")
@@ -176,6 +189,19 @@ class UpdateSourceConnectionRequest(BaseModel):
         if not value:
             raise ValueError("display_name must not be empty")
         return value
+
+    @field_validator("permission_scope")
+    @classmethod
+    def _normalize_optional_scope(
+        cls,
+        values: list[str] | None,
+    ) -> list[str] | None:
+        if values is None:
+            return None
+        normalized = sorted({item.strip() for item in values if item.strip()})
+        if not normalized:
+            raise ValueError("permission_scope must contain at least one value")
+        return normalized
 
 
 class SourceConnectionTestResponse(BaseModel):
