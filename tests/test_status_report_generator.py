@@ -1,7 +1,6 @@
 """Tests for grounded AI Status Report Generator V0."""
 
 from datetime import date, datetime, timedelta, timezone
-import json
 from uuid import UUID, uuid4
 
 import pytest
@@ -17,6 +16,7 @@ from pmwizard.models import (
     Decision,
     Evidence,
     Project,
+    Provenance,
     Risk,
 )
 from pmwizard.models.enums import (
@@ -200,6 +200,55 @@ def test_grounding_packet_uses_governed_state_not_pending_suggestions(
         for fact in packet.facts
     )
     assert "UNREVIEWED-SUGGESTION-MUST-NOT-BE-REPORTABLE" not in serialized
+
+
+def test_grounding_filters_unauthorized_provenance_evidence_ids(
+    report_env,
+) -> None:
+    tenant_id, _, project, _ = _seed(report_env)
+
+    with report_env() as session:
+        memory = ProjectMemoryService(session)
+        restricted = memory.add_evidence(
+            tenant_id,
+            Evidence(
+                project_id=project.id,
+                source_type="document",
+                source_system="restricted",
+                captured_at=NOW,
+                content_excerpt="Restricted supporting material.",
+                permission_scope=["project:read", "source:secret"],
+            ),
+        )
+        memory.add_action_item(
+            tenant_id,
+            ActionItem(
+                project_id=project.id,
+                title="Restricted-evidence completion",
+                status=ActionItemStatus.COMPLETED,
+                completed_at=NOW - timedelta(days=1),
+                provenance=Provenance(
+                    evidence_ids=[restricted.id],
+                    human_verified=True,
+                ),
+            ),
+        )
+
+        packet = StatusReportGroundingService(session).build(
+            tenant_id=tenant_id,
+            project_id=project.id,
+            lookback_days=7,
+            permissions={"project:read", "project:review"},
+            as_of=NOW,
+        )
+
+    fact = next(
+        item
+        for item in packet.facts
+        if "Restricted-evidence completion" in item.text
+    )
+    assert fact.evidence_ids == []
+    assert str(restricted.id) not in packet.model_dump_json()
 
 
 def test_generator_accepts_structured_grounded_draft(report_env) -> None:
