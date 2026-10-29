@@ -43,10 +43,11 @@ Initial work will focus on:
 - [`docs/PROJECT_HEALTH.md`](docs/PROJECT_HEALTH.md) — deterministic, explainable project health scoring and assessment coverage
 - [`docs/HEALTH_HISTORY_TRENDS.md`](docs/HEALTH_HISTORY_TRENDS.md) — persisted health snapshots, trend direction, factor deltas, and driver changes
 - [`docs/PROGRAM_PORTFOLIO_INTELLIGENCE.md`](docs/PROGRAM_PORTFOLIO_INTELLIGENCE.md) — authorized Program/Portfolio rollups, attention ranking, and cross-project signals
+- [`docs/EXECUTIVE_DASHBOARD.md`](docs/EXECUTIVE_DASHBOARD.md) — authenticated executive landing view for Health, Inbox, RAID, Decisions, Sources, and cross-project attention
 
 ## Project status
 
-PMWizard now has longitudinal Project Health and is implementing **Program & Portfolio Intelligence V0** to roll authorized Project health, trends, hierarchy, and repeated RAID signals into an explainable cross-project view.
+PMWizard now has Project, Program, and Portfolio Intelligence and is implementing **Executive Dashboard V0** as the authenticated command center for Health, review workload, critical RAID, pending Decisions, and Source operations.
 
 ## Local development
 
