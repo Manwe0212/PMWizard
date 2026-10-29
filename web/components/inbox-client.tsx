@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { AutomationWorkspace } from "@/components/automation-workspace";
 import { ExecutiveDashboard } from "@/components/executive-dashboard";
 import { HealthWorkspace } from "@/components/health-workspace";
 import { MemoryWorkspace } from "@/components/memory-workspace";
@@ -105,7 +106,7 @@ export function InboxClient({
   const [editSummary, setEditSummary] = useState("");
   const [reviewerNote, setReviewerNote] = useState("");
   const [activeView, setActiveView] = useState<
-    "executive" | "portfolio" | "health" | "reports" | "inbox" | "memory" | "sources"
+    "executive" | "portfolio" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources"
   >("executive");
 
   const loadInbox = useCallback(async () => {
@@ -290,6 +291,14 @@ export function InboxClient({
               Status Reports
             </button>
             <button
+              className={`navItem ${activeView === "automations" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("automations")}
+            >
+              <span className="navIcon">⚙</span>
+              Automations
+            </button>
+            <button
               className={`navItem ${activeView === "inbox" ? "active" : ""}`}
               type="button"
               onClick={() => setActiveView("inbox")}
@@ -345,7 +354,9 @@ export function InboxClient({
                   ? "Project Health"
                   : activeView === "reports"
                     ? "Status Reports"
-                    : activeView === "inbox"
+                    : activeView === "automations"
+                      ? "Automations"
+                      : activeView === "inbox"
                       ? "Project Inbox"
                     : activeView === "memory"
                       ? "Project Memory"
@@ -360,7 +371,9 @@ export function InboxClient({
                   ? "Understand project health through deterministic, explainable signals."
                   : activeView === "reports"
                     ? "Generate grounded AI status-report drafts from governed project truth."
-                    : activeView === "inbox"
+                    : activeView === "automations"
+                      ? "Schedule recurring intelligence work without moving governance into the request path."
+                      : activeView === "inbox"
                       ? "Review evidence-backed updates before they become project truth."
                     : activeView === "memory"
                       ? "Inspect the governed project truth produced by authorized review."
@@ -438,6 +451,8 @@ export function InboxClient({
           <HealthWorkspace canCapture={canReviewProject} />
         ) : activeView === "reports" ? (
           <StatusReportWorkspace canGenerate={canReviewProject} />
+        ) : activeView === "automations" ? (
+          <AutomationWorkspace canManage={canReviewProject} />
         ) : activeView === "inbox" ? (
           <>
           <section className="metrics" aria-label="Inbox summary">

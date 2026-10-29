@@ -1111,3 +1111,47 @@ The provider boundary is `StructuredGenerationProvider`. The first runtime adapt
 Generation requires `project:read` and `project:review`. The result is not written back to Project Memory and is not automatically distributed.
 
 V0 validates that every generated statement cites known GroundFact IDs and rejects numerical values not present in the cited facts. This is a grounding guardrail, not a replacement for human review.
+
+
+## Automation & Scheduler V0
+
+Recurring intelligence work is separated from interactive API requests:
+
+```text
+Authenticated UI / API
+       ↓
+automation_schedules
+       ↓
+PostgreSQL durable due state
+       ↓
+AutomationWorker
+       ↓ conditional lease claim
+AutomationExecutor
+       ↓
+AutomationHandler registry
+       ↓
+HealthSnapshotAutomationHandler
+       ↓
+ProjectHealthHistoryService
+       ↓
+automation_runs
+```
+
+Schedule mutations require Project review permission, while read-only schedule/run observability requires Project read permission.
+
+The scheduler uses interval-based due times and expiring database leases rather than in-process timers. Multiple workers can poll the same database; a conditional update grants one unique lease token for each due schedule.
+
+A reclaimed expired lease marks any unfinished previous run as `abandoned`. A worker whose lease has expired or been replaced cannot finalize the run.
+
+`Run now` changes durable due state to an immediate manual trigger. The API never executes the job synchronously.
+
+V0 registers only deterministic Project Health snapshot automation. The handler registry is intentionally extensible, but Source Sync is deferred until secure connector credential/config resolution exists. This avoids turning safe Source metadata into an implicit credential store.
+
+The lightweight worker can run continuously or as a one-shot process:
+
+```text
+python -m pmwizard.automation.worker
+python -m pmwizard.automation.worker --once
+```
+
+Automation observes and computes governed state; it does not accept Inbox suggestions or perform external write-back.

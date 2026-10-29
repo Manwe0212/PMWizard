@@ -21,6 +21,14 @@ from pmwizard.ai import (
     OpenAIResponsesProvider,
     StructuredGenerationProvider,
 )
+from pmwizard.automation import (
+    AutomationScheduleService,
+    AutomationScheduleView,
+    AutomationsWorkspaceSnapshot,
+    CreateAutomationScheduleRequest,
+    RunNowResponse,
+    UpdateAutomationScheduleRequest,
+)
 from pmwizard.auth.schemas import (
     LoginRequest,
     LoginResponse,
@@ -302,6 +310,117 @@ def create_app(
             tenant_id=principal.tenant_id,
             authorized_project_ids=authorized_project_ids,
         )
+
+    @app.get(
+        "/v1/projects/{project_id}/automations",
+        response_model=AutomationsWorkspaceSnapshot,
+    )
+    def get_project_automations(
+        project_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> AutomationsWorkspaceSnapshot:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return AutomationScheduleService(session).snapshot(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+    @app.post(
+        "/v1/projects/{project_id}/automations",
+        response_model=AutomationScheduleView,
+        status_code=status.HTTP_201_CREATED,
+    )
+    def create_project_automation(
+        project_id: UUID,
+        command: CreateAutomationScheduleRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> AutomationScheduleView:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            return AutomationScheduleService(session).create(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                created_by=principal.user_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+    @app.patch(
+        "/v1/projects/{project_id}/automations/{schedule_id}",
+        response_model=AutomationScheduleView,
+    )
+    def update_project_automation(
+        project_id: UUID,
+        schedule_id: UUID,
+        command: UpdateAutomationScheduleRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> AutomationScheduleView:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            return AutomationScheduleService(session).update(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                schedule_id=schedule_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(exc),
+            ) from exc
+
+    @app.post(
+        "/v1/projects/{project_id}/automations/{schedule_id}/run-now",
+        response_model=RunNowResponse,
+    )
+    def run_project_automation_now(
+        project_id: UUID,
+        schedule_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> RunNowResponse:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            return AutomationScheduleService(session).run_now(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                schedule_id=schedule_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(exc),
+            ) from exc
 
     @app.post(
         "/v1/projects/{project_id}/status-report/draft",
