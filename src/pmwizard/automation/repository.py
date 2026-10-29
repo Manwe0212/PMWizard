@@ -254,9 +254,18 @@ class AutomationRepository:
         if schedule is None:
             raise LookupError("Automation schedule not found")
 
-        if schedule.lease_owner != claim.lease_token:
+        lease_expires_at = (
+            self._aware(schedule.lease_expires_at)
+            if schedule.lease_expires_at is not None
+            else None
+        )
+        if (
+            schedule.lease_owner != claim.lease_token
+            or lease_expires_at is None
+            or lease_expires_at <= now
+        ):
             raise RuntimeError(
-                "Automation lease was lost before the run could be finalized"
+                "Automation lease was lost or expired before the run could be finalized"
             )
 
         run.status = status.value
