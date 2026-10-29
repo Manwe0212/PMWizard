@@ -197,15 +197,19 @@ class AutomationScheduleService:
             interval_minutes=row.interval_minutes,
             enabled=row.is_enabled,
             config=row.config,
-            next_run_at=row.next_run_at,
+            next_run_at=self._aware(row.next_run_at),
             pending_trigger=row.pending_trigger,
-            last_run_at=row.last_run_at,
+            last_run_at=(
+                self._aware(row.last_run_at)
+                if row.last_run_at is not None
+                else None
+            ),
             last_status=row.last_status,
             consecutive_failures=row.consecutive_failures,
             created_by=row.created_by,
             running=self._running(row, now),
-            created_at=row.created_at,
-            updated_at=row.updated_at,
+            created_at=self._aware(row.created_at),
+            updated_at=self._aware(row.updated_at),
             recent_runs=[
                 self.repository.run_view(run)
                 for run in runs
