@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from pmwizard.health import ProjectHealthHistoryService, ProjectHealthService
 from pmwizard.memory import ProjectMemoryQueryService
+from pmwizard.persistence import ProjectMemoryService
 from pmwizard.models.enums import (
     ActionItemStatus,
     DecisionStatus,
@@ -33,6 +34,7 @@ class StatusReportGroundingService:
         tenant_id: UUID,
         project_id: UUID,
         lookback_days: int,
+        permissions: set[str],
         as_of: datetime | None = None,
     ) -> StatusReportGroundingPacket:
         timestamp = as_of or datetime.now(timezone.utc)
@@ -44,6 +46,7 @@ class StatusReportGroundingService:
             tzinfo=timezone.utc,
         )
 
+        evidence_repository = ProjectMemoryService(self.session).repository
         memory = ProjectMemoryQueryService(self.session).snapshot(
             tenant_id=tenant_id,
             project_id=project_id,
@@ -88,7 +91,13 @@ class StatusReportGroundingService:
                 text=" ".join(project_parts),
                 entity_type="Project",
                 entity_id=project.id,
-                evidence_ids=project.provenance.evidence_ids,
+                evidence_ids=self._visible_evidence_ids(
+                    repository=evidence_repository,
+                    tenant_id=tenant_id,
+                    project_id=project_id,
+                    evidence_ids=project.provenance.evidence_ids,
+                    permissions=permissions,
+                ),
                 observed_at=project.updated_at,
             )
         )
@@ -183,7 +192,13 @@ class StatusReportGroundingService:
                     ),
                     entity_type="ActionItem",
                     entity_id=item.id,
-                    evidence_ids=item.provenance.evidence_ids,
+                    evidence_ids=self._visible_evidence_ids(
+                        repository=evidence_repository,
+                        tenant_id=tenant_id,
+                        project_id=project_id,
+                        evidence_ids=item.provenance.evidence_ids,
+                        permissions=permissions,
+                    ),
                     observed_at=item.completed_at,
                 )
             )
@@ -227,7 +242,13 @@ class StatusReportGroundingService:
                     ),
                     entity_type="ActionItem",
                     entity_id=item.id,
-                    evidence_ids=item.provenance.evidence_ids,
+                    evidence_ids=self._visible_evidence_ids(
+                        repository=evidence_repository,
+                        tenant_id=tenant_id,
+                        project_id=project_id,
+                        evidence_ids=item.provenance.evidence_ids,
+                        permissions=permissions,
+                    ),
                     observed_at=item.updated_at,
                 )
             )
@@ -267,7 +288,13 @@ class StatusReportGroundingService:
                     ),
                     entity_type="ActionItem",
                     entity_id=item.id,
-                    evidence_ids=item.provenance.evidence_ids,
+                    evidence_ids=self._visible_evidence_ids(
+                        repository=evidence_repository,
+                        tenant_id=tenant_id,
+                        project_id=project_id,
+                        evidence_ids=item.provenance.evidence_ids,
+                        permissions=permissions,
+                    ),
                     observed_at=item.updated_at,
                 )
             )
@@ -293,7 +320,13 @@ class StatusReportGroundingService:
                     ),
                     entity_type="Risk",
                     entity_id=item.id,
-                    evidence_ids=item.provenance.evidence_ids,
+                    evidence_ids=self._visible_evidence_ids(
+                        repository=evidence_repository,
+                        tenant_id=tenant_id,
+                        project_id=project_id,
+                        evidence_ids=item.provenance.evidence_ids,
+                        permissions=permissions,
+                    ),
                     observed_at=item.updated_at,
                 )
             )
@@ -322,7 +355,13 @@ class StatusReportGroundingService:
                     ),
                     entity_type="Issue",
                     entity_id=item.id,
-                    evidence_ids=item.provenance.evidence_ids,
+                    evidence_ids=self._visible_evidence_ids(
+                        repository=evidence_repository,
+                        tenant_id=tenant_id,
+                        project_id=project_id,
+                        evidence_ids=item.provenance.evidence_ids,
+                        permissions=permissions,
+                    ),
                     observed_at=item.updated_at,
                 )
             )
@@ -363,7 +402,13 @@ class StatusReportGroundingService:
                     ),
                     entity_type="Dependency",
                     entity_id=item.id,
-                    evidence_ids=item.provenance.evidence_ids,
+                    evidence_ids=self._visible_evidence_ids(
+                        repository=evidence_repository,
+                        tenant_id=tenant_id,
+                        project_id=project_id,
+                        evidence_ids=item.provenance.evidence_ids,
+                        permissions=permissions,
+                    ),
                     observed_at=item.updated_at,
                 )
             )
@@ -405,7 +450,13 @@ class StatusReportGroundingService:
                     ),
                     entity_type="Decision",
                     entity_id=item.id,
-                    evidence_ids=item.provenance.evidence_ids,
+                    evidence_ids=self._visible_evidence_ids(
+                        repository=evidence_repository,
+                        tenant_id=tenant_id,
+                        project_id=project_id,
+                        evidence_ids=item.provenance.evidence_ids,
+                        permissions=permissions,
+                    ),
                     observed_at=item.decision_date or item.updated_at,
                 )
             )
@@ -467,6 +518,24 @@ class StatusReportGroundingService:
             trend_score_delta=trend.score_delta,
             facts=facts,
         )
+
+    @staticmethod
+    def _visible_evidence_ids(
+        *,
+        repository,
+        tenant_id: UUID,
+        project_id: UUID,
+        evidence_ids: list[UUID],
+        permissions: set[str],
+    ) -> list[UUID]:
+        visible: list[UUID] = []
+        for evidence_id in evidence_ids:
+            evidence = repository.get_evidence(tenant_id, evidence_id)
+            if evidence is None or evidence.project_id != project_id:
+                continue
+            if set(evidence.permission_scope).issubset(permissions):
+                visible.append(evidence_id)
+        return visible
 
     @staticmethod
     def _aware(value: datetime | None) -> datetime:
