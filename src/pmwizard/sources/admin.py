@@ -270,9 +270,22 @@ class SourceConnectionAdminService:
                         "max_file_bytes": config.max_file_bytes,
                     },
                 )
-        except (ValidationError, TypeError, ValueError) as exc:
+        except ValidationError as exc:
+            fields = sorted(
+                {
+                    str(error["loc"][-1])
+                    for error in exc.errors(include_input=False)
+                    if error.get("loc")
+                }
+            )
+            field_text = ", ".join(fields) if fields else "connector fields"
             raise ValueError(
-                f"Invalid safe configuration for {source_system}: {exc}"
+                f"Invalid safe configuration for {source_system}; "
+                f"check: {field_text}."
+            ) from exc
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"Invalid safe configuration for {source_system}."
             ) from exc
 
         raise ValueError(
