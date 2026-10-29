@@ -1045,3 +1045,36 @@ The rollup never counts or infers the existence of Projects outside the authenti
 Rollup Health averages only reliably scored Projects and separately reports average assessment coverage. Coverage below 35% forces the rollup band to `insufficient_data` even when a provisional numeric average exists.
 
 Cross-project RAID V0 is deliberately conservative: only exact normalized active titles repeated across at least two authorized Projects are surfaced. Semantic relationship discovery remains deferred and should enter through governed AI proposals rather than hidden inference.
+
+
+## Executive Dashboard V0
+
+Executive Dashboard is a composition layer over existing authorized read models:
+
+```text
+Authenticated User
+       ↓
+ProjectMembership(project:read)
+       ↓
+authorized Projects only
+       ├─ Program / Portfolio Intelligence
+       ├─ ProjectInboxService (Evidence permission aware)
+       ├─ ProjectMemoryQueryService
+       └─ SourcesWorkspaceService
+       ↓
+ExecutiveDashboardService
+       ↓
+GET /v1/executive/dashboard
+       ↓
+Next.js /api/executive/dashboard
+       ↓
+Executive Dashboard
+```
+
+The dashboard does not persist executive state and does not use generated narrative as project truth.
+
+Critical RAID rules are deterministic. Pending Decisions come from governed Project Memory. Inbox workload is derived through the same Evidence authorization path as Project Inbox. Source alerts reuse the existing operational health model.
+
+Trusted-header compatibility mode is deliberately unavailable for the cross-project endpoint because complete ProjectMembership resolution is required to prevent tenant enumeration.
+
+The authenticated Web application opens Executive Dashboard by default, with actionable rows routing users into Project Health, Inbox, Memory, or Sources.
