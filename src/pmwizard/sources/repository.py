@@ -222,8 +222,6 @@ class SourceRepository:
             self.session.scalars(
                 select(SourceConnectionORM)
                 .where(
-                    SourceConnectionORM.is_enabled.is_(True),
-                    SourceConnectionORM.credential_ref.is_not(None),
                     SourceConnectionORM.test_requested_at.is_not(None),
                     or_(
                         SourceConnectionORM.last_test_at.is_(None),
