@@ -350,9 +350,13 @@ class AutomationRepository:
             trigger=row.trigger,
             status=row.status,
             worker_id=row.worker_id,
-            scheduled_for=row.scheduled_for,
-            started_at=row.started_at,
-            finished_at=row.finished_at,
+            scheduled_for=AutomationRepository._aware(row.scheduled_for),
+            started_at=AutomationRepository._aware(row.started_at),
+            finished_at=(
+                AutomationRepository._aware(row.finished_at)
+                if row.finished_at is not None
+                else None
+            ),
             summary=row.summary,
             error_message=row.error_message,
         )
