@@ -41,6 +41,7 @@ class StatusReportGeneratorService:
         tenant_id: UUID,
         project_id: UUID,
         command: StatusReportRequest,
+        permissions: set[str],
         as_of: datetime | None = None,
     ) -> StatusReportDraft:
         timestamp = as_of or datetime.now(timezone.utc)
@@ -48,6 +49,7 @@ class StatusReportGeneratorService:
             tenant_id=tenant_id,
             project_id=project_id,
             lookback_days=command.lookback_days,
+            permissions=permissions,
             as_of=timestamp,
         )
 
