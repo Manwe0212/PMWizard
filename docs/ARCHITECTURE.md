@@ -1155,3 +1155,37 @@ python -m pmwizard.automation.worker --once
 ```
 
 Automation observes and computes governed state; it does not accept Inbox suggestions or perform external write-back.
+
+
+## Secure Source Runtime + Scheduled Source Sync V0
+
+Production Source execution now separates safe persisted connection metadata from runtime credentials:
+
+```text
+SourceConnection
+  ├─ safe_config
+  ├─ connector_key
+  └─ credential_ref
+          ↓
+Automation Worker
+          ↓
+SecretProvider
+          ↓
+runtime-only Microsoft Graph credential
+          ↓
+SourceRuntimeResolver
+          ↓
+Graph connector with original connector_key
+          ↓
+durable ConnectorRunner
+```
+
+`credential_ref` stores only an opaque pointer. The first resolver accepts `env:ALIAS` and can read only the `PMWIZARD_SECRET_ALIAS` namespace.
+
+The Sources API exposes only `credential_configured`, not the reference. This keeps internal secret naming and all secret values outside the ordinary Project read model.
+
+The runtime supports bearer-token material for externally managed/local use and Microsoft Entra client credentials for app-only Graph execution. Entra access tokens are memory-only.
+
+Automation adds `source_sync`. Its persisted config contains only `source_connection_id`. Schedule creation verifies same-project ownership, enabled state, and credential readiness.
+
+At execution time the worker resolves the Source, reconstructs Mail or SharePoint with the exact persisted connector key, and reuses existing durable checkpoint + telemetry infrastructure. This preserves delta resume across worker restarts and prevents logical duplicate connections.
