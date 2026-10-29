@@ -45,10 +45,11 @@ Initial work will focus on:
 - [`docs/PROGRAM_PORTFOLIO_INTELLIGENCE.md`](docs/PROGRAM_PORTFOLIO_INTELLIGENCE.md) — authorized Program/Portfolio rollups, attention ranking, and cross-project signals
 - [`docs/EXECUTIVE_DASHBOARD.md`](docs/EXECUTIVE_DASHBOARD.md) — authenticated executive landing view for Health, Inbox, RAID, Decisions, Sources, and cross-project attention
 - [`docs/AI_STATUS_REPORTS.md`](docs/AI_STATUS_REPORTS.md) — grounded structured AI drafting with fact citations, validation, and provider abstraction
+- [`docs/AUTOMATION_SCHEDULER.md`](docs/AUTOMATION_SCHEDULER.md) — durable interval scheduling, leases, worker execution, run history, and automated Health snapshots
 
 ## Project status
 
-PMWizard now has an executive cross-project command center and is implementing **AI Status Report Generator V0** so governed Project Memory, deterministic Health, captured Trends, and Source telemetry can produce fact-cited human-reviewable status drafts.
+PMWizard now has grounded AI status-report drafting and is implementing **Automation & Scheduler V0** so recurring intelligence work can run durably through PostgreSQL-backed schedules, expiring worker leases, and persisted execution history.
 
 ## Local development
 
@@ -61,6 +62,9 @@ pytest -q
 
 # API (requires PMWIZARD_DATABASE_URL + PMWIZARD_AUTH_SECRET)
 uvicorn pmwizard.api.app:create_default_app --factory --reload
+
+# Automation worker
+python -m pmwizard.automation.worker
 ```
 
 The test suite uses SQLite for fast domain/persistence tests, while CI also validates the Alembic migration against PostgreSQL 16.
