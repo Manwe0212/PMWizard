@@ -114,6 +114,7 @@ class SourceRuntimeResolver:
                     ),
                 ),
                 transport,
+                connector_key_override=row.connector_key,
             )
 
         if row.source_system == "microsoft_graph_sharepoint":
@@ -152,6 +153,7 @@ class SourceRuntimeResolver:
                     ),
                 ),
                 transport,
+                connector_key_override=row.connector_key,
             )
 
         raise SourceRuntimeError(
