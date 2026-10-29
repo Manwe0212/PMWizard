@@ -392,7 +392,7 @@ function SourceDetail({
               Credential alias
               <input
                 value={credentialRef}
-                onChange={(event) => setCredentialRef(event.target.value.toUpperCase())}
+                onChange={(event) => setCredentialRef(event.target.value)}
                 placeholder="env:GRAPH_PROJECT_A"
                 disabled={credentialBusy}
               />
