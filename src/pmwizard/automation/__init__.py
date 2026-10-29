@@ -17,7 +17,6 @@ from .schemas import (
     UpdateAutomationScheduleRequest,
 )
 from .service import AutomationScheduleService
-from .worker import AutomationWorker
 
 __all__ = [
     "AutomationClaim",
@@ -32,7 +31,6 @@ __all__ = [
     "AutomationsWorkspaceSnapshot",
     "AutomationTaskType",
     "AutomationTrigger",
-    "AutomationWorker",
     "CreateAutomationScheduleRequest",
     "HealthSnapshotAutomationHandler",
     "RunNowResponse",
