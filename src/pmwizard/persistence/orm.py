@@ -127,6 +127,13 @@ class SourceConnectionORM(Base, TimestampMixin, TenantMixin):
     safe_config: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
     credential_ref: Mapped[str | None] = mapped_column(String(255))
     is_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    test_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    test_requested_by: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True))
+    test_lease_owner: Mapped[str | None] = mapped_column(String(255))
+    test_lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_test_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_test_status: Mapped[str | None] = mapped_column(String(50))
+    last_test_message: Mapped[str | None] = mapped_column(Text)
 
 
 class ConnectorCheckpointORM(Base, TimestampMixin, TenantMixin):
