@@ -2,7 +2,7 @@
 
 from .contracts import AutomationClaim, AutomationHandler
 from .executor import AutomationExecutor
-from .handlers import HealthSnapshotAutomationHandler
+from .handlers import HealthSnapshotAutomationHandler, SourceSyncAutomationHandler
 from .repository import AutomationRepository
 from .schemas import (
     AutomationRunStatus,
@@ -34,5 +34,6 @@ __all__ = [
     "CreateAutomationScheduleRequest",
     "HealthSnapshotAutomationHandler",
     "RunNowResponse",
+    "SourceSyncAutomationHandler",
     "UpdateAutomationScheduleRequest",
 ]
