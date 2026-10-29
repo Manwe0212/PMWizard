@@ -25,7 +25,7 @@ from pmwizard.models import Project
 from pmwizard.persistence import Base, ProjectMemoryService
 
 
-NOW = datetime(2026, 10, 29, 22, 0, tzinfo=timezone.utc)
+NOW = datetime.now(timezone.utc).replace(microsecond=0)
 
 
 @pytest.fixture()
