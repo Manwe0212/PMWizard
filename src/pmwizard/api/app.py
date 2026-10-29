@@ -16,6 +16,11 @@ from pmwizard.auth import (
     AuthService,
     AuthSettings,
 )
+from pmwizard.ai import (
+    AIProviderError,
+    OpenAIResponsesProvider,
+    StructuredGenerationProvider,
+)
 from pmwizard.auth.schemas import (
     LoginRequest,
     LoginResponse,
@@ -47,6 +52,12 @@ from pmwizard.portfolio import (
     ProgramPortfolioIntelligenceService,
     ProgramPortfolioOverview,
 )
+from pmwizard.reports import (
+    StatusReportDraft,
+    StatusReportGeneratorService,
+    StatusReportRequest,
+    UngroundedStatusReportError,
+)
 from pmwizard.sources import SourcesWorkspaceService, SourcesWorkspaceSnapshot
 
 from .context import ApiPrincipal
@@ -60,6 +71,7 @@ def create_app(
     *,
     auth_settings: AuthSettings | None = None,
     allow_trusted_headers: bool = False,
+    status_report_provider: StructuredGenerationProvider | None = None,
 ) -> FastAPI:
     app = FastAPI(
         title="PMWizard API",
@@ -290,6 +302,54 @@ def create_app(
             tenant_id=principal.tenant_id,
             authorized_project_ids=authorized_project_ids,
         )
+
+    @app.post(
+        "/v1/projects/{project_id}/status-report/draft",
+        response_model=StatusReportDraft,
+    )
+    def generate_project_status_report(
+        project_id: UUID,
+        command: StatusReportRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> StatusReportDraft:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+
+        if status_report_provider is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="AI status-report provider is not configured.",
+            )
+
+        try:
+            return StatusReportGeneratorService(
+                session,
+                status_report_provider,
+            ).generate(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except UngroundedStatusReportError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=(
+                    "AI status-report output failed grounding validation: "
+                    f"{exc}"
+                ),
+            ) from exc
+        except AIProviderError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"AI status-report provider failed: {exc}",
+            ) from exc
 
     @app.get(
         "/v1/projects/{project_id}/health/history",
@@ -534,9 +594,32 @@ def create_default_app() -> FastAPI:
         ),
     )
 
+    status_report_provider: StructuredGenerationProvider | None = None
+    ai_provider = os.getenv("PMWIZARD_AI_PROVIDER", "").strip().casefold()
+    if ai_provider:
+        if ai_provider != "openai":
+            raise RuntimeError(
+                "PMWIZARD_AI_PROVIDER must be 'openai' when configured."
+            )
+        api_key = os.getenv("OPENAI_API_KEY", "").strip()
+        model = os.getenv("PMWIZARD_AI_MODEL", "").strip()
+        if not api_key:
+            raise RuntimeError(
+                "OPENAI_API_KEY is required when PMWIZARD_AI_PROVIDER=openai."
+            )
+        if not model:
+            raise RuntimeError(
+                "PMWIZARD_AI_MODEL is required when PMWIZARD_AI_PROVIDER=openai."
+            )
+        status_report_provider = OpenAIResponsesProvider(
+            api_key=api_key,
+            model=model,
+        )
+
     engine = create_engine_from_url(database_url)
     return create_app(
         create_session_factory(engine),
         auth_settings=auth_settings,
         allow_trusted_headers=False,
+        status_report_provider=status_report_provider,
     )
