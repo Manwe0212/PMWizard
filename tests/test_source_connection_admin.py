@@ -182,6 +182,7 @@ def test_create_source_rejects_secret_material_in_safe_config(admin_env) -> None
 
     assert response.status_code == 422
     assert "access_token" in response.json()["detail"]
+    assert "must-never-be-accepted" not in response.text
 
     with admin_env() as session:
         rows = session.scalars(select(SourceConnectionORM)).all()
