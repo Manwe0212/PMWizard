@@ -12,9 +12,13 @@ from uuid import uuid4
 from sqlalchemy.orm import sessionmaker
 
 from pmwizard.persistence import create_engine_from_url, create_session_factory
+from pmwizard.security import EnvironmentSecretProvider, SecretProvider
 
 from .executor import AutomationExecutor
-from .handlers import HealthSnapshotAutomationHandler
+from .handlers import (
+    HealthSnapshotAutomationHandler,
+    SourceSyncAutomationHandler,
+)
 from .repository import AutomationRepository
 
 
@@ -26,6 +30,8 @@ class AutomationWorker:
         worker_id: str,
         lease_seconds: int = 300,
         batch_size: int = 10,
+        secret_provider: SecretProvider | None = None,
+        graph_transport_factory=None,
     ) -> None:
         if lease_seconds < 30:
             raise ValueError("lease_seconds must be at least 30")
@@ -36,6 +42,8 @@ class AutomationWorker:
         self.worker_id = worker_id
         self.lease_seconds = lease_seconds
         self.batch_size = batch_size
+        self.secret_provider = secret_provider
+        self.graph_transport_factory = graph_transport_factory
 
     def run_once(
         self,
@@ -54,9 +62,17 @@ class AutomationWorker:
         results = []
         for claim in claims:
             with self.session_factory() as session:
+                handlers = [HealthSnapshotAutomationHandler()]
+                if self.secret_provider is not None:
+                    handlers.append(
+                        SourceSyncAutomationHandler(
+                            self.secret_provider,
+                            graph_transport_factory=self.graph_transport_factory,
+                        )
+                    )
                 result = AutomationExecutor(
                     session,
-                    handlers=[HealthSnapshotAutomationHandler()],
+                    handlers=handlers,
                 ).execute(
                     claim=claim,
                     worker_id=self.worker_id,
@@ -109,6 +125,7 @@ def main() -> None:
         worker_id=_worker_id(),
         lease_seconds=lease_seconds,
         batch_size=batch_size,
+        secret_provider=EnvironmentSecretProvider(),
     )
 
     if args.once:
