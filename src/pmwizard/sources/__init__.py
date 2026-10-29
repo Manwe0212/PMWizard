@@ -6,12 +6,17 @@ from .repository import SourceRepository, checkpoint_fingerprint
 from .runtime import SourceRuntimeError, SourceRuntimeResolver
 from .schemas import (
     BindSourceCredentialRequest,
+    CreateSourceConnectionRequest,
+    SourceConnectionTestResponse,
+    SourceConnectionTestStatus,
+    SourceConnectionTestView,
     SourceConnectionView,
     SourceCredentialStatus,
     SourceHealthStatus,
     SourceRunView,
     SourcesSummary,
     SourcesWorkspaceSnapshot,
+    UpdateSourceConnectionRequest,
 )
 from .test_worker import SourceConnectionTestWorker
 from .service import (
@@ -22,8 +27,12 @@ from .service import (
 
 __all__ = [
     "BindSourceCredentialRequest",
+    "CreateSourceConnectionRequest",
     "SourceConnectionAdminService",
     "SourceConnectionTestWorker",
+    "SourceConnectionTestResponse",
+    "SourceConnectionTestStatus",
+    "SourceConnectionTestView",
     "SourceConnectionView",
     "SourceCredentialService",
     "SourceCredentialStatus",
@@ -36,6 +45,7 @@ __all__ = [
     "SourcesSummary",
     "SourcesWorkspaceService",
     "SourcesWorkspaceSnapshot",
+    "UpdateSourceConnectionRequest",
     "checkpoint_fingerprint",
     "create_durable_connector_runner",
 ]
