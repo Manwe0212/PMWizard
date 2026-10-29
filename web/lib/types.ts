@@ -554,3 +554,62 @@ export interface StatusReportDraft {
   validation: StatusReportValidation;
   disclaimer: string;
 }
+
+
+export type AutomationTaskType = "health_snapshot";
+export type AutomationRunStatus =
+  | "running"
+  | "success"
+  | "failed"
+  | "abandoned";
+export type AutomationTrigger = "scheduled" | "manual";
+
+export interface AutomationRunView {
+  id: string;
+  schedule_id: string;
+  project_id: string;
+  task_type: AutomationTaskType;
+  trigger: AutomationTrigger;
+  status: AutomationRunStatus;
+  worker_id: string;
+  scheduled_for: string;
+  started_at: string;
+  finished_at: string | null;
+  summary: Record<string, unknown>;
+  error_message: string | null;
+}
+
+export interface AutomationScheduleView {
+  id: string;
+  project_id: string;
+  name: string;
+  task_type: AutomationTaskType;
+  interval_minutes: number;
+  enabled: boolean;
+  config: Record<string, unknown>;
+  next_run_at: string;
+  pending_trigger: AutomationTrigger;
+  last_run_at: string | null;
+  last_status: AutomationRunStatus | null;
+  consecutive_failures: number;
+  created_by: string | null;
+  running: boolean;
+  created_at: string;
+  updated_at: string;
+  recent_runs: AutomationRunView[];
+}
+
+export interface AutomationsSummary {
+  total: number;
+  enabled: number;
+  running: number;
+  failing: number;
+  due_now: number;
+}
+
+export interface AutomationsWorkspaceSnapshot {
+  project_id: string;
+  generated_at: string;
+  summary: AutomationsSummary;
+  schedules: AutomationScheduleView[];
+}
