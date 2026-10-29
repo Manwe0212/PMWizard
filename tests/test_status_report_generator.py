@@ -26,6 +26,7 @@ from pmwizard.models.enums import (
     SuggestionType,
 )
 from pmwizard.persistence import Base, ProjectMemoryService
+from pmwizard.persistence.orm import DecisionORM, RiskORM
 from pmwizard.reports import (
     ReportStatement,
     StatusReportAudience,
@@ -121,26 +122,36 @@ def _seed(factory):
                 progress_summary="Checklist is under review.",
             ),
         )
-        memory.add_risk(
-            tenant_id,
-            Risk(
-                project_id=project.id,
-                title="Vendor capacity",
-                status=RiskStatus.MITIGATING,
-                impact="high",
-                mitigation="Confirm secondary implementation window.",
-            ),
+        session.add_all(
+            [
+                RiskORM(
+                    id=uuid4(),
+                    tenant_id=tenant_id,
+                    project_id=project.id,
+                    title="Vendor capacity",
+                    status=RiskStatus.MITIGATING.value,
+                    impact="high",
+                    mitigation="Confirm secondary implementation window.",
+                    provenance={},
+                    created_at=NOW,
+                    updated_at=NOW,
+                ),
+                DecisionORM(
+                    id=uuid4(),
+                    tenant_id=tenant_id,
+                    project_id=project.id,
+                    title="Approve rollout date",
+                    status=DecisionStatus.PENDING.value,
+                    review_date=date(2026, 10, 31),
+                    expected_impact="Controls production launch timing.",
+                    alternatives_considered=[],
+                    provenance={},
+                    created_at=NOW,
+                    updated_at=NOW,
+                ),
+            ]
         )
-        memory.add_decision(
-            tenant_id,
-            Decision(
-                project_id=project.id,
-                title="Approve rollout date",
-                status=DecisionStatus.PENDING,
-                review_date=date(2026, 10, 31),
-                expected_impact="Controls production launch timing.",
-            ),
-        )
+        session.commit()
 
         evidence = memory.add_evidence(
             tenant_id,
