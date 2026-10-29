@@ -36,9 +36,10 @@ Stores safe, non-secret metadata for one project-scoped connector configuration:
 - display name;
 - permission scopes;
 - safe configuration metadata;
+- opaque runtime credential reference;
 - enabled flag.
 
-OAuth access tokens, refresh tokens, client secrets, and passwords must never be stored here.
+The credential reference is not secret material and is not returned by the Sources read API. OAuth access tokens, refresh tokens, client secrets, and passwords must never be stored here.
 
 ### connector_checkpoints
 
@@ -118,7 +119,16 @@ GET /v1/projects/{project_id}/sources
 
 The endpoint requires authenticated project membership and `project:read`.
 
-Response includes project-scoped source connections, health, checkpoint metadata, latest run, and up to five recent runs.
+Response includes project-scoped source connections, health, checkpoint metadata, latest run, up to five recent runs, and only a boolean `credential_configured` readiness signal.
+
+Credential bindings are managed through:
+
+```text
+PUT    /v1/projects/{project_id}/sources/{source_connection_id}/credential
+DELETE /v1/projects/{project_id}/sources/{source_connection_id}/credential
+```
+
+These mutations require `project:review`.
 
 ## Health semantics
 
@@ -152,7 +162,8 @@ Sources Web V0 includes:
 - sanitized errors and skips;
 - safe connector configuration;
 - checkpoint fingerprint;
-- recent run history.
+- recent run history;
+- secure runtime credential readiness/binding.
 
 The browser calls the Next.js BFF:
 
@@ -166,6 +177,7 @@ The BFF supplies the HttpOnly Bearer session and selected project server-side.
 
 Sources Workspace intentionally does not expose:
 
+- credential reference names after binding;
 - OAuth tokens;
 - refresh tokens;
 - passwords;
@@ -179,14 +191,13 @@ Database backups and the connector checkpoint table still require normal product
 
 V0 still defers:
 
-- connector configuration UI;
+- full Source connection creation wizard;
 - enable/disable mutation API;
-- manual "Sync now";
-- scheduler/work queue;
-- retries with exponential backoff;
+- source-specific retries with exponential backoff;
 - rate-limit handling;
 - webhook subscriptions;
-- provider credential persistence/refresh;
+- delegated OAuth refresh-token lifecycle;
+- cloud secret-manager adapters;
 - alert notifications;
 - source SLAs;
 - long-term telemetry aggregation.
