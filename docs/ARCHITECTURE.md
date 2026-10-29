@@ -1189,3 +1189,44 @@ The runtime supports bearer-token material for externally managed/local use and 
 Automation adds `source_sync`. Its persisted config contains only `source_connection_id`. Schedule creation verifies same-project ownership, enabled state, and credential readiness.
 
 At execution time the worker resolves the Source, reconstructs Mail or SharePoint with the exact persisted connector key, and reuses existing durable checkpoint + telemetry infrastructure. This preserves delta resume across worker restarts and prevents logical duplicate connections.
+
+
+## Source Connection Administration V0
+
+Source configuration now has an explicit governed mutation path:
+
+```text
+Authorized reviewer
+      ↓
+Source Admin API
+      ↓
+validated connector config
+      ↓
+source_connections
+```
+
+New Sources use immutable UUID-based connector keys so display-name edits do not fragment checkpoints or telemetry.
+
+When safe stream configuration changes, the current durable checkpoint is intentionally invalidated while connector run history is retained.
+
+Connection tests preserve the worker-only secret boundary:
+
+```text
+API queues test
+   ↓
+SourceConnection.test_requested_at
+   ↓
+Automation Worker
+   ↓
+SourceConnectionTestWorker
+   ↓ expiring lease
+SourceRuntimeResolver
+   ↓
+SecretProvider
+   ↓
+connector.test_connection()
+```
+
+The API never resolves provider credentials to perform a connection test.
+
+Disabling a Source also pauses enabled `source_sync` schedules that reference that Source. Re-enabling does not automatically resume them.
