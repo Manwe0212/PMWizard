@@ -47,7 +47,7 @@ class AutomationScheduleService:
             tenant_id=tenant_id,
             project_id=project_id,
             task_type=command.task_type,
-            config=config,
+            config=command.config,
         )
         row = self.repository.create_schedule(
             tenant_id=tenant_id,
