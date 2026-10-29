@@ -20,7 +20,10 @@ from pmwizard.automation import (
     CreateAutomationScheduleRequest,
 )
 from pmwizard.automation.worker import AutomationWorker
-from pmwizard.connectors import ConnectorDescriptor
+from pmwizard.connectors import (
+    ConnectorDescriptor,
+    MicrosoftGraphSharePointConnector,
+)
 from pmwizard.models import Project
 from pmwizard.persistence import Base, ProjectMemoryService
 from pmwizard.persistence.orm import (
@@ -307,11 +310,84 @@ def test_source_runtime_reconstructs_mail_connector_from_safe_metadata(
             limit=100,
         )
 
-    assert connector.connector_key == "microsoft-graph-mail:Project Inbox:v0"
+    assert connector.connector_key == "microsoft-graph-mail:project-inbox:v0"
     assert len(page.records) == 1
     assert page.records[0].external_id == "msg-1"
     assert page.next_cursor == "https://graph.test/delta/1"
     assert state["tokens"] == ["runtime-token"]
+
+
+def test_source_runtime_reconstructs_sharepoint_without_persisting_secret(
+    runtime_env,
+    monkeypatch,
+) -> None:
+    tenant_id = uuid4()
+    with runtime_env() as session:
+        project = ProjectMemoryService(session).create_project(
+            tenant_id,
+            Project(name="SharePoint Runtime"),
+        )
+        SourceTelemetryService(session).register_connection(
+            tenant_id=tenant_id,
+            project_id=project.id,
+            connector_key="microsoft-graph-sharepoint:delivery-docs:v0",
+            descriptor=ConnectorDescriptor(
+                source_type="document",
+                source_system="microsoft_graph_sharepoint",
+                display_name="Delivery Docs",
+                permission_scope=["project:read", "source:sharepoint"],
+                safe_config={
+                    "drive_id": "drive-123",
+                    "initial_sync_mode": "latest",
+                    "supported_extensions": [".docx", ".txt"],
+                    "max_file_bytes": 1048576,
+                },
+            ),
+        )
+        source = session.scalar(
+            select(SourceConnectionORM).where(
+                SourceConnectionORM.tenant_id == tenant_id,
+                SourceConnectionORM.project_id == project.id,
+            )
+        )
+        assert source is not None
+        source_id = source.id
+
+        SourceCredentialService(session).bind(
+            tenant_id=tenant_id,
+            project_id=project.id,
+            source_connection_id=source_id,
+            command=BindSourceCredentialRequest(
+                credential_ref="env:SHAREPOINT_GRAPH"
+            ),
+        )
+
+    monkeypatch.setenv(
+        "PMWIZARD_SECRET_SHAREPOINT_GRAPH",
+        '{"kind":"bearer_token","access_token":"sharepoint-runtime-token"}',
+    )
+    state: dict = {}
+
+    with runtime_env() as session:
+        connector = SourceRuntimeResolver(
+            session,
+            EnvironmentSecretProvider(),
+            graph_transport_factory=lambda token_provider: FakeGraphTransport(
+                token_provider,
+                state,
+            ),
+        ).resolve(
+            tenant_id=tenant_id,
+            project_id=project.id,
+            source_connection_id=source_id,
+        )
+
+    assert isinstance(connector, MicrosoftGraphSharePointConnector)
+    assert connector.connector_key == (
+        "microsoft-graph-sharepoint:delivery-docs:v0"
+    )
+    assert connector.config.connection_name == "Delivery Docs"
+    assert connector.config.drive_id == "drive-123"
 
 
 def test_source_sync_schedule_requires_bound_enabled_source(runtime_env) -> None:
