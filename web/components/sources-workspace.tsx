@@ -49,7 +49,7 @@ async function loadSources(): Promise<SourcesWorkspaceSnapshot> {
   return payload as SourcesWorkspaceSnapshot;
 }
 
-export function SourcesWorkspace() {
+export function SourcesWorkspace({ canManage }: { canManage: boolean }) {
   const [snapshot, setSnapshot] = useState<SourcesWorkspaceSnapshot | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -200,7 +200,13 @@ export function SourcesWorkspace() {
           </div>
 
           <div className="sourceDetail">
-            {selected && <SourceDetail source={selected} />}
+            {selected && (
+              <SourceDetail
+                source={selected}
+                canManage={canManage}
+                onChanged={load}
+              />
+            )}
           </div>
         </div>
       )}
@@ -208,10 +214,11 @@ export function SourcesWorkspace() {
       <div className="sourceSecurityNote">
         <span>⌁</span>
         <div>
-          <strong>Checkpoint privacy</strong>
+          <strong>Runtime secret boundary</strong>
           <p>
-            Raw provider cursors are stored only for resuming incremental sync.
-            This workspace exposes only a short fingerprint and timestamp.
+            Raw provider cursors remain redacted, and credentials are resolved only by
+            the worker from PMWIZARD_SECRET_* variables. The API exposes only whether
+            a binding is configured.
           </p>
         </div>
       </div>
@@ -236,8 +243,83 @@ function SourceMetric({
   );
 }
 
-function SourceDetail({ source }: { source: SourceConnectionView }) {
+function SourceDetail({
+  source,
+  canManage,
+  onChanged,
+}: {
+  source: SourceConnectionView;
+  canManage: boolean;
+  onChanged: () => Promise<void>;
+}) {
   const latest = source.latest_run;
+  const [credentialRef, setCredentialRef] = useState("");
+  const [credentialBusy, setCredentialBusy] = useState(false);
+  const [credentialError, setCredentialError] = useState<string | null>(null);
+
+  async function bindCredential() {
+    if (!canManage || !credentialRef.trim()) return;
+    setCredentialBusy(true);
+    setCredentialError(null);
+    try {
+      const response = await fetch(
+        `/api/sources/${encodeURIComponent(source.id)}/credential`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential_ref: credentialRef.trim() }),
+        },
+      );
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          typeof payload?.detail === "string"
+            ? payload.detail
+            : `Credential binding failed (${response.status})`,
+        );
+      }
+      setCredentialRef("");
+      await onChanged();
+    } catch (requestError) {
+      setCredentialError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to bind runtime credential.",
+      );
+    } finally {
+      setCredentialBusy(false);
+    }
+  }
+
+  async function clearCredential() {
+    if (!canManage) return;
+    setCredentialBusy(true);
+    setCredentialError(null);
+    try {
+      const response = await fetch(
+        `/api/sources/${encodeURIComponent(source.id)}/credential`,
+        { method: "DELETE" },
+      );
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          typeof payload?.detail === "string"
+            ? payload.detail
+            : `Credential clear failed (${response.status})`,
+        );
+      }
+      setCredentialRef("");
+      await onChanged();
+    } catch (requestError) {
+      setCredentialError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to clear runtime credential.",
+      );
+    } finally {
+      setCredentialBusy(false);
+    }
+  }
 
   return (
     <>
@@ -280,7 +362,78 @@ function SourceDetail({ source }: { source: SourceConnectionView }) {
           <span>Enabled</span>
           <strong>{source.is_enabled ? "Yes" : "No"}</strong>
         </div>
+        <div>
+          <span>Runtime credential</span>
+          <strong>{source.credential_configured ? "Configured" : "Not configured"}</strong>
+        </div>
       </div>
+
+      <section className="sourceSection sourceCredentialSection">
+        <div className="sourceSectionTitle">
+          <div>
+            <h4>Secure runtime credential</h4>
+            <p>
+              Store only an alias in PMWizard. The actual JSON credential stays in a
+              PMWIZARD_SECRET_* environment variable available to the worker.
+            </p>
+          </div>
+          <span
+            className={`sourceHealth ${
+              source.credential_configured ? "healthy" : "never_synced"
+            }`}
+          >
+            {source.credential_configured ? "configured" : "required for scheduled sync"}
+          </span>
+        </div>
+
+        {canManage ? (
+          <div className="sourceCredentialControls">
+            <label>
+              Credential alias
+              <input
+                value={credentialRef}
+                onChange={(event) => setCredentialRef(event.target.value.toUpperCase())}
+                placeholder="env:GRAPH_PROJECT_A"
+                disabled={credentialBusy}
+              />
+            </label>
+            <button
+              className="primaryButton"
+              type="button"
+              disabled={credentialBusy || !credentialRef.trim()}
+              onClick={() => void bindCredential()}
+            >
+              {credentialBusy ? "Saving…" : source.credential_configured ? "Replace binding" : "Bind credential"}
+            </button>
+            {source.credential_configured && (
+              <button
+                className="dangerButton"
+                type="button"
+                disabled={credentialBusy}
+                onClick={() => void clearCredential()}
+              >
+                Clear binding
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="mutedInline">
+            Project review permission is required to manage the runtime credential binding.
+          </p>
+        )}
+
+        {credentialError && (
+          <div className="runIssues error">
+            <strong>Credential binding error</strong>
+            <p>{credentialError}</p>
+          </div>
+        )}
+
+        <div className="sourceCredentialHint">
+          Example runtime variable: <code>PMWIZARD_SECRET_GRAPH_PROJECT_A</code>.
+          PMWizard never returns the stored alias or secret value in this workspace.
+        </div>
+      </section>
 
       <section className="sourceSection">
         <div className="sourceSectionTitle">
