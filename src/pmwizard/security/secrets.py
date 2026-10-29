@@ -37,7 +37,7 @@ class EnvironmentSecretProvider:
         value = os.getenv(variable)
         if value is None or not value.strip():
             raise SecretResolutionError(
-                f"Secret reference {reference!r} is not configured."
+                "Referenced runtime secret is not configured."
             )
         return value
 
