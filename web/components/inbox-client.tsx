@@ -7,6 +7,7 @@ import { HealthWorkspace } from "@/components/health-workspace";
 import { MemoryWorkspace } from "@/components/memory-workspace";
 import { PortfolioWorkspace } from "@/components/portfolio-workspace";
 import { SourcesWorkspace } from "@/components/sources-workspace";
+import { StatusReportWorkspace } from "@/components/status-report-workspace";
 import type {
   InboxListResponse,
   InboxSuggestionDetail,
@@ -104,7 +105,7 @@ export function InboxClient({
   const [editSummary, setEditSummary] = useState("");
   const [reviewerNote, setReviewerNote] = useState("");
   const [activeView, setActiveView] = useState<
-    "executive" | "portfolio" | "health" | "inbox" | "memory" | "sources"
+    "executive" | "portfolio" | "health" | "reports" | "inbox" | "memory" | "sources"
   >("executive");
 
   const loadInbox = useCallback(async () => {
@@ -281,6 +282,14 @@ export function InboxClient({
               Project Health
             </button>
             <button
+              className={`navItem ${activeView === "reports" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("reports")}
+            >
+              <span className="navIcon">✦</span>
+              Status Reports
+            </button>
+            <button
               className={`navItem ${activeView === "inbox" ? "active" : ""}`}
               type="button"
               onClick={() => setActiveView("inbox")}
@@ -334,8 +343,10 @@ export function InboxClient({
                   ? "Program & Portfolio"
                   : activeView === "health"
                   ? "Project Health"
-                  : activeView === "inbox"
-                    ? "Project Inbox"
+                  : activeView === "reports"
+                    ? "Status Reports"
+                    : activeView === "inbox"
+                      ? "Project Inbox"
                     : activeView === "memory"
                       ? "Project Memory"
                       : "Sources"}
@@ -347,8 +358,10 @@ export function InboxClient({
                   ? "Roll up authorized project health, trends, hierarchy, and shared signals."
                   : activeView === "health"
                   ? "Understand project health through deterministic, explainable signals."
-                  : activeView === "inbox"
-                    ? "Review evidence-backed updates before they become project truth."
+                  : activeView === "reports"
+                    ? "Generate grounded AI status-report drafts from governed project truth."
+                    : activeView === "inbox"
+                      ? "Review evidence-backed updates before they become project truth."
                     : activeView === "memory"
                       ? "Inspect the governed project truth produced by authorized review."
                       : "Monitor authorized source health, sync history, and ingestion telemetry."}
@@ -423,6 +436,8 @@ export function InboxClient({
           />
         ) : activeView === "health" ? (
           <HealthWorkspace canCapture={canReviewProject} />
+        ) : activeView === "reports" ? (
+          <StatusReportWorkspace canGenerate={canReviewProject} />
         ) : activeView === "inbox" ? (
           <>
           <section className="metrics" aria-label="Inbox summary">
