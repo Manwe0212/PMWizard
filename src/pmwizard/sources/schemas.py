@@ -53,7 +53,7 @@ class SourceConnectionView(BaseModel):
     permission_scope: list[str]
     safe_config: dict[str, Any]
     is_enabled: bool
-    credential_configured: bool
+    credential_configured: bool = False
     health: SourceHealthStatus
     checkpoint_present: bool
     checkpoint_fingerprint: str | None = None
