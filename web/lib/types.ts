@@ -499,3 +499,58 @@ export interface ExecutiveDashboardSnapshot {
   source_alerts: ExecutiveSourceAlert[];
   cross_project_signals: CrossProjectSignal[];
 }
+
+
+export type StatusReportAudience = "executive" | "project_team";
+
+export interface GroundFact {
+  fact_id: string;
+  category: string;
+  text: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  evidence_ids: string[];
+  observed_at: string | null;
+}
+
+export interface ReportStatement {
+  text: string;
+  fact_ids: string[];
+}
+
+export interface StatusReportContent {
+  executive_summary: ReportStatement[];
+  accomplishments: ReportStatement[];
+  risks_and_issues: ReportStatement[];
+  decisions_needed: ReportStatement[];
+  next_steps: ReportStatement[];
+  data_quality_notes: ReportStatement[];
+}
+
+export interface StatusReportValidation {
+  grounded: boolean;
+  statement_count: number;
+  cited_fact_count: number;
+  available_fact_count: number;
+}
+
+export interface StatusReportDraft {
+  project_id: string;
+  project_name: string;
+  title: string;
+  audience: StatusReportAudience;
+  period_start: string;
+  period_end: string;
+  generated_at: string;
+  provider: string;
+  model: string;
+  health_score: number | null;
+  health_band: ProjectHealthBand;
+  health_coverage_percent: number;
+  trend_direction: TrendDirection;
+  trend_score_delta: number | null;
+  content: StatusReportContent;
+  facts: GroundFact[];
+  validation: StatusReportValidation;
+  disclaimer: string;
+}
