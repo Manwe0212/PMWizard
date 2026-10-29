@@ -234,6 +234,7 @@ export interface SourceConnectionView {
   permission_scope: string[];
   safe_config: Record<string, unknown>;
   is_enabled: boolean;
+  credential_configured: boolean;
   health: SourceHealthStatus;
   checkpoint_present: boolean;
   checkpoint_fingerprint: string | null;
@@ -556,7 +557,7 @@ export interface StatusReportDraft {
 }
 
 
-export type AutomationTaskType = "health_snapshot";
+export type AutomationTaskType = "health_snapshot" | "source_sync";
 export type AutomationRunStatus =
   | "running"
   | "success"
