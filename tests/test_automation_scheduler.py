@@ -17,9 +17,9 @@ from pmwizard.automation import (
     AutomationScheduleService,
     AutomationTaskType,
     AutomationTrigger,
-    AutomationWorker,
     CreateAutomationScheduleRequest,
 )
+from pmwizard.automation.worker import AutomationWorker
 from pmwizard.health import ProjectHealthHistoryService
 from pmwizard.models import Project
 from pmwizard.persistence import Base, ProjectMemoryService
