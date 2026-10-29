@@ -213,7 +213,7 @@ def test_update_display_name_preserves_key_but_stream_change_clears_checkpoint(
         )
         key = source.connector_key
 
-        SQLAlchemyCheckpointStore(session).set(
+        SQLAlchemyCheckpointStore(session).set_checkpoint(
             tenant_id=tenant_id,
             project_id=project.id,
             connector_key=key,
