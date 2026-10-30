@@ -55,6 +55,16 @@ Initial work will focus on:
 
 PMWizard now includes governed Project Memory, deterministic Health, portfolio intelligence, human-reviewed AI suggestions, an Attention Center, Email/Teams notification delivery, an auditable Activity Timeline, and redacted CSV/JSON activity exports. PR #25 adds an explicitly gated **synthetic local demo** for reproducible first-run testing without real client data. These features are MVP modules, not a production-ready hosted service.
 
+## Create your first project (PR #27)
+
+Once you have a PMWizard login, select **+ New project** from the project
+picker or the authenticated workspace. Enter its name and optionally its
+objective, methodology and schedule. The project is created within your
+authenticated tenant, you receive read/human-review access, and PMWizard
+records the creation in its audit timeline. No synthetic project seed is needed.
+See [`docs/PROJECT_ONBOARDING.md`](docs/PROJECT_ONBOARDING.md) for the API,
+permissions, limits, and remaining multi-user onboarding work.
+
 ## Containerized local demo (PR #26)
 
 To launch an isolated **synthetic PMWizard demo** with PostgreSQL, migrations,
