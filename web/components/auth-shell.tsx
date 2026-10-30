@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 import { InboxClient } from "@/components/inbox-client";
+import { ProjectCreation, type CreateProjectValues } from "@/components/project-creation";
 import type { ProjectAccess, WebSession } from "@/lib/types";
 
 async function jsonRequest<T>(
@@ -27,6 +28,7 @@ export function AuthShell() {
   const [loading, setLoading] = useState(true);
   const [authenticating, setAuthenticating] = useState(false);
   const [selecting, setSelecting] = useState(false);
+  const [showCreateProject, setShowCreateProject] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState("");
   const [email, setEmail] = useState("");
@@ -120,6 +122,21 @@ export function AuthShell() {
     } finally {
       setSelecting(false);
     }
+  }
+
+  async function createProject(values: CreateProjectValues) {
+    const created = await jsonRequest<ProjectAccess>("/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    });
+    await jsonRequest("/api/project-selection", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ project_id: created.project_id }),
+    });
+    setShowCreateProject(false);
+    await loadSession();
   }
 
   const selectedProject = useMemo(
@@ -245,10 +262,18 @@ export function AuthShell() {
 
           {error && <div className="loginError">{error}</div>}
 
+          <button
+            className="primaryButton"
+            type="button"
+            onClick={() => setShowCreateProject(true)}
+          >
+            + New project
+          </button>
+
           {session.projects.length === 0 ? (
             <div className="noProjects">
               <strong>No project memberships found</strong>
-              <span>Ask an administrator to grant access to a project.</span>
+              <span>Create your first project here, or ask an administrator for access to an existing one.</span>
             </div>
           ) : (
             <div className="projectGrid">
@@ -263,11 +288,18 @@ export function AuthShell() {
             </div>
           )}
         </section>
+        {showCreateProject && (
+          <ProjectCreation
+            onCreate={createProject}
+            onCancel={() => setShowCreateProject(false)}
+          />
+        )}
       </main>
     );
   }
 
   return (
+    <>
     <InboxClient
       key={selectedProject.project_id}
       projectId={selectedProject.project_id}
@@ -278,7 +310,15 @@ export function AuthShell() {
       onProjectChange={selectProject}
       onLogout={logout}
       projectSwitching={selecting}
+      onNewProject={() => setShowCreateProject(true)}
     />
+    {showCreateProject && (
+      <ProjectCreation
+        onCreate={createProject}
+        onCancel={() => setShowCreateProject(false)}
+      />
+    )}
+    </>
   );
 }
 
