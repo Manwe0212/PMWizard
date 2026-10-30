@@ -28,6 +28,7 @@ type Props = {
   userName: string;
   userEmail: string;
   onProjectChange: (projectId: string) => Promise<void>;
+  onNewProject: () => void;
   onLogout: () => Promise<void>;
   projectSwitching: boolean;
 };
@@ -94,6 +95,7 @@ export function InboxClient({
   userName,
   userEmail,
   onProjectChange,
+  onNewProject,
   onLogout,
   projectSwitching,
 }: Props) {
@@ -459,6 +461,7 @@ export function InboxClient({
                 </div>
               </div>
             )}
+            <button className="secondaryButton" type="button" onClick={onNewProject} title="Create project">+ New project</button>
             <div className="accountPill" title={userEmail}>
               <div className="accountAvatar">
                 {userName.trim().slice(0, 1).toUpperCase()}

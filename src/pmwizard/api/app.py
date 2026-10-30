@@ -19,6 +19,7 @@ from pmwizard.auth import (
     AuthenticationError,
     AuthRepository,
     AuthService,
+    ProjectAccess,
     AuthSettings,
 )
 from pmwizard.ai import (
@@ -67,6 +68,7 @@ from pmwizard.inbox import (
     ReviewCommand,
     ReviewResponse,
 )
+from pmwizard.onboarding import CreateProjectRequest, ProjectOnboardingService
 from pmwizard.notifications import (
     NotificationPreferenceCommand,
     NotificationPreferenceService,
@@ -293,6 +295,35 @@ def create_app(
             user_id=principal.user_id,
         )
         return ProjectsResponse(count=len(items), items=items)
+
+    @app.post(
+        "/v1/projects",
+        response_model=ProjectAccess,
+        status_code=status.HTTP_201_CREATED,
+    )
+    def create_project(
+        command: CreateProjectRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> ProjectAccess:
+        # Only authenticated, active accounts can open their own project.
+        # Trusted development headers must never create arbitrary tenant data.
+        if principal.auth_method != "bearer":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Project creation requires Bearer authentication.",
+            )
+        try:
+            return ProjectOnboardingService(session).create(
+                tenant_id=principal.tenant_id,
+                actor_id=principal.user_id,
+                command=command,
+            )
+        except PermissionError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=str(exc),
+            ) from exc
 
     @app.get(
         "/v1/executive/dashboard",

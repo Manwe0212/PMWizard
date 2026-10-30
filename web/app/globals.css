@@ -6486,3 +6486,89 @@ button:disabled {
   .activityToolbar { width: 100%; }
   .activityToolbar button { flex: 1 1 auto; }
 }
+
+
+/* Authenticated project onboarding V0 */
+.projectCreationOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(12, 22, 39, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.projectCreationPanel {
+  width: min(100%, 560px);
+  max-height: min(94vh, 880px);
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 30px;
+  color: #142238;
+  box-shadow: 0 24px 96px rgba(8, 20, 46, 0.3);
+}
+
+.projectCreationPanel h2 {
+  font-size: 23px;
+  margin: 8px 0;
+}
+
+.projectCreationPanel > p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #526479;
+  margin: 0 0 22px;
+}
+
+.projectCreationForm,
+.projectCreationForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.projectCreationForm {
+  gap: 16px;
+}
+
+.projectCreationForm label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #263750;
+}
+
+.projectCreationForm input,
+.projectCreationForm select,
+.projectCreationForm textarea {
+  border: 1px solid #c9d6e6;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 12px;
+  width: 100%;
+  background: white;
+  color: #15243b;
+}
+
+.projectCreationDates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.projectCreationActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 540px) {
+  .projectCreationPanel { padding: 20px; }
+  .projectCreationDates { grid-template-columns: 1fr; }
+}
