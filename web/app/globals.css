@@ -5770,3 +5770,277 @@ button:disabled {
     display: grid;
   }
 }
+
+
+.attentionSurface {
+  display: grid;
+  gap: 16px;
+}
+
+.attentionHero {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 8% 15%, rgba(19, 88, 213, 0.08), transparent 30%),
+    white;
+  padding: 22px;
+}
+
+.attentionHero h2,
+.attentionHero p {
+  margin: 0;
+}
+
+.attentionHero h2 {
+  margin-top: 9px;
+  font-size: 22px;
+  letter-spacing: -0.035em;
+}
+
+.attentionHero p {
+  margin-top: 6px;
+  max-width: 780px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.attentionMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.attentionFilters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.attentionFilters button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  color: #66758a;
+  padding: 6px 10px;
+  font-size: 7px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.attentionFilters button.active {
+  border-color: #cbdcf8;
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.attentionList {
+  display: grid;
+  gap: 9px;
+}
+
+.attentionCard {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  border-radius: 12px;
+  background: white;
+  padding: 13px;
+}
+
+.attentionCard.critical {
+  border-left-color: var(--red);
+}
+
+.attentionCard.warning {
+  border-left-color: var(--amber);
+}
+
+.attentionCard.info {
+  border-left-color: var(--blue);
+}
+
+.attentionCard.acknowledged,
+.attentionCard.snoozed {
+  background: #fbfcfe;
+  opacity: 0.82;
+}
+
+.attentionCardIcon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #eef3f9;
+  color: #5c6b7d;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.attentionCard.critical .attentionCardIcon {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.attentionCard.warning .attentionCardIcon {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.attentionCard.info .attentionCardIcon {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.attentionCardBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.attentionSeverity,
+.attentionState {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 3px 6px;
+  font-size: 6.5px;
+  font-weight: 850;
+}
+
+.attentionSeverity.critical {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.attentionSeverity.warning {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.attentionSeverity.info {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.attentionState {
+  background: #edf1f6;
+  color: #68778a;
+}
+
+.attentionState.unread {
+  background: #eaf2ff;
+  color: var(--blue);
+}
+
+.attentionState.acknowledged {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.attentionState.snoozed {
+  background: #f3eefc;
+  color: #7050a4;
+}
+
+.attentionCardBody h3,
+.attentionCardBody p {
+  margin: 0;
+}
+
+.attentionCardBody h3 {
+  margin-top: 7px;
+  font-size: 10px;
+}
+
+.attentionCardBody p {
+  margin-top: 4px;
+  max-width: 760px;
+  color: #5f6f84;
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+.attentionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 7px;
+  color: #8a97a8;
+  font-size: 6.5px;
+}
+
+.attentionActions {
+  min-width: 138px;
+  display: grid;
+  gap: 6px;
+}
+
+.attentionActions button {
+  white-space: nowrap;
+}
+
+.attentionEmpty {
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 5px;
+  border: 1px dashed #d7e1ee;
+  border-radius: 13px;
+  background: #fbfcfe;
+  text-align: center;
+  padding: 24px;
+}
+
+.attentionEmpty strong {
+  font-size: 10px;
+}
+
+.attentionEmpty span {
+  max-width: 500px;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .attentionMetricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .attentionHero {
+    display: grid;
+  }
+
+  .attentionCard {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .attentionActions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .attentionMetricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .attentionCard {
+    grid-template-columns: 1fr;
+  }
+
+  .attentionActions {
+    grid-column: auto;
+    grid-template-columns: 1fr;
+  }
+}

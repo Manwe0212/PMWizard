@@ -214,6 +214,28 @@ class ProjectMembershipORM(Base, TimestampMixin, TenantMixin):
     permissions: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
 
 
+class AttentionReceiptORM(Base, TimestampMixin, TenantMixin):
+    __tablename__ = "attention_receipts"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id",
+            "user_id",
+            "project_id",
+            "signal_key",
+            name="uq_attention_receipts_user_signal",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    project_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    signal_key: Mapped[str] = mapped_column(String(500), nullable=False)
+    signal_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    snoozed_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class PortfolioORM(Base, TimestampMixin, TenantMixin, ProvenanceMixin):
     __tablename__ = "portfolios"
 

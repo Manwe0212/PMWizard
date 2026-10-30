@@ -29,6 +29,12 @@ from pmwizard.automation import (
     RunNowResponse,
     UpdateAutomationScheduleRequest,
 )
+from pmwizard.attention import (
+    AttentionCenterService,
+    AttentionCenterSnapshot,
+    AttentionStateCommand,
+    AttentionStateResponse,
+)
 from pmwizard.auth.schemas import (
     LoginRequest,
     LoginResponse,
@@ -321,6 +327,63 @@ def create_app(
             tenant_id=principal.tenant_id,
             authorized_project_ids=authorized_project_ids,
         )
+
+    @app.get(
+        "/v1/projects/{project_id}/attention",
+        response_model=AttentionCenterSnapshot,
+    )
+    def get_project_attention(
+        project_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> AttentionCenterSnapshot:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return AttentionCenterService(session).snapshot(
+                tenant_id=principal.tenant_id,
+                user_id=principal.user_id,
+                project_id=project_id,
+                permissions=permissions,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+    @app.post(
+        "/v1/projects/{project_id}/attention/{signal_id}/state",
+        response_model=AttentionStateResponse,
+    )
+    def update_project_attention_state(
+        project_id: UUID,
+        signal_id: str,
+        command: AttentionStateCommand,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> AttentionStateResponse:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return AttentionCenterService(session).update_state(
+                tenant_id=principal.tenant_id,
+                user_id=principal.user_id,
+                project_id=project_id,
+                permissions=permissions,
+                signal_id=signal_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            ) from exc
 
     @app.get(
         "/v1/projects/{project_id}/automations",
