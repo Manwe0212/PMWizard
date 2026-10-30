@@ -4,6 +4,11 @@ This operator-only workflow creates a **synthetic demo workspace** that can be
 used to explore the real PMWizard UI and API. It does **not** provision real
 connectors, customer accounts, or a production tenant.
 
+> **Docker-first option (PR #26):** For a complete local stack without
+> installing Python/Node dependencies on the host, see
+> [Containerized Local Demo](CONTAINERIZED_LOCAL_DEMO.md). The manual
+> workflow below remains available.
+
 ## Prerequisites
 
 - Python 3.11 or 3.12, Docker with Compose, Node.js 22, npm
