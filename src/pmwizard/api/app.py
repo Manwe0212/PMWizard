@@ -56,6 +56,11 @@ from pmwizard.inbox import (
     ReviewCommand,
     ReviewResponse,
 )
+from pmwizard.notifications import (
+    NotificationPreferenceCommand,
+    NotificationPreferenceService,
+    NotificationWorkspaceSnapshot,
+)
 from pmwizard.memory import (
     ProjectMemoryQueryService,
     ProjectMemorySnapshot,
@@ -327,6 +332,59 @@ def create_app(
             tenant_id=principal.tenant_id,
             authorized_project_ids=authorized_project_ids,
         )
+
+    @app.get(
+        "/v1/projects/{project_id}/notifications",
+        response_model=NotificationWorkspaceSnapshot,
+    )
+    def get_project_notifications(
+        project_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> NotificationWorkspaceSnapshot:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return NotificationPreferenceService(session).snapshot(
+                tenant_id=principal.tenant_id,
+                user_id=principal.user_id,
+                project_id=project_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+    @app.put(
+        "/v1/projects/{project_id}/notifications",
+        response_model=NotificationWorkspaceSnapshot,
+    )
+    def update_project_notifications(
+        project_id: UUID,
+        command: NotificationPreferenceCommand,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> NotificationWorkspaceSnapshot:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return NotificationPreferenceService(session).save(
+                tenant_id=principal.tenant_id,
+                user_id=principal.user_id,
+                project_id=project_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            ) from exc
 
     @app.get(
         "/v1/projects/{project_id}/attention",

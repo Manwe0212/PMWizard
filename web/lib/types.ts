@@ -683,3 +683,43 @@ export interface AttentionCenterSnapshot {
 export interface AttentionStateResponse {
   signal: AttentionSignalView;
 }
+
+
+export type NotificationChannel = "email" | "teams";
+export type NotificationDeliveryStatus = "success" | "failed";
+
+export interface NotificationPreferenceView {
+  id: string | null;
+  project_id: string;
+  enabled: boolean;
+  email_enabled: boolean;
+  email_destination: string;
+  teams_enabled: boolean;
+  teams_webhook_configured: boolean;
+  minimum_severity: AttentionSeverity;
+  categories: AttentionCategory[];
+  interval_minutes: number;
+  next_delivery_at: string;
+  last_delivery_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotificationDeliveryView {
+  id: string;
+  project_id: string;
+  channel: NotificationChannel;
+  status: NotificationDeliveryStatus;
+  signal_count: number;
+  signal_ids: string[];
+  attempted_at: string;
+  delivered_at: string | null;
+  error_message: string | null;
+}
+
+export interface NotificationWorkspaceSnapshot {
+  project_id: string;
+  generated_at: string;
+  preference: NotificationPreferenceView;
+  recent_deliveries: NotificationDeliveryView[];
+}

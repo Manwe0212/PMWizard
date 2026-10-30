@@ -1264,3 +1264,30 @@ Receipts are scoped by tenant, user, Project, and signal key. Acknowledgement an
 Inbox-derived signals are produced through `ProjectInboxService`, preserving Evidence permission filtering.
 
 When a governed or operational condition resolves, the signal simply disappears. Attention Center does not maintain a competing lifecycle or require a separate close action.
+
+
+## Notification Delivery & Preferences V0
+
+Outbound notification delivery consumes the existing Attention Center projection:
+
+```text
+AttentionCenterService
+        ↓
+active versioned signals
+        ↓
+NotificationPreference
+        ↓
+NotificationDeliveryWorker
+        ↓
+Email / Teams providers
+```
+
+Notification rules are not duplicated in channel adapters.
+
+Preferences are scoped to tenant + user + Project. Delivery uses the user's current ProjectMembership permissions to recompute authorized Attention signals at worker runtime.
+
+Successful signal IDs are stored in channel delivery history and removed from future batches. A materially changed Attention condition produces a new signal ID and can therefore be delivered again.
+
+Email destinations are locked to the authenticated AppUser email. Microsoft Teams stores only an `env:TEAMS_*` secret alias; the webhook is resolved by the worker and never crosses the API boundary.
+
+The notification worker uses expiring leases and runs inside the existing Automation Worker process. Provider delivery does not mutate Attention receipts or governed Project state.
