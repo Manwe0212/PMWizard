@@ -37,7 +37,8 @@ def initialize() -> Path:
     print("Created .env.demo with random credentials (private local file).")
     print("Demo login: demo@example.com")
     print("Demo workspace: 269ba0ba-35e4-4e86-bd2e-7d43f09d2550")
-    print(f"Demo password (copy now): {values['PMWIZARD_DEMO_PASSWORD']}")
+    if os.getenv("PMWIZARD_DEMO_QUIET") != "1":
+        print(f"Demo password (copy now): {values['PMWIZARD_DEMO_PASSWORD']}")
     print("To see it later, read PMWIZARD_DEMO_PASSWORD from your local .env.demo.")
     print("Do not share that file. Do not expose this local demo to the internet.")
     return OUTPUT
