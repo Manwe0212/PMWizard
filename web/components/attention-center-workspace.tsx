@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { NotificationPreferencesPanel } from "@/components/notification-preferences-panel";
+
 import type {
   AttentionCenterSnapshot,
   AttentionSignalView,
@@ -224,6 +226,8 @@ export function AttentionCenterWorkspace({
           />
         </div>
       )}
+
+      <NotificationPreferencesPanel />
 
       <div className="attentionFilters">
         {(["all", "unread", "critical", "snoozed"] as Filter[]).map((item) => (
