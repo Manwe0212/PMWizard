@@ -1145,7 +1145,7 @@ A reclaimed expired lease marks any unfinished previous run as `abandoned`. A wo
 
 `Run now` changes durable due state to an immediate manual trigger. The API never executes the job synchronously.
 
-V0 registers only deterministic Project Health snapshot automation. The handler registry is intentionally extensible, but Source Sync is deferred until secure connector credential/config resolution exists. This avoids turning safe Source metadata into an implicit credential store.
+The worker currently registers deterministic Project Health snapshot automation and secure Source Sync. Source Sync resolves credentials only at worker runtime through the SecretProvider boundary.
 
 The lightweight worker can run continuously or as a one-shot process:
 
@@ -1230,3 +1230,37 @@ connector.test_connection()
 The API never resolves provider credentials to perform a connection test.
 
 Disabling a Source also pauses enabled `source_sync` schedules that reference that Source. Re-enabling does not automatically resume them.
+
+
+## Project Notifications & Attention Center V0
+
+Attention is a deterministic composition layer, not a new source of Project truth:
+
+```text
+Project Memory ─────────┐
+Project Health ─────────┤
+Health History ─────────┤
+Sources ────────────────┤
+Automations ────────────┤
+Project Inbox ──────────┘
+          ↓
+AttentionCenterService
+          ↓
+active signal versions
+          ↓
+AttentionReceipt (per user)
+          ↓
+GET /v1/projects/{project_id}/attention
+          ↓
+Next.js Attention Center
+```
+
+Signals are recomputed on read. Only personal receipt state is persisted.
+
+Each logical condition has a stable signal key and a version fingerprint. A changed condition produces a new signal ID and therefore returns to unread even when the previous version was acknowledged.
+
+Receipts are scoped by tenant, user, Project, and signal key. Acknowledgement and snooze require only `project:read` because they do not mutate governed state.
+
+Inbox-derived signals are produced through `ProjectInboxService`, preserving Evidence permission filtering.
+
+When a governed or operational condition resolves, the signal simply disappears. Attention Center does not maintain a competing lifecycle or require a separate close action.
