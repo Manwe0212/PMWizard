@@ -214,6 +214,52 @@ class ProjectMembershipORM(Base, TimestampMixin, TenantMixin):
     permissions: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
 
 
+class NotificationPreferenceORM(Base, TimestampMixin, TenantMixin):
+    __tablename__ = "notification_preferences"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id",
+            "user_id",
+            "project_id",
+            name="uq_notification_preferences_user_project",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    project_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    is_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    email_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    teams_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    teams_webhook_ref: Mapped[str | None] = mapped_column(String(100))
+    minimum_severity: Mapped[str] = mapped_column(String(20), nullable=False, default="warning")
+    categories: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
+    interval_minutes: Mapped[int] = mapped_column(nullable=False, default=60)
+    next_delivery_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_delivery_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    lease_owner: Mapped[str | None] = mapped_column(String(255))
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class NotificationDeliveryORM(Base, TenantMixin):
+    __tablename__ = "notification_deliveries"
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    preference_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    user_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    project_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    channel: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    signal_ids: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
+    signal_count: Mapped[int] = mapped_column(nullable=False, default=0)
+    attempted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    error_message: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, nullable=False
+    )
+
+
 class AttentionReceiptORM(Base, TimestampMixin, TenantMixin):
     __tablename__ = "attention_receipts"
     __table_args__ = (
