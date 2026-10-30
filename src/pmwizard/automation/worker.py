@@ -12,6 +12,12 @@ from uuid import uuid4
 from sqlalchemy.orm import sessionmaker
 
 from pmwizard.persistence import create_engine_from_url, create_session_factory
+from pmwizard.notifications import (
+    NotificationDeliveryWorker,
+    SmtpEmailNotificationProvider,
+    TeamsWebhookNotificationProvider,
+    public_base_url_from_environment,
+)
 from pmwizard.security import EnvironmentSecretProvider, SecretProvider
 from pmwizard.sources.test_worker import SourceConnectionTestWorker
 
@@ -33,6 +39,9 @@ class AutomationWorker:
         batch_size: int = 10,
         secret_provider: SecretProvider | None = None,
         graph_transport_factory=None,
+        email_notification_provider=None,
+        teams_notification_provider=None,
+        public_base_url: str | None = None,
     ) -> None:
         if lease_seconds < 30:
             raise ValueError("lease_seconds must be at least 30")
@@ -45,6 +54,9 @@ class AutomationWorker:
         self.batch_size = batch_size
         self.secret_provider = secret_provider
         self.graph_transport_factory = graph_transport_factory
+        self.email_notification_provider = email_notification_provider
+        self.teams_notification_provider = teams_notification_provider
+        self.public_base_url = public_base_url
 
     def run_once(
         self,
@@ -52,6 +64,16 @@ class AutomationWorker:
         now: datetime | None = None,
     ) -> list:
         timestamp = now or datetime.now(timezone.utc)
+        NotificationDeliveryWorker(
+            self.session_factory,
+            worker_id=self.worker_id,
+            email_provider=self.email_notification_provider,
+            teams_provider=self.teams_notification_provider,
+            lease_seconds=min(self.lease_seconds, 120),
+            batch_size=self.batch_size,
+            public_base_url=self.public_base_url,
+        ).run_once(now=timestamp)
+
         if self.secret_provider is not None:
             SourceConnectionTestWorker(
                 self.session_factory,
@@ -131,12 +153,20 @@ def main() -> None:
         )
 
     engine = create_engine_from_url(database_url)
+    secret_provider = EnvironmentSecretProvider()
     worker = AutomationWorker(
         create_session_factory(engine),
         worker_id=_worker_id(),
         lease_seconds=lease_seconds,
         batch_size=batch_size,
-        secret_provider=EnvironmentSecretProvider(),
+        secret_provider=secret_provider,
+        email_notification_provider=(
+            SmtpEmailNotificationProvider.from_environment(secret_provider)
+        ),
+        teams_notification_provider=TeamsWebhookNotificationProvider(
+            secret_provider
+        ),
+        public_base_url=public_base_url_from_environment(),
     )
 
     if args.once:
