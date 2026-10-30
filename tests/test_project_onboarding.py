@@ -78,9 +78,6 @@ def test_create_project_assigns_manager_membership_and_initial_audit(project_env
     assert activity.json()["items"][0]["actor_id"] == str(user.id)
 
     with factory() as session:
-        project = session.get(ProjectORM, project_id)
-        # SQLAlchemy accepts hyphenated UUID strings through the UUID object.
-        assert project is None  # project IDs are stored as UUID objects.
         from uuid import UUID
         project = session.get(ProjectORM, UUID(project_id))
         assert project.tenant_id == tenant
