@@ -148,9 +148,11 @@ class AttentionCenterService:
 
         snoozed_until = None
         if command.action == "snooze":
-            if command.snoozed_until is None:
-                raise ValueError("snoozed_until is required for snooze.")
-            snoozed_until = self._aware(command.snoozed_until)
+            snoozed_until = (
+                self._aware(command.snoozed_until)
+                if command.snoozed_until is not None
+                else timestamp + timedelta(hours=24)
+            )
             if snoozed_until <= timestamp:
                 raise ValueError("snoozed_until must be in the future.")
             if snoozed_until > timestamp + timedelta(days=30):
