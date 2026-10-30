@@ -38,13 +38,6 @@ function dateTimeLabel(value: string | null): string {
   }).format(new Date(value));
 }
 
-function cadenceLabel(minutes: number): string {
-  return (
-    CADENCES.find((item) => item.minutes === minutes)?.label ??
-    `Every ${minutes} min`
-  );
-}
-
 async function readJson(response: Response) {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
