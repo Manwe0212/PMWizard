@@ -48,10 +48,11 @@ Initial work will focus on:
 - [`docs/AUTOMATION_SCHEDULER.md`](docs/AUTOMATION_SCHEDULER.md) — durable interval scheduling, leases, worker execution, run history, and automated Health snapshots
 - [`docs/SECURE_SOURCE_RUNTIME.md`](docs/SECURE_SOURCE_RUNTIME.md) — opaque credential references, runtime secret resolution, and scheduled Outlook/SharePoint delta sync
 - [`docs/SOURCE_CONNECTION_ADMIN.md`](docs/SOURCE_CONNECTION_ADMIN.md) — governed creation/editing, worker-executed connection tests, and safe checkpoint reset
+- [`docs/ATTENTION_CENTER.md`](docs/ATTENTION_CENTER.md) — deterministic project attention signals with per-user seen, acknowledge, and snooze receipts
 
 ## Project status
 
-PMWizard now has secure scheduled Outlook/SharePoint ingestion and is implementing **Source Connection Administration V0** so Project reviewers can create, configure, enable/disable, and worker-test Sources without touching code or exposing secrets.
+PMWizard now has governed Source administration and is implementing **Project Notifications & Attention Center V0** so active Health, execution, RAID, Decision, Source, Automation, and review conditions are prioritized in one personal, explainable workspace.
 
 ## Local development
 
