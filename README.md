@@ -53,7 +53,11 @@ Initial work will focus on:
 
 ## Project status
 
-PMWizard now has a deterministic personal Attention Center and is implementing **Notification Delivery & Preferences V0** so authorized users can securely receive new or changed project attention signals through Email and Microsoft Teams without creating a second rules engine.
+PMWizard now includes governed Project Memory, deterministic Health, portfolio intelligence, human-reviewed AI suggestions, an Attention Center, Email/Teams notification delivery, an auditable Activity Timeline, and redacted CSV/JSON activity exports. PR #25 adds an explicitly gated **synthetic local demo** for reproducible first-run testing without real client data. These features are MVP modules, not a production-ready hosted service.
+
+## Local demo and first-run walkthrough
+
+Start with [`docs/LOCAL_DEMO_ONBOARDING.md`](docs/LOCAL_DEMO_ONBOARDING.md) for the complete **local-only** path: database migrations, a synthetic demo user and project, server startup, frontend startup, and a test login. No real customer content or third-party credentials are needed. Never seed a production or shared client database.
 
 ## Local development
 
@@ -72,6 +76,8 @@ python -m pmwizard.automation.worker
 ```
 
 The test suite uses SQLite for fast domain/persistence tests, while CI also validates the Alembic migration against PostgreSQL 16.
+
+**Note:** Shell commands above require `PMWIZARD_DATABASE_URL` and `PMWIZARD_AUTH_SECRET` to be exported as environment variables; copying an `.env` file alone does not load it into the current shell. The local demo walkthrough shows the full procedure.
 
 ## Data and privacy
 
