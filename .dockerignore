@@ -1,0 +1,19 @@
+# Never copy secrets or machine-specific artifacts into backend image.
+.git
+.env
+.env.*
+!.env.example
+__pycache__
+*.pyc
+.pytest_cache
+.venv
+node_modules
+web/node_modules
+web/.next
+web/.env*
+.next
+*.sqlite
+*.db
+*.log
+tests
+docs
