@@ -6450,3 +6450,39 @@ button:disabled {
   .activityFilters { grid-template-columns: 1fr; }
   .activityFilterActions { flex-wrap: wrap; }
 }
+
+
+/* PR #24: Activity export & checksum feedback */
+.activityToolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.activityToolbar button {
+  white-space: nowrap;
+}
+
+.activityExportHelp {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.activityExportNotice {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid #d7e4f6;
+  background: #f7faff;
+  color: #28599e;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .activityToolbar { width: 100%; }
+  .activityToolbar button { flex: 1 1 auto; }
+}

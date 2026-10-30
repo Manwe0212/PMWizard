@@ -53,13 +53,16 @@ function queryFor(filters: Filters, cursor: string | null): string {
   return params.toString();
 }
 
-export function ActivityWorkspace() {
+export function ActivityWorkspace({ canExport }: { canExport: boolean }) {
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<"csv" | "json" | null>(null);
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [refresh, setRefresh] = useState(0);
   const requestVersion = useRef(0);
 
@@ -118,6 +121,60 @@ export function ActivityWorkspace() {
     setRefresh((value) => value + 1);
   }
 
+
+  async function downloadActivity(format: "csv" | "json") {
+    if (!canExport || exporting) return;
+    setExporting(format);
+    setExportNotice(null);
+    setExportError(null);
+    try {
+      // Export matches the applied filters, rather than the unsubmitted draft.
+      const params = new URLSearchParams(queryFor(filters, null));
+      params.delete("limit");
+      params.set("format", format);
+      const response = await fetch(`/api/activity/export?${params}`, {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(
+          typeof payload?.detail === "string"
+            ? payload.detail
+            : `Export failed (${response.status})`,
+        );
+      }
+      const blob = await response.blob();
+      const disposition = response.headers.get("Content-Disposition") ?? "";
+      const filename = disposition.match(/filename="([^"]+)"/)?.[1]
+        ?? `pmwizard-activity.${format}`;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      const count = response.headers.get("X-PMWizard-Export-Count") ?? "0";
+      const truncated = response.headers.get("X-PMWizard-Export-Truncated") === "true";
+      const checksum = response.headers.get("X-PMWizard-Export-SHA256");
+      setExportNotice(
+        `Downloaded ${count} activity records.`
+          + (truncated
+            ? " Export reached the 500-record cap: narrow the date filters for complete coverage."
+            : "")
+          + (checksum ? ` SHA-256: ${checksum}` : ""),
+      );
+    } catch (reason) {
+      setExportError(
+        reason instanceof Error ? reason.message : "Unable to export project activity.",
+      );
+    } finally {
+      setExporting(null);
+    }
+  }
+
   return (
     <section className="activityWorkspace" aria-label="Project activity timeline">
       <div className="activityIntro">
@@ -129,9 +186,35 @@ export function ActivityWorkspace() {
             automations and health captures. Sensitive payloads are never exposed.
           </p>
         </div>
-        <button className="secondaryButton" type="button" onClick={() => setRefresh((v) => v + 1)}>
-          Refresh
-        </button>
+        <div className="activityToolbar">
+          {canExport && (
+            <>
+              <button
+                className="secondaryButton"
+                type="button"
+                disabled={exporting !== null}
+                onClick={() => void downloadActivity("csv")}
+              >
+                {exporting === "csv" ? "Preparing CSV…" : "Export CSV"}
+              </button>
+              <button
+                className="secondaryButton"
+                type="button"
+                disabled={exporting !== null}
+                onClick={() => void downloadActivity("json")}
+              >
+                {exporting === "json" ? "Preparing JSON…" : "Export JSON"}
+              </button>
+            </>
+          )}
+          <button
+            className="secondaryButton"
+            type="button"
+            onClick={() => setRefresh((v) => v + 1)}
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       <form className="activityFilters" onSubmit={applyFilters}>
@@ -191,6 +274,13 @@ export function ActivityWorkspace() {
           </button>
         </div>
       </form>
+
+      <p className="activityExportHelp">
+        Exports use applied filters and include at most 500 redacted metadata records,
+        without evidence contents. Export permission requires project review access.
+      </p>
+      {exportNotice && <p className="activityExportNotice" role="status">{exportNotice}</p>}
+      {exportError && <div className="activityError" role="alert">{exportError}</div>}
 
       {error && (
         <div className="activityError" role="alert">

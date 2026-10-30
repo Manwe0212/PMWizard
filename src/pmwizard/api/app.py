@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import os
 from datetime import datetime
+from typing import Literal
 from collections.abc import Callable, Iterator
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from pmwizard.auth import (
@@ -30,7 +32,12 @@ from pmwizard.automation import (
     RunNowResponse,
     UpdateAutomationScheduleRequest,
 )
-from pmwizard.activity import ActivityCategory, ActivityTimeline, ProjectActivityService
+from pmwizard.activity import (
+    ActivityCategory,
+    ActivityTimeline,
+    ProjectActivityExportService,
+    ProjectActivityService,
+)
 from pmwizard.attention import (
     AttentionCenterService,
     AttentionCenterSnapshot,
@@ -374,6 +381,55 @@ def create_app(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=str(exc),
             ) from exc
+
+    @app.get("/v1/projects/{project_id}/activity/export")
+    def export_project_activity(
+        project_id: UUID,
+        export_format: Literal["csv", "json"] = Query(default="csv", alias="format"),
+        category: list[ActivityCategory] | None = Query(default=None),
+        actor_id: UUID | None = None,
+        since: datetime | None = None,
+        until: datetime | None = None,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> Response:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            export = ProjectActivityExportService(session).export(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                permissions=permissions,
+                export_format=export_format,
+                categories=category,
+                actor_id=actor_id,
+                since=since,
+                until=until,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            ) from exc
+
+        return Response(
+            content=export.body,
+            media_type=export.content_type,
+            headers={
+                "Content-Disposition": f'attachment; filename="{export.filename}"',
+                "Cache-Control": "private, no-store",
+                "X-Content-Type-Options": "nosniff",
+                "X-PMWizard-Export-SHA256": export.sha256,
+                "X-PMWizard-Export-Count": str(export.count),
+                "X-PMWizard-Export-Truncated": str(export.truncated).lower(),
+            },
+        )
 
     @app.get(
         "/v1/projects/{project_id}/notifications",
