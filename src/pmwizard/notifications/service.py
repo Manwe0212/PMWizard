@@ -41,7 +41,7 @@ class NotificationPreferenceService:
             user_id=user_id,
             project_id=project_id,
         )
-        preference = self._view(row, user.email, timestamp)
+        preference = self._view(row, user.email, project_id, timestamp)
         deliveries = self.repository.list_deliveries(
             tenant_id=tenant_id,
             user_id=user_id,
@@ -136,12 +136,13 @@ class NotificationPreferenceService:
     def _view(
         row: NotificationPreferenceORM | None,
         email: str,
+        project_id: UUID,
         now: datetime,
     ) -> NotificationPreferenceView:
         if row is None:
             return NotificationPreferenceView(
                 id=None,
-                project_id=UUID(int=0),
+                project_id=project_id,
                 enabled=False,
                 email_enabled=False,
                 email_destination=email,
