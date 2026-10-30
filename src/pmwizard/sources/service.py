@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -15,6 +16,8 @@ from pmwizard.connectors import (
 from .repository import SourceRepository
 from .schemas import (
     BindSourceCredentialRequest,
+    SourceConnectionTestStatus,
+    SourceConnectionTestView,
     SourceConnectionView,
     SourceCredentialStatus,
     SourceHealthStatus,
@@ -166,6 +169,7 @@ class SourcesWorkspaceService:
                     ),
                     latest_run=latest,
                     recent_runs=runs,
+                    connection_test=self._test_view(connection),
                 )
             )
 
@@ -202,6 +206,56 @@ class SourcesWorkspaceService:
             ),
             sources=views,
         )
+
+    @classmethod
+    def _test_view(cls, connection) -> SourceConnectionTestView:
+        now = datetime.now(timezone.utc)
+        requested_at = (
+            cls._aware(connection.test_requested_at)
+            if connection.test_requested_at is not None
+            else None
+        )
+        last_test_at = (
+            cls._aware(connection.last_test_at)
+            if connection.last_test_at is not None
+            else None
+        )
+        lease_expires_at = (
+            cls._aware(connection.test_lease_expires_at)
+            if connection.test_lease_expires_at is not None
+            else None
+        )
+
+        if (
+            connection.test_lease_owner is not None
+            and lease_expires_at is not None
+            and lease_expires_at > now
+        ):
+            status = SourceConnectionTestStatus.RUNNING
+        elif (
+            requested_at is not None
+            and (last_test_at is None or requested_at > last_test_at)
+        ):
+            status = SourceConnectionTestStatus.QUEUED
+        elif connection.last_test_status == "success":
+            status = SourceConnectionTestStatus.SUCCESS
+        elif connection.last_test_status == "failed":
+            status = SourceConnectionTestStatus.FAILED
+        else:
+            status = SourceConnectionTestStatus.NEVER_TESTED
+
+        return SourceConnectionTestView(
+            status=status,
+            requested_at=requested_at,
+            last_test_at=last_test_at,
+            message=connection.last_test_message,
+        )
+
+    @staticmethod
+    def _aware(value: datetime) -> datetime:
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
 
     @staticmethod
     def _health(

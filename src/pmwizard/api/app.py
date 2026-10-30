@@ -68,10 +68,15 @@ from pmwizard.reports import (
 )
 from pmwizard.sources import (
     BindSourceCredentialRequest,
+    CreateSourceConnectionRequest,
+    SourceConnectionAdminService,
+    SourceConnectionTestResponse,
+    SourceConnectionView,
     SourceCredentialService,
     SourceCredentialStatus,
     SourcesWorkspaceService,
     SourcesWorkspaceSnapshot,
+    UpdateSourceConnectionRequest,
 )
 
 from .context import ApiPrincipal
@@ -567,6 +572,100 @@ def create_app(
         except LookupError as exc:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+    @app.post(
+        "/v1/projects/{project_id}/sources",
+        response_model=SourceConnectionView,
+        status_code=status.HTTP_201_CREATED,
+    )
+    def create_project_source(
+        project_id: UUID,
+        command: CreateSourceConnectionRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> SourceConnectionView:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            return SourceConnectionAdminService(session).create(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            ) from exc
+
+    @app.patch(
+        "/v1/projects/{project_id}/sources/{source_connection_id}",
+        response_model=SourceConnectionView,
+    )
+    def update_project_source(
+        project_id: UUID,
+        source_connection_id: UUID,
+        command: UpdateSourceConnectionRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> SourceConnectionView:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            return SourceConnectionAdminService(session).update(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                source_connection_id=source_connection_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            ) from exc
+
+    @app.post(
+        "/v1/projects/{project_id}/sources/{source_connection_id}/test",
+        response_model=SourceConnectionTestResponse,
+    )
+    def test_project_source(
+        project_id: UUID,
+        source_connection_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> SourceConnectionTestResponse:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        require_permission(permissions, "project:review")
+        try:
+            return SourceConnectionAdminService(session).queue_test(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                source_connection_id=source_connection_id,
+                requested_by=principal.user_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
                 detail=str(exc),
             ) from exc
 

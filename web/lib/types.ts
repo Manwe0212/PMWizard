@@ -225,6 +225,20 @@ export interface SourceRunView {
   checkpoint_fingerprint: string | null;
 }
 
+export type SourceConnectionTestStatus =
+  | "never_tested"
+  | "queued"
+  | "running"
+  | "success"
+  | "failed";
+
+export interface SourceConnectionTestView {
+  status: SourceConnectionTestStatus;
+  requested_at: string | null;
+  last_test_at: string | null;
+  message: string | null;
+}
+
 export interface SourceConnectionView {
   id: string;
   connector_key: string;
@@ -241,6 +255,7 @@ export interface SourceConnectionView {
   checkpoint_updated_at: string | null;
   latest_run: SourceRunView | null;
   recent_runs: SourceRunView[];
+  connection_test: SourceConnectionTestView;
 }
 
 export interface SourcesSummary {

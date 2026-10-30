@@ -47,10 +47,11 @@ Initial work will focus on:
 - [`docs/AI_STATUS_REPORTS.md`](docs/AI_STATUS_REPORTS.md) — grounded structured AI drafting with fact citations, validation, and provider abstraction
 - [`docs/AUTOMATION_SCHEDULER.md`](docs/AUTOMATION_SCHEDULER.md) — durable interval scheduling, leases, worker execution, run history, and automated Health snapshots
 - [`docs/SECURE_SOURCE_RUNTIME.md`](docs/SECURE_SOURCE_RUNTIME.md) — opaque credential references, runtime secret resolution, and scheduled Outlook/SharePoint delta sync
+- [`docs/SOURCE_CONNECTION_ADMIN.md`](docs/SOURCE_CONNECTION_ADMIN.md) — governed creation/editing, worker-executed connection tests, and safe checkpoint reset
 
 ## Project status
 
-PMWizard now has durable background automation and is implementing **Secure Source Runtime + Scheduled Source Sync V0** so Outlook and SharePoint can resume incremental ingestion automatically without persisting provider secrets.
+PMWizard now has secure scheduled Outlook/SharePoint ingestion and is implementing **Source Connection Administration V0** so Project reviewers can create, configure, enable/disable, and worker-test Sources without touching code or exposing secrets.
 
 ## Local development
 

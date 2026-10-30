@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 from uuid import UUID, uuid4
 
-from sqlalchemy import select
+from sqlalchemy import delete, or_, select, update
 from sqlalchemy.orm import Session
 
 from pmwizard.connectors import ConnectorDescriptor, ConnectorRunResult
@@ -22,6 +23,14 @@ def checkpoint_fingerprint(cursor: str | None) -> str | None:
     if cursor is None:
         return None
     return sha256(cursor.encode("utf-8")).hexdigest()[:16]
+
+
+@dataclass(frozen=True)
+class SourceConnectionTestClaim:
+    tenant_id: UUID
+    project_id: UUID
+    source_connection_id: UUID
+    lease_token: str
 
 
 class SourceRepository:
@@ -106,6 +115,205 @@ class SourceRepository:
                 SourceConnectionORM.id == source_connection_id,
             )
         )
+
+    def create_admin_connection(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        source_connection_id: UUID,
+        connector_key: str,
+        descriptor: ConnectorDescriptor,
+        enabled: bool,
+    ) -> SourceConnectionORM:
+        self.require_project(tenant_id, project_id)
+        row = SourceConnectionORM(
+            id=source_connection_id,
+            tenant_id=tenant_id,
+            project_id=project_id,
+            connector_key=connector_key,
+            source_type=descriptor.source_type,
+            source_system=descriptor.source_system,
+            display_name=descriptor.display_name,
+            permission_scope=descriptor.permission_scope,
+            safe_config=descriptor.safe_config,
+            is_enabled=enabled,
+        )
+        self.session.add(row)
+        self.session.flush()
+        return row
+
+    def update_admin_connection(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        source_connection_id: UUID,
+        display_name: str | None = None,
+        safe_config: dict | None = None,
+        enabled: bool | None = None,
+    ) -> SourceConnectionORM:
+        row = self.get_connection_by_id(
+            tenant_id=tenant_id,
+            project_id=project_id,
+            source_connection_id=source_connection_id,
+        )
+        if row is None:
+            raise LookupError("Source connection not found")
+        if display_name is not None:
+            row.display_name = display_name
+        if safe_config is not None:
+            row.safe_config = safe_config
+        if enabled is not None:
+            row.is_enabled = enabled
+        self.session.flush()
+        return row
+
+    def clear_checkpoint(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        connector_key: str,
+    ) -> None:
+        self.session.execute(
+            delete(ConnectorCheckpointORM).where(
+                ConnectorCheckpointORM.tenant_id == tenant_id,
+                ConnectorCheckpointORM.project_id == project_id,
+                ConnectorCheckpointORM.connector_key == connector_key,
+            )
+        )
+        self.session.flush()
+
+    def queue_connection_test(
+        self,
+        *,
+        tenant_id: UUID,
+        project_id: UUID,
+        source_connection_id: UUID,
+        requested_by: UUID,
+        now: datetime,
+    ) -> SourceConnectionORM:
+        row = self.get_connection_by_id(
+            tenant_id=tenant_id,
+            project_id=project_id,
+            source_connection_id=source_connection_id,
+        )
+        if row is None:
+            raise LookupError("Source connection not found")
+        if row.test_lease_expires_at is not None:
+            lease_expiry = self._aware(row.test_lease_expires_at)
+            if lease_expiry > now:
+                raise ValueError("Source connection test is already running")
+        row.test_requested_at = now
+        row.test_requested_by = requested_by
+        self.session.flush()
+        return row
+
+    def claim_pending_tests(
+        self,
+        *,
+        worker_id: str,
+        now: datetime,
+        lease_seconds: int,
+        limit: int,
+    ) -> list[SourceConnectionTestClaim]:
+        candidates = list(
+            self.session.scalars(
+                select(SourceConnectionORM)
+                .where(
+                    SourceConnectionORM.test_requested_at.is_not(None),
+                    or_(
+                        SourceConnectionORM.last_test_at.is_(None),
+                        SourceConnectionORM.last_test_at
+                        < SourceConnectionORM.test_requested_at,
+                    ),
+                    or_(
+                        SourceConnectionORM.test_lease_expires_at.is_(None),
+                        SourceConnectionORM.test_lease_expires_at <= now,
+                    ),
+                )
+                .order_by(
+                    SourceConnectionORM.test_requested_at,
+                    SourceConnectionORM.id,
+                )
+                .limit(limit)
+            ).all()
+        )
+
+        claims: list[SourceConnectionTestClaim] = []
+        for row in candidates:
+            lease_token = f"{worker_id}:{uuid4().hex}"
+            updated = self.session.execute(
+                update(SourceConnectionORM)
+                .where(
+                    SourceConnectionORM.id == row.id,
+                    SourceConnectionORM.tenant_id == row.tenant_id,
+                    SourceConnectionORM.project_id == row.project_id,
+                    or_(
+                        SourceConnectionORM.test_lease_expires_at.is_(None),
+                        SourceConnectionORM.test_lease_expires_at <= now,
+                    ),
+                )
+                .values(
+                    test_lease_owner=lease_token,
+                    test_lease_expires_at=now + timedelta(seconds=lease_seconds),
+                )
+            )
+            if updated.rowcount == 1:
+                claims.append(
+                    SourceConnectionTestClaim(
+                        tenant_id=row.tenant_id,
+                        project_id=row.project_id,
+                        source_connection_id=row.id,
+                        lease_token=lease_token,
+                    )
+                )
+        self.session.commit()
+        return claims
+
+    def finish_connection_test(
+        self,
+        *,
+        claim: SourceConnectionTestClaim,
+        now: datetime,
+        status: str,
+        message: str,
+    ) -> None:
+        row = self.get_connection_by_id(
+            tenant_id=claim.tenant_id,
+            project_id=claim.project_id,
+            source_connection_id=claim.source_connection_id,
+        )
+        if row is None:
+            raise LookupError("Source connection not found")
+
+        lease_expiry = (
+            self._aware(row.test_lease_expires_at)
+            if row.test_lease_expires_at is not None
+            else None
+        )
+        if (
+            row.test_lease_owner != claim.lease_token
+            or lease_expiry is None
+            or lease_expiry <= now
+        ):
+            raise RuntimeError(
+                "Source connection test lease was lost or expired"
+            )
+
+        row.last_test_at = now
+        row.last_test_status = status
+        row.last_test_message = message[:1000]
+        row.test_lease_owner = None
+        row.test_lease_expires_at = None
+        self.session.commit()
+
+    @staticmethod
+    def _aware(value: datetime) -> datetime:
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
 
     def bind_credential_reference(
         self,

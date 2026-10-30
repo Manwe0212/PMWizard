@@ -13,6 +13,7 @@ from sqlalchemy.orm import sessionmaker
 
 from pmwizard.persistence import create_engine_from_url, create_session_factory
 from pmwizard.security import EnvironmentSecretProvider, SecretProvider
+from pmwizard.sources.test_worker import SourceConnectionTestWorker
 
 from .executor import AutomationExecutor
 from .handlers import (
@@ -51,6 +52,16 @@ class AutomationWorker:
         now: datetime | None = None,
     ) -> list:
         timestamp = now or datetime.now(timezone.utc)
+        if self.secret_provider is not None:
+            SourceConnectionTestWorker(
+                self.session_factory,
+                worker_id=self.worker_id,
+                secret_provider=self.secret_provider,
+                lease_seconds=min(self.lease_seconds, 120),
+                batch_size=self.batch_size,
+                graph_transport_factory=self.graph_transport_factory,
+            ).run_once(now=timestamp)
+
         with self.session_factory() as session:
             claims = AutomationRepository(session).claim_due(
                 worker_id=self.worker_id,

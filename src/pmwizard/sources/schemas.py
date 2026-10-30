@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -42,6 +42,23 @@ class SourceRunView(BaseModel):
     checkpoint_fingerprint: str | None = None
 
 
+class SourceConnectionTestStatus(StrEnum):
+    NEVER_TESTED = "never_tested"
+    QUEUED = "queued"
+    RUNNING = "running"
+    SUCCESS = "success"
+    FAILED = "failed"
+
+
+class SourceConnectionTestView(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: SourceConnectionTestStatus
+    requested_at: datetime | None = None
+    last_test_at: datetime | None = None
+    message: str | None = None
+
+
 class SourceConnectionView(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -60,6 +77,11 @@ class SourceConnectionView(BaseModel):
     checkpoint_updated_at: datetime | None = None
     latest_run: SourceRunView | None = None
     recent_runs: list[SourceRunView] = Field(default_factory=list)
+    connection_test: SourceConnectionTestView = Field(
+        default_factory=lambda: SourceConnectionTestView(
+            status=SourceConnectionTestStatus.NEVER_TESTED
+        )
+    )
 
 
 class SourcesSummary(BaseModel):
@@ -115,3 +137,76 @@ class SourceCredentialStatus(BaseModel):
 
     source_connection_id: UUID
     credential_configured: bool
+
+
+
+class CreateSourceConnectionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source_system: Literal[
+        "microsoft_graph_mail",
+        "microsoft_graph_sharepoint",
+    ]
+    display_name: str = Field(min_length=1, max_length=255)
+    safe_config: dict[str, Any]
+    permission_scope: list[str] = Field(
+        default_factory=lambda: ["project:read"],
+        min_length=1,
+    )
+    enabled: bool = True
+
+    @field_validator("display_name")
+    @classmethod
+    def _strip_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("display_name must not be empty")
+        return value
+
+    @field_validator("permission_scope")
+    @classmethod
+    def _normalize_scope(cls, values: list[str]) -> list[str]:
+        normalized = sorted({item.strip() for item in values if item.strip()})
+        if not normalized:
+            raise ValueError("permission_scope must contain at least one value")
+        return normalized
+
+
+class UpdateSourceConnectionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    display_name: str | None = Field(default=None, min_length=1, max_length=255)
+    safe_config: dict[str, Any] | None = None
+    permission_scope: list[str] | None = Field(default=None, min_length=1)
+    enabled: bool | None = None
+
+    @field_validator("display_name")
+    @classmethod
+    def _strip_optional_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            raise ValueError("display_name must not be empty")
+        return value
+
+    @field_validator("permission_scope")
+    @classmethod
+    def _normalize_optional_scope(
+        cls,
+        values: list[str] | None,
+    ) -> list[str] | None:
+        if values is None:
+            return None
+        normalized = sorted({item.strip() for item in values if item.strip()})
+        if not normalized:
+            raise ValueError("permission_scope must contain at least one value")
+        return normalized
+
+
+class SourceConnectionTestResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source_connection_id: UUID
+    status: SourceConnectionTestStatus
+    requested_at: datetime
