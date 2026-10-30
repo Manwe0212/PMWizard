@@ -50,7 +50,7 @@ npm run dev
 Open `http://localhost:3000` and sign in using:
 
 - **Workspace ID:** `269ba0ba-35e4-4e86-bd2e-7d43f09d2550`
-- **Email:** `demo@pmwizard.local`
+- **Email:** `demo@example.com`
 - **Password:** the password you typed at the prompt
 
 The CLI prints the workspace, project ID, and whether rows were newly created
