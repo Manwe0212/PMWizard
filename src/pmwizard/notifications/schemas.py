@@ -81,7 +81,7 @@ class NotificationPreferenceCommand(BaseModel):
 class NotificationPreferenceView(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    id: UUID
+    id: UUID | None = None
     project_id: UUID
     enabled: bool
     email_enabled: bool
