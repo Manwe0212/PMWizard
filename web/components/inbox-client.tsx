@@ -840,7 +840,7 @@ export function InboxClient({
   
           </>
         ) : activeView === "activity" ? (
-          <ActivityWorkspace />
+          <ActivityWorkspace canExport={canReviewProject} />
         ) : activeView === "memory" ? (
           <MemoryWorkspace projectName={projectName} />
         ) : (
