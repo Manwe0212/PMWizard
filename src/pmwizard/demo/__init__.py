@@ -30,7 +30,7 @@ from pmwizard.persistence.orm import (
 
 # Public, deterministic LOCAL DEMO identifiers, not authentication credentials.
 DEMO_TENANT_ID = UUID("269ba0ba-35e4-4e86-bd2e-7d43f09d2550")
-DEMO_EMAIL = "demo@pmwizard.local"
+DEMO_EMAIL = "demo@example.com"
 DEMO_DISPLAY_NAME = "PMWizard Demo Project Manager"
 DEMO_PROJECT_NAME = "Atlas Delivery — Synthetic Demo"
 DEMO_SOURCE = "pmwizard_local_demo_v0"
