@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 from collections.abc import Callable, Iterator
 from uuid import UUID
 
@@ -29,6 +30,7 @@ from pmwizard.automation import (
     RunNowResponse,
     UpdateAutomationScheduleRequest,
 )
+from pmwizard.activity import ActivityCategory, ActivityTimeline, ProjectActivityService
 from pmwizard.attention import (
     AttentionCenterService,
     AttentionCenterSnapshot,
@@ -332,6 +334,46 @@ def create_app(
             tenant_id=principal.tenant_id,
             authorized_project_ids=authorized_project_ids,
         )
+
+    @app.get(
+        "/v1/projects/{project_id}/activity",
+        response_model=ActivityTimeline,
+    )
+    def get_project_activity(
+        project_id: UUID,
+        category: list[ActivityCategory] | None = Query(default=None),
+        actor_id: UUID | None = None,
+        since: datetime | None = None,
+        until: datetime | None = None,
+        cursor: str | None = Query(default=None, max_length=256),
+        limit: int = Query(default=40, ge=1, le=100),
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> ActivityTimeline:
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:read")
+        try:
+            return ProjectActivityService(session).timeline(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                permissions=permissions,
+                categories=category,
+                actor_id=actor_id,
+                since=since,
+                until=until,
+                cursor=cursor,
+                limit=limit,
+            )
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            ) from exc
 
     @app.get(
         "/v1/projects/{project_id}/notifications",

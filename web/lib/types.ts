@@ -723,3 +723,34 @@ export interface NotificationWorkspaceSnapshot {
   preference: NotificationPreferenceView;
   recent_deliveries: NotificationDeliveryView[];
 }
+
+
+export type ActivityCategory =
+  | "event"
+  | "human_review"
+  | "audit"
+  | "source_run"
+  | "automation_run"
+  | "health_snapshot";
+
+export interface ActivityItem {
+  id: string;
+  category: ActivityCategory;
+  occurred_at: string;
+  actor_kind: "human" | "worker" | "system";
+  actor_id: string | null;
+  action: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  status: string | null;
+  summary: string | null;
+  changed_fields: string[];
+  evidence_ids: string[];
+}
+
+export interface ActivityTimeline {
+  project_id: string;
+  count: number;
+  items: ActivityItem[];
+  next_cursor: string | null;
+}

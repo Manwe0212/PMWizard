@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { ActivityWorkspace } from "@/components/activity-workspace";
 import { AttentionCenterWorkspace } from "@/components/attention-center-workspace";
 import { AutomationWorkspace } from "@/components/automation-workspace";
 import { ExecutiveDashboard } from "@/components/executive-dashboard";
@@ -109,7 +110,7 @@ export function InboxClient({
   const [reviewerNote, setReviewerNote] = useState("");
   const [attentionUnread, setAttentionUnread] = useState(0);
   const [activeView, setActiveView] = useState<
-    "executive" | "portfolio" | "attention" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources"
+    "executive" | "portfolio" | "attention" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources" | "activity"
   >("executive");
 
   const loadInbox = useCallback(async () => {
@@ -336,6 +337,14 @@ export function InboxClient({
               {items.length > 0 && <span className="navCount">{items.length}</span>}
             </button>
             <button
+              className={`navItem ${activeView === "activity" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("activity")}
+            >
+              <span className="navIcon">≡</span>
+              Activity Timeline
+            </button>
+            <button
               className={`navItem ${activeView === "memory" ? "active" : ""}`}
               type="button"
               onClick={() => setActiveView("memory")}
@@ -390,6 +399,8 @@ export function InboxClient({
                       ? "Automations"
                       : activeView === "inbox"
                       ? "Project Inbox"
+                    : activeView === "activity"
+                      ? "Activity Timeline"
                     : activeView === "memory"
                       ? "Project Memory"
                       : "Sources"}
@@ -409,6 +420,8 @@ export function InboxClient({
                       ? "Schedule recurring intelligence work without moving governance into the request path."
                       : activeView === "inbox"
                       ? "Review evidence-backed updates before they become project truth."
+                    : activeView === "activity"
+                      ? "Explore the ordered, evidence-aware record of project activity."
                     : activeView === "memory"
                       ? "Inspect the governed project truth produced by authorized review."
                       : "Monitor authorized source health, sync history, and ingestion telemetry."}
@@ -826,6 +839,8 @@ export function InboxClient({
           </section>
   
           </>
+        ) : activeView === "activity" ? (
+          <ActivityWorkspace />
         ) : activeView === "memory" ? (
           <MemoryWorkspace projectName={projectName} />
         ) : (
