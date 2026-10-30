@@ -1,0 +1,7 @@
+# No local cookies, source secrets, caches or host build output.
+.env
+.env.*
+.next
+node_modules
+npm-debug.log*
+.DS_Store
