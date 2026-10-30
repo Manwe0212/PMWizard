@@ -55,6 +55,22 @@ Initial work will focus on:
 
 PMWizard now includes governed Project Memory, deterministic Health, portfolio intelligence, human-reviewed AI suggestions, an Attention Center, Email/Teams notification delivery, an auditable Activity Timeline, and redacted CSV/JSON activity exports. PR #25 adds an explicitly gated **synthetic local demo** for reproducible first-run testing without real client data. These features are MVP modules, not a production-ready hosted service.
 
+## Containerized local demo (PR #26)
+
+To launch an isolated **synthetic PMWizard demo** with PostgreSQL, migrations,
+project data, API and web using Docker Compose:
+
+```bash
+python scripts/init_demo_env.py
+docker compose --env-file .env.demo -f compose.demo.yml up --build -d --wait
+python scripts/smoke_demo_stack.py
+```
+
+Open **http://127.0.0.1:3000**. See
+[`docs/CONTAINERIZED_LOCAL_DEMO.md`](docs/CONTAINERIZED_LOCAL_DEMO.md)
+for the demo credentials, safe shutdown commands and security restrictions.
+This is for **localhost development only**, not production hosting.
+
 ## Local demo and first-run walkthrough
 
 Start with [`docs/LOCAL_DEMO_ONBOARDING.md`](docs/LOCAL_DEMO_ONBOARDING.md) for the complete **local-only** path: database migrations, a synthetic demo user and project, server startup, frontend startup, and a test login. No real customer content or third-party credentials are needed. Never seed a production or shared client database.

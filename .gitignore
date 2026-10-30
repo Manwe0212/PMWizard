@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# PR #26: generated local-only Docker demo credentials.
+.env.demo

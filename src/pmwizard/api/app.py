@@ -10,6 +10,8 @@ from uuid import UUID
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
 from fastapi.responses import Response
+from sqlalchemy import text as sql_text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from pmwizard.auth import (
@@ -130,6 +132,23 @@ def create_app(
             yield session
         finally:
             session.close()
+
+    @app.get("/health/live", include_in_schema=False)
+    def health_live() -> dict[str, str]:
+        """Process liveness; no user data, credentials or integration checks."""
+        return {"status": "ok"}
+
+    @app.get("/health/ready", include_in_schema=False)
+    def health_ready(session: Session = Depends(get_session)) -> dict[str, str]:
+        """Readiness requires a reachable, migrated project database."""
+        try:
+            session.execute(sql_text("SELECT 1 FROM projects LIMIT 1"))
+        except SQLAlchemyError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Database is not ready.",
+            ) from exc
+        return {"status": "ok"}
 
     def unauthorized(detail: str) -> HTTPException:
         return HTTPException(
