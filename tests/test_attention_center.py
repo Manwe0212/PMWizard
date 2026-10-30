@@ -18,7 +18,13 @@ from pmwizard.attention import (
 from pmwizard.models import AISuggestion, ActionItem, Evidence, Project
 from pmwizard.models.enums import ActionItemStatus, SuggestionType
 from pmwizard.persistence import Base, ProjectMemoryService
-from pmwizard.persistence.orm import ActionItemORM
+from pmwizard.persistence.orm import (
+    ActionItemORM,
+    AutomationScheduleORM,
+    ConnectorRunORM,
+    DecisionORM,
+    SourceConnectionORM,
+)
 
 
 NOW = datetime(2026, 10, 30, 16, 0, tzinfo=timezone.utc)
@@ -413,3 +419,105 @@ def test_snooze_rejects_past_and_excessive_windows(attention_env) -> None:
                 ),
                 now=NOW,
             )
+
+
+
+def test_attention_composes_source_automation_and_stale_decision_signals(
+    attention_env,
+) -> None:
+    tenant_id, user_id, project = _seed_project(attention_env)
+
+    source_id = uuid4()
+    schedule_id = uuid4()
+    decision_id = uuid4()
+
+    with attention_env() as session:
+        session.add(
+            SourceConnectionORM(
+                id=source_id,
+                tenant_id=tenant_id,
+                project_id=project.id,
+                connector_key=f"microsoft-graph-mail:admin:{source_id}:v0",
+                source_type="email",
+                source_system="microsoft_graph_mail",
+                display_name="Project Inbox",
+                permission_scope=["project:read"],
+                safe_config={"mailbox": "pm@example.com", "folder_id": "inbox"},
+                credential_ref="env:GRAPH_TEST",
+                is_enabled=True,
+            )
+        )
+        session.add(
+            ConnectorRunORM(
+                id=uuid4(),
+                tenant_id=tenant_id,
+                project_id=project.id,
+                source_connection_id=source_id,
+                connector_key=f"microsoft-graph-mail:admin:{source_id}:v0",
+                status="failed",
+                started_at=NOW - timedelta(minutes=2),
+                finished_at=NOW - timedelta(minutes=1),
+                pages_processed=0,
+                fetched=0,
+                ingested=0,
+                duplicates=0,
+                source_changed=0,
+                empty_content=0,
+                skipped=0,
+                skips=[],
+                errors=[{"stage": "fetch", "message": "Graph unavailable"}],
+                start_checkpoint_present=False,
+                end_checkpoint_present=False,
+                checkpoint_fingerprint=None,
+            )
+        )
+        session.add(
+            AutomationScheduleORM(
+                id=schedule_id,
+                tenant_id=tenant_id,
+                project_id=project.id,
+                task_type="source_sync",
+                name="Sync Project Inbox",
+                interval_minutes=60,
+                is_enabled=True,
+                config={"source_connection_id": str(source_id)},
+                next_run_at=NOW + timedelta(hours=1),
+                pending_trigger="scheduled",
+                last_run_at=NOW - timedelta(minutes=1),
+                last_status="failed",
+                consecutive_failures=3,
+                created_by=user_id,
+                lease_owner=None,
+                lease_expires_at=None,
+            )
+        )
+        session.add(
+            DecisionORM(
+                id=decision_id,
+                tenant_id=tenant_id,
+                project_id=project.id,
+                title="Approve production rollout",
+                status="pending",
+                alternatives_considered=[],
+                review_date=NOW.date() - timedelta(days=8),
+                provenance={},
+            )
+        )
+        session.commit()
+
+    with attention_env() as session:
+        snapshot = AttentionCenterService(session).snapshot(
+            tenant_id=tenant_id,
+            user_id=user_id,
+            project_id=project.id,
+            permissions={"project:read"},
+            now=NOW,
+        )
+
+    by_key = {item.signal_key: item for item in snapshot.signals}
+    assert by_key[f"source:health:{source_id}"].severity.value == "critical"
+    assert by_key[f"automation:failure:{schedule_id}"].severity.value == "critical"
+    assert by_key[f"decision:stale:{decision_id}"].severity.value == "critical"
+    assert by_key[f"source:health:{source_id}"].target_view == "sources"
+    assert by_key[f"automation:failure:{schedule_id}"].target_view == "automations"
+    assert by_key[f"decision:stale:{decision_id}"].target_view == "memory"
