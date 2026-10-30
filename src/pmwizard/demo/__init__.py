@@ -89,10 +89,11 @@ def seed_local_demo(
 ) -> DemoSeedResult:
     """Create demo rows in caller-owned transaction; never alter existing rows.
 
-    The caller MUST call assert_local_demo_allowed against the actual engine
-    URL before invoking this function. This function is intentionally not an
-    unauthenticated API route.
+    This function enforces the local database and explicit opt-in guard itself,
+    even when invoked programmatically rather than via the CLI.
     """
+    bind = session.get_bind()
+    assert_local_demo_allowed(bind.url.render_as_string(hide_password=False))
     PasswordService._validate_password(password)
     timestamp = now or datetime.now(timezone.utc)
     if timestamp.tzinfo is None:
