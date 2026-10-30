@@ -49,10 +49,11 @@ Initial work will focus on:
 - [`docs/SECURE_SOURCE_RUNTIME.md`](docs/SECURE_SOURCE_RUNTIME.md) — opaque credential references, runtime secret resolution, and scheduled Outlook/SharePoint delta sync
 - [`docs/SOURCE_CONNECTION_ADMIN.md`](docs/SOURCE_CONNECTION_ADMIN.md) — governed creation/editing, worker-executed connection tests, and safe checkpoint reset
 - [`docs/ATTENTION_CENTER.md`](docs/ATTENTION_CENTER.md) — deterministic project attention signals with per-user seen, acknowledge, and snooze receipts
+- [`docs/NOTIFICATION_DELIVERY.md`](docs/NOTIFICATION_DELIVERY.md) — secure Email/Teams delivery, user preferences, deduplication, and sanitized history
 
 ## Project status
 
-PMWizard now has governed Source administration and is implementing **Project Notifications & Attention Center V0** so active Health, execution, RAID, Decision, Source, Automation, and review conditions are prioritized in one personal, explainable workspace.
+PMWizard now has a deterministic personal Attention Center and is implementing **Notification Delivery & Preferences V0** so authorized users can securely receive new or changed project attention signals through Email and Microsoft Teams without creating a second rules engine.
 
 ## Local development
 
