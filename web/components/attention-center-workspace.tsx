@@ -100,11 +100,6 @@ export function AttentionCenterWorkspace({
     setError(null);
     try {
       const body: Record<string, unknown> = { action };
-      if (action === "snooze") {
-        body.snoozed_until = new Date(
-          Date.now() + 24 * 60 * 60 * 1000,
-        ).toISOString();
-      }
       await readJson<AttentionStateResponse>(
         await fetch(
           `/api/attention/${encodeURIComponent(signal.id)}/state`,
