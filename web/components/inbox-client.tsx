@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { AttentionCenterWorkspace } from "@/components/attention-center-workspace";
 import { AutomationWorkspace } from "@/components/automation-workspace";
 import { ExecutiveDashboard } from "@/components/executive-dashboard";
 import { HealthWorkspace } from "@/components/health-workspace";
@@ -10,6 +11,7 @@ import { PortfolioWorkspace } from "@/components/portfolio-workspace";
 import { SourcesWorkspace } from "@/components/sources-workspace";
 import { StatusReportWorkspace } from "@/components/status-report-workspace";
 import type {
+  AttentionCenterSnapshot,
   InboxListResponse,
   InboxSuggestionDetail,
   InboxSuggestionSummary,
@@ -105,8 +107,9 @@ export function InboxClient({
   const [editStatus, setEditStatus] = useState("in_progress");
   const [editSummary, setEditSummary] = useState("");
   const [reviewerNote, setReviewerNote] = useState("");
+  const [attentionUnread, setAttentionUnread] = useState(0);
   const [activeView, setActiveView] = useState<
-    "executive" | "portfolio" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources"
+    "executive" | "portfolio" | "attention" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources"
   >("executive");
 
   const loadInbox = useCallback(async () => {
@@ -129,6 +132,15 @@ export function InboxClient({
       );
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const loadAttentionSummary = useCallback(async () => {
+    try {
+      const response = await jsonRequest<AttentionCenterSnapshot>("/api/attention");
+      setAttentionUnread(response.summary.unread);
+    } catch {
+      setAttentionUnread(0);
     }
   }, []);
 
@@ -170,6 +182,10 @@ export function InboxClient({
   useEffect(() => {
     void loadInbox();
   }, [loadInbox]);
+
+  useEffect(() => {
+    void loadAttentionSummary();
+  }, [activeView, projectId, loadAttentionSummary]);
 
   useEffect(() => {
     if (selectedId) {
@@ -219,6 +235,7 @@ export function InboxClient({
       );
 
       await loadInbox();
+      await loadAttentionSummary();
 
       if (status === "deferred") {
         await loadDetail(selectedId);
@@ -273,6 +290,17 @@ export function InboxClient({
             >
               <span className="navIcon">▦</span>
               Program & Portfolio
+            </button>
+            <button
+              className={`navItem ${activeView === "attention" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("attention")}
+            >
+              <span className="navIcon">!</span>
+              Attention Center
+              {attentionUnread > 0 && (
+                <span className="navCount">{attentionUnread}</span>
+              )}
             </button>
             <button
               className={`navItem ${activeView === "health" ? "active" : ""}`}
@@ -343,14 +371,18 @@ export function InboxClient({
                 ? "Executive workspace"
                 : activeView === "portfolio"
                   ? "Cross-project workspace"
-                  : "Project workspace"}
+                  : activeView === "attention"
+                    ? "Personal attention workspace"
+                    : "Project workspace"}
             </div>
             <h1>
               {activeView === "executive"
                 ? "Executive Dashboard"
                 : activeView === "portfolio"
                   ? "Program & Portfolio"
-                  : activeView === "health"
+                  : activeView === "attention"
+                    ? "Attention Center"
+                    : activeView === "health"
                   ? "Project Health"
                   : activeView === "reports"
                     ? "Status Reports"
@@ -367,7 +399,9 @@ export function InboxClient({
                 ? "See what requires attention across your authorized project landscape."
                 : activeView === "portfolio"
                   ? "Roll up authorized project health, trends, hierarchy, and shared signals."
-                  : activeView === "health"
+                  : activeView === "attention"
+                    ? "Prioritize active project conditions without changing governed truth."
+                    : activeView === "health"
                   ? "Understand project health through deterministic, explainable signals."
                   : activeView === "reports"
                     ? "Generate grounded AI status-report drafts from governed project truth."
@@ -446,6 +480,11 @@ export function InboxClient({
               await onProjectChange(nextProjectId);
               setActiveView("health");
             }}
+          />
+        ) : activeView === "attention" ? (
+          <AttentionCenterWorkspace
+            onNavigate={(target) => setActiveView(target)}
+            onUnreadChange={setAttentionUnread}
           />
         ) : activeView === "health" ? (
           <HealthWorkspace canCapture={canReviewProject} />
