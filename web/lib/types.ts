@@ -629,3 +629,57 @@ export interface AutomationsWorkspaceSnapshot {
   summary: AutomationsSummary;
   schedules: AutomationScheduleView[];
 }
+
+
+export type AttentionSeverity = "critical" | "warning" | "info";
+export type AttentionCategory =
+  | "health"
+  | "execution"
+  | "raid"
+  | "decision"
+  | "source"
+  | "automation"
+  | "review";
+export type AttentionUserState =
+  | "unread"
+  | "seen"
+  | "acknowledged"
+  | "snoozed";
+
+export interface AttentionSignalView {
+  id: string;
+  signal_key: string;
+  category: AttentionCategory;
+  severity: AttentionSeverity;
+  title: string;
+  detail: string;
+  target_view: "health" | "memory" | "sources" | "automations" | "inbox";
+  action_label: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  due_date: string | null;
+  observed_at: string | null;
+  state: AttentionUserState;
+  snoozed_until: string | null;
+}
+
+export interface AttentionSummary {
+  active: number;
+  unread: number;
+  critical: number;
+  warning: number;
+  info: number;
+  acknowledged: number;
+  snoozed: number;
+}
+
+export interface AttentionCenterSnapshot {
+  project_id: string;
+  generated_at: string;
+  summary: AttentionSummary;
+  signals: AttentionSignalView[];
+}
+
+export interface AttentionStateResponse {
+  signal: AttentionSignalView;
+}
