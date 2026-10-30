@@ -235,8 +235,19 @@ class NotificationRepository:
         row = self.session.get(NotificationPreferenceORM, claim.preference_id)
         if row is None:
             return
-        if row.lease_owner != claim.lease_token:
-            raise RuntimeError("Notification preference lease was lost.")
+        lease_expires_at = (
+            self._aware(row.lease_expires_at)
+            if row.lease_expires_at is not None
+            else None
+        )
+        if (
+            row.lease_owner != claim.lease_token
+            or lease_expires_at is None
+            or lease_expires_at <= now
+        ):
+            raise RuntimeError(
+                "Notification preference lease was lost or expired."
+            )
         row.last_delivery_at = now
         row.next_delivery_at = now + timedelta(minutes=row.interval_minutes)
         row.lease_owner = None
