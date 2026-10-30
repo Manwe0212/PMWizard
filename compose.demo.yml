@@ -1,0 +1,110 @@
+# Explicit local-only demo stack. Do NOT combine with production Compose files.
+#
+# One-time:
+#   python scripts/init_demo_env.py
+# Run:
+#   docker compose --env-file .env.demo -f compose.demo.yml up --build -d
+#
+# Database has no host-published port. Web/API listen only on host loopback.
+name: pmwizard-local-demo
+
+services:
+  demo-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pmwizard
+      POSTGRES_USER: pmwizard
+      POSTGRES_PASSWORD: ${PMWIZARD_DEMO_DB_PASSWORD:?Run python scripts/init_demo_env.py first}
+    volumes:
+      - demo_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pmwizard -d pmwizard"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  demo-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      PMWIZARD_DATABASE_URL: postgresql+psycopg://pmwizard:${PMWIZARD_DEMO_DB_PASSWORD:?Missing demo DB password}@demo-db:5432/pmwizard
+    depends_on:
+      demo-db:
+        condition: service_healthy
+    restart: "no"
+
+  demo-seed:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    command: ["python", "-m", "pmwizard.demo.seed"]
+    # The PR #25 seeder *requires* loopback DB access. This service shares
+    # ONLY the dedicated demo DB's network namespace so 127.0.0.1 is valid;
+    # it cannot seed an arbitrary remote database via a Compose hostname.
+    network_mode: "service:demo-db"
+    environment:
+      PMWIZARD_DATABASE_URL: postgresql+psycopg://pmwizard:${PMWIZARD_DEMO_DB_PASSWORD:?Missing demo DB password}@127.0.0.1:5432/pmwizard
+      PMWIZARD_ENV: development
+      PMWIZARD_ENABLE_LOCAL_DEMO: "true"
+      PMWIZARD_DEMO_PASSWORD: ${PMWIZARD_DEMO_PASSWORD:?Missing demo user password}
+    depends_on:
+      demo-db:
+        condition: service_healthy
+      demo-migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  demo-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      PMWIZARD_DATABASE_URL: postgresql+psycopg://pmwizard:${PMWIZARD_DEMO_DB_PASSWORD:?Missing demo DB password}@demo-db:5432/pmwizard
+      PMWIZARD_AUTH_SECRET: ${PMWIZARD_AUTH_SECRET:?Missing random auth secret}
+      PMWIZARD_ENV: development
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      demo-seed:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      start_period: 25s
+      retries: 12
+    restart: unless-stopped
+
+  demo-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.demo
+    environment:
+      PMWIZARD_API_URL: http://demo-api:8000
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      demo-api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 8s
+      start_period: 90s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  demo_pgdata:
