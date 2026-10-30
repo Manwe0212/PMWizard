@@ -79,3 +79,44 @@ jobs:
 
       - name: Build web
         run: npm run build
+
+
+  demo-stack:
+    name: docker-demo-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python for demo bootstrap and smoke script
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate temporary, private demo credentials
+        env:
+          PMWIZARD_DEMO_QUIET: "1"
+        run: python scripts/init_demo_env.py
+
+      - name: Validate isolated Compose configuration
+        run: docker compose --env-file .env.demo -f compose.demo.yml config --quiet
+
+      - name: Build and start database, migrations, seed, API and web
+        run: docker compose --env-file .env.demo -f compose.demo.yml up --build -d --wait
+
+      - name: Smoke test authenticated local demo
+        run: python scripts/smoke_demo_stack.py
+
+      - name: Diagnose demo containers on failure
+        if: failure()
+        run: |
+          docker compose --env-file .env.demo -f compose.demo.yml ps -a
+          docker compose --env-file .env.demo -f compose.demo.yml logs --no-color --tail=100
+
+      - name: Remove ephemeral demo data and containers
+        if: always()
+        run: |
+          if test -f .env.demo; then
+            docker compose --env-file .env.demo -f compose.demo.yml down --volumes --remove-orphans
+          fi
