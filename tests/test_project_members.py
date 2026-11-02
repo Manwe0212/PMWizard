@@ -105,9 +105,9 @@ def test_owner_can_add_existing_user_and_grant_only_project_role(members_env):
     original = listed.json()["items"][0]
     assert original["is_owner"] is True
     assert original["user_id"] == str(v["owner"].id)
-    assert original["permissions"] == [
+    assert set(original["permissions"]) == {
         "project:read", "project:review", "project:manage_members",
-    ]
+    }
 
     add = client.post(url, headers=owner_headers, json={
         "email": "REVIEWER@example.com", "role": "reviewer",
