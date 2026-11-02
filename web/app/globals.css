@@ -6723,3 +6723,13 @@ button:disabled {
   .memberActions { justify-content: flex-start; }
   .memberIntro { align-items: flex-start; flex-wrap: wrap; }
 }
+
+.memberPermissionNotice {
+  margin: 0;
+  border-left: 3px solid #e1ad56;
+  padding: 10px 14px;
+  background: #fffaf2;
+  color: #66502c;
+  line-height: 1.6;
+  font-size: 11px;
+}
