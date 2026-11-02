@@ -65,6 +65,7 @@ class MemberView(BaseModel):
     role: ProjectRole
     permissions: list[str]
     is_active: bool
+    is_owner: bool = False
     joined_at: datetime
 
 
@@ -114,7 +115,10 @@ class ProjectMemberService:
             raise PermissionError("Missing required permission: project:manage_members")
         return project
 
-    def _view(self, membership: ProjectMembershipORM, user: AppUserORM) -> MemberView:
+    def _view(
+        self, membership: ProjectMembershipORM, user: AppUserORM,
+        owner_id: UUID | None,
+    ) -> MemberView:
         return MemberView(
             user_id=user.id,
             email=user.email,
@@ -126,6 +130,7 @@ class ProjectMemberService:
             ),
             permissions=list(membership.permissions),
             is_active=user.is_active,
+            is_owner=user.id == owner_id,
             joined_at=_utc(membership.created_at),
         )
 
@@ -138,7 +143,7 @@ class ProjectMemberService:
         limit: int = 50,
         offset: int = 0,
     ) -> MembersPage:
-        self._authorize(tenant_id, project_id, actor_id)
+        project = self._authorize(tenant_id, project_id, actor_id)
         if type(limit) is not int or not 1 <= limit <= 100:
             raise ValueError("limit must be between 1 and 100")
         if type(offset) is not int or offset < 0:
@@ -162,7 +167,7 @@ class ProjectMemberService:
         # such rows as a conservative viewer; updating them requires explicit
         # selection of a supported role.
         items = [
-            self._view(membership, user)
+            self._view(membership, user, project.project_manager_id)
             for membership, user in rows[:limit]
         ]
         return MembersPage(
@@ -180,7 +185,7 @@ class ProjectMemberService:
         actor_id: UUID,
         command: AddProjectMemberRequest,
     ) -> MemberView:
-        self._authorize(tenant_id, project_id, actor_id, lock=True)
+        project = self._authorize(tenant_id, project_id, actor_id, lock=True)
         user = self.repository.get_user_by_email(tenant_id, str(command.email))
         if user is None or not user.is_active:
             raise LookupError("Eligible account not found in this workspace")
@@ -217,6 +222,7 @@ class ProjectMemberService:
             role=command.role,
             permissions=list(ROLE_PERMISSIONS[command.role]),
             is_active=user.is_active,
+            is_owner=user.id == project.project_manager_id,
             joined_at=_utc(created.created_at),
         )
 
@@ -246,7 +252,7 @@ class ProjectMemberService:
         old_role = membership.role
         permissions = list(ROLE_PERMISSIONS[command.role])
         if old_role == command.role.value and set(membership.permissions) == set(permissions):
-            return self._view(membership, user)
+            return self._view(membership, user, project.project_manager_id)
         try:
             membership.role = command.role.value
             membership.permissions = permissions
@@ -264,7 +270,7 @@ class ProjectMemberService:
         except Exception:
             self.session.rollback()
             raise
-        return self._view(membership, user)
+        return self._view(membership, user, project.project_manager_id)
 
     def remove_member(
         self,
