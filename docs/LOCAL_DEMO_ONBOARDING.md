@@ -69,7 +69,8 @@ a safe environment configuration for longer-running development.
 
 The fictional **Atlas Delivery — Synthetic Demo** project contains:
 
-- A project manager user with only `project:read` and `project:review` rights
+- A project manager user with project-scoped `project:read`, `project:review`
+  and `project:manage_members` rights on fresh demo seeds
 - Three Action Items: blocked, in progress, completed
 - One Risk, one Issue, one Dependency and a pending Decision
 - One synthetic meeting Evidence record with `project:read` scope
