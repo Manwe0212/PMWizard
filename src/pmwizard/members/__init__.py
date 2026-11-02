@@ -119,7 +119,11 @@ class ProjectMemberService:
             user_id=user.id,
             email=user.email,
             display_name=user.display_name,
-            role=ProjectRole(membership.role),
+            role=(
+                ProjectRole(membership.role)
+                if membership.role in ProjectRole._value2member_map_
+                else ProjectRole.VIEWER
+            ),
             permissions=list(membership.permissions),
             is_active=user.is_active,
             joined_at=_utc(membership.created_at),
