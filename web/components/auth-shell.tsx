@@ -305,6 +305,7 @@ export function AuthShell() {
       projectId={selectedProject.project_id}
       projectName={selectedProject.name}
       projects={session.projects}
+      userId={session.user.id}
       userName={session.user.display_name}
       userEmail={session.user.email}
       onProjectChange={selectProject}
