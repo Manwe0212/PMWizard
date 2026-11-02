@@ -10,7 +10,7 @@ import type {
 
 const ROLES: { value: ProjectMemberRole; label: string; detail: string }[] = [
   { value: "viewer", label: "Viewer", detail: "Read-only access" },
-  { value: "reviewer", label: "Reviewer", detail: "Read and human-review access" },
+  { value: "reviewer", label: "Reviewer", detail: "Read, review and existing privileged project actions" },
   {
     value: "project_manager",
     label: "Project manager",
@@ -165,6 +165,11 @@ export function MembersWorkspace({ currentUserId }: { currentUserId: string }) {
         ))}
       </div>
 
+      <p className="memberPermissionNotice">
+        Note: project:review currently also authorizes some project operations,
+        including source configuration and automations. Grant reviewer access carefully.
+      </p>
+
       <form className="memberAddForm" onSubmit={addMember}>
         <div>
           <h3>Add existing member</h3>
@@ -221,6 +226,7 @@ export function MembersWorkspace({ currentUserId }: { currentUserId: string }) {
                   {!member.is_active ? "Inactive · " : ""}
                   Joined {new Date(member.joined_at).toLocaleDateString()}
                 </small>
+                <small>Effective permissions: {member.permissions.join(", ")}</small>
               </div>
               <div className="memberActions">
                 <label>
