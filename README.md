@@ -55,6 +55,17 @@ Initial work will focus on:
 
 PMWizard now includes governed Project Memory, deterministic Health, portfolio intelligence, human-reviewed AI suggestions, an Attention Center, Email/Teams notification delivery, an auditable Activity Timeline, and redacted CSV/JSON activity exports. PR #25 adds an explicitly gated **synthetic local demo** for reproducible first-run testing without real client data. These features are MVP modules, not a production-ready hosted service.
 
+## Manage project members (PR #28)
+
+Authorized project managers can use **Members & Roles** to add existing
+tenant users by email, assign a fixed Viewer/Reviewer/Project Manager role,
+and revoke project-only access. All changes are audited. New project
+creators receive `project:manage_members`; existing manager memberships
+must be explicitly upgraded by a trusted operator rather than silently
+escalated. See
+[`docs/PROJECT_MEMBERS_AND_ROLES.md`](docs/PROJECT_MEMBERS_AND_ROLES.md)
+for permission boundaries, API and safety guarantees.
+
 ## Create your first project (PR #27)
 
 Once you have a PMWizard login, select **+ New project** from the project
