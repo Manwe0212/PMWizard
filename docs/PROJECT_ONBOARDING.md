@@ -15,7 +15,8 @@ and optionally its description, objective, methodology and dates.
 On successful creation PMWizard:
 1. Saves the project within the user's authenticated tenant.
 2. Assigns the creator as its project manager.
-3. Grants **only** `project:read` and `project:review` permissions on the
+3. Grants only project-scoped `project:read`, `project:review`, and
+   `project:manage_members` permissions on the
    new project (not on other projects, and not on all tenant projects).
 4. Adds a `project_created` audit record visible in Activity Timeline.
 5. Switches the browser to the newly created project after membership
@@ -50,7 +51,7 @@ Returns `201 Created`, using the existing `ProjectAccess` response:
   "name": "Customer Enablement Launch",
   "status": "planning",
   "role": "project_manager",
-  "permissions": ["project:read", "project:review"]
+  "permissions": ["project:read", "project:review", "project:manage_members"]
 }
 ```
 
