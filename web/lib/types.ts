@@ -80,6 +80,26 @@ export interface ProjectAccess {
   permissions: string[];
 }
 
+export type ProjectMemberRole = "viewer" | "reviewer" | "project_manager";
+
+export interface ProjectMember {
+  user_id: string;
+  email: string;
+  display_name: string;
+  role: ProjectMemberRole;
+  permissions: string[];
+  is_active: boolean;
+  is_owner: boolean;
+  joined_at: string;
+}
+
+export interface ProjectMembersPage {
+  project_id: string;
+  count: number;
+  items: ProjectMember[];
+  next_offset: number | null;
+}
+
 export interface WebSession {
   user: AppUser;
   projects: ProjectAccess[];
