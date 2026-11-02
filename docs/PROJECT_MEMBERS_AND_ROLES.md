@@ -17,7 +17,7 @@ email invitation, or global tenant administrator implied by these endpoints.
 | `reviewer` | `project:read`, `project:review` | Human review of AI proposals |
 | `project_manager` | `project:read`, `project:review`, `project:manage_members` | Manage this project's member list |
 
-These are strictly controlled server-side presets. Client-supplied permission
+**Important:** In the current MVP, `project:review` also gates some\noperational actions (including certain source-connection configuration and\nautomation endpoints). Therefore the Reviewer preset has broader powers than\nreviewing AI suggestions alone. Treat it as a privileged project role until\nfiner-grained operational permissions are introduced.\n\nThese are strictly controlled server-side presets. Client-supplied permission
 arrays and tenant IDs are rejected. Membership management cannot create
 source credentials, enable cross-tenant access or assign tenant-wide powers.
 
