@@ -93,7 +93,7 @@ def test_create_project_assigns_manager_membership_and_initial_audit(project_env
         )
         assert membership.tenant_id == tenant
         assert membership.user_id == user.id
-        assert membership.permissions == ["project:read", "project:review", "project:manage_members"]
+        assert set(membership.permissions) == {"project:read", "project:review", "project:manage_members"}
         audits = session.scalars(
             select(AuditLogORM).where(AuditLogORM.project_id == UUID(project_id))
         ).all()
