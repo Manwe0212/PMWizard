@@ -63,7 +63,7 @@ def test_create_project_assigns_manager_membership_and_initial_audit(project_env
     assert payload["name"] == "Customer Enablement Launch"
     assert payload["role"] == "project_manager"
     assert payload["status"] == "planning"
-    assert payload["permissions"] == ["project:read", "project:review"]
+    assert payload["permissions"] == ["project:read", "project:review", "project:manage_members"]
     project_id = payload["project_id"]
     listed = client.get("/v1/projects", headers=headers)
     assert listed.status_code == 200
