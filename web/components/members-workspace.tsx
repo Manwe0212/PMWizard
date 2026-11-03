@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { InvitationWorkspace } from "@/components/invitation-workspace";
 
 import type {
   ProjectMember,
@@ -289,6 +290,7 @@ export function MembersWorkspace({ currentUserId }: { currentUserId: string }) {
           </button>
         </div>
       )}
+      <InvitationWorkspace />
     </section>
   );
 }

@@ -183,6 +183,27 @@ class ConnectorRunORM(Base, TenantMixin):
     )
 
 
+class ProjectInvitationORM(Base, TimestampMixin, TenantMixin):
+    """One-time account onboarding: store only a token digest, never its value."""
+
+    __tablename__ = "project_invitations"
+    __table_args__ = (
+        UniqueConstraint("token_hash", name="uq_project_invitations_token_hash"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    project_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
+    invited_email: Mapped[str] = mapped_column(String(320), index=True, nullable=False)
+    role: Mapped[str] = mapped_column(String(100), nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    invited_by: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    accepted_user_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class AppUserORM(Base, TimestampMixin, TenantMixin):
     __tablename__ = "app_users"
     __table_args__ = (

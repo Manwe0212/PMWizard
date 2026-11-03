@@ -6733,3 +6733,47 @@ button:disabled {
   line-height: 1.6;
   font-size: 11px;
 }
+
+
+/* PR #29 — Secure one-time project invitation UI */
+.memberInvites {
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.memberInvites > .memberListHeader p {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 6px 0 0;
+}
+
+.memberInviteLink {
+  border: 1px solid #bfd5f1;
+  border-radius: 12px;
+  background: #f5f9ff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.memberInviteLink strong { font-size: 12px; }
+.memberInviteLink input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #aec5e4;
+  font-size: 11px;
+  color: var(--ink);
+  background: #fff;
+}
+.memberInviteLinkActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

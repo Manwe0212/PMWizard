@@ -55,6 +55,17 @@ Initial work will focus on:
 
 PMWizard now includes governed Project Memory, deterministic Health, portfolio intelligence, human-reviewed AI suggestions, an Attention Center, Email/Teams notification delivery, an auditable Activity Timeline, and redacted CSV/JSON activity exports. PR #25 adds an explicitly gated **synthetic local demo** for reproducible first-run testing without real client data. These features are MVP modules, not a production-ready hosted service.
 
+## Invite new teammates (PR #29)
+
+Project managers with `project:manage_members` can issue seven-day,
+one-time signup links from **Members & Roles** to people who do not yet have
+an account in the tenant. The recipient opens `/invite#token=...`, sets a
+password, and is granted the selected project-scoped role.
+Invitations are hash-stored, auditable, revocable, and returned only once.
+**Links must be shared manually over a trusted channel; no invitation
+email is sent or mailbox ownership verified.** See
+[`docs/PROJECT_INVITATIONS.md`](docs/PROJECT_INVITATIONS.md).
+
 ## Manage project members (PR #28)
 
 Authorized project managers can use **Members & Roles** to add existing
