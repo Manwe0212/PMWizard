@@ -273,8 +273,8 @@ def test_trusted_headers_cannot_logout_or_reset_authenticated_sessions(env):
         "X-PMWizard-User-ID": str(v["verified"].id),
         "X-PMWizard-Permissions": "project:read,project:manage_members",
     }
-    assert v["client"].post("/v1/auth/logout", headers=trusted).status_code == 422
-    assert v["client"].post("/v1/auth/logout-all", headers=trusted).status_code == 422
+    assert v["client"].post("/v1/auth/logout", headers=trusted).status_code == 403
+    assert v["client"].post("/v1/auth/logout-all", headers=trusted).status_code == 403
 
 
 def test_recovery_disabled_responds_503_without_mutating_account(env):
