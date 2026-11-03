@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from pmwizard.auth import PasswordService
 from pmwizard.invitations.email_delivery import InvitationEmailDelivery
-from pmwizard.persistence.orm import AppUserORM, PasswordResetORM
+from pmwizard.persistence.orm import AppUserORM, AuditLogORM, PasswordResetORM
 
 RESET_TTL = timedelta(minutes=30)
 RESET_COOLDOWN = timedelta(minutes=15)
@@ -156,6 +156,18 @@ class PasswordRecoveryService:
             ).all()
             for row in outstanding:
                 row.used_at = now
+            self.session.add(AuditLogORM(
+                tenant_id=user.tenant_id,
+                project_id=None,
+                actor_id=user.id,
+                action="account_password_reset",
+                entity_type="AppUser",
+                entity_id=user.id,
+                previous_state=None,
+                proposed_state=None,
+                final_state={"sessions_revoked": True},
+                evidence_ids=[],
+            ))
             self.session.commit()
         except Exception:
             self.session.rollback()
