@@ -11,8 +11,9 @@ import ssl
 from dataclasses import dataclass
 from email.message import EmailMessage
 from urllib.parse import urlparse
+from typing import Protocol
 
-from pmwizard.notifications import NotificationDeliveryError, SmtpEmailNotificationProvider
+from pmwizard.notifications import SmtpEmailNotificationProvider
 from pmwizard.security import EnvironmentSecretProvider
 
 
@@ -45,9 +46,13 @@ class VerifiedTlsSmtpProvider(SmtpEmailNotificationProvider):
             ) from exc
 
 
+class InvitationMailer(Protocol):
+    def send(self, *, to_email: str, subject: str, text: str) -> None: ...
+
+
 @dataclass(frozen=True)
 class InvitationEmailDelivery:
-    provider: VerifiedTlsSmtpProvider | object
+    provider: InvitationMailer
     public_base_url: str
 
     def send(self, *, email: str, token: str, role: str) -> None:
