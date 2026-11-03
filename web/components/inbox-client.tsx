@@ -32,6 +32,7 @@ type Props = {
   onProjectChange: (projectId: string) => Promise<void>;
   onNewProject: () => void;
   onLogout: () => Promise<void>;
+  onLogoutAll: () => Promise<void>;
   projectSwitching: boolean;
 };
 
@@ -100,6 +101,7 @@ export function InboxClient({
   onProjectChange,
   onNewProject,
   onLogout,
+  onLogoutAll,
   projectSwitching,
 }: Props) {
   const [items, setItems] = useState<InboxSuggestionSummary[]>([]);
@@ -492,6 +494,15 @@ export function InboxClient({
                 <small>Signed in</small>
                 <strong>{userName}</strong>
               </div>
+              <button
+                type="button"
+                className="secondaryButton"
+                onClick={() => void onLogoutAll()}
+                aria-label="Sign out on all devices"
+                title="Invalidate all existing sessions"
+              >
+                Sign out all devices
+              </button>
               <button
                 type="button"
                 className="logoutButton"
