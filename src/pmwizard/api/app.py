@@ -61,6 +61,11 @@ from pmwizard.health import (
     ProjectHealthService,
     ProjectHealthSnapshot,
 )
+from pmwizard.invitations.email_delivery import (
+    InvitationEmailDelivery,
+    InvitationDeliveryUnavailable,
+    delivery_from_environment,
+)
 from pmwizard.invitations import (
     AcceptInvitationRequest,
     CreateInvitationRequest,
@@ -130,6 +135,7 @@ def create_app(
     auth_settings: AuthSettings | None = None,
     allow_trusted_headers: bool = False,
     status_report_provider: StructuredGenerationProvider | None = None,
+    invitation_email_delivery: InvitationEmailDelivery | None = None,
 ) -> FastAPI:
     app = FastAPI(
         title="PMWizard API",
@@ -485,7 +491,13 @@ def create_app(
                 project_id=project_id,
                 actor_id=principal.user_id,
                 command=command,
+                email_delivery=invitation_email_delivery,
             )
+        except InvitationDeliveryUnavailable as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Invitation email could not be sent. No invitation was created.",
+            ) from exc
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         return Response(
@@ -1390,4 +1402,5 @@ def create_default_app() -> FastAPI:
         auth_settings=auth_settings,
         allow_trusted_headers=False,
         status_report_provider=status_report_provider,
+        invitation_email_delivery=delivery_from_environment(),
     )
