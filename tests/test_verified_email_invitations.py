@@ -59,14 +59,18 @@ def env():
         )
     jwt = AccessTokenService(SETTINGS).issue(user_id=manager.id, tenant_id=tenant)
     headers = {"Authorization": f"Bearer {jwt}"}
-    def client_with(provider=None):
+    def client_with(provider=None, strict=False):
         delivery = None
         if provider is not None:
             delivery = InvitationEmailDelivery(
                 provider=provider, public_base_url="https://pmwizard.example.com",
             )
         return TestClient(
-            create_app(factory, auth_settings=SETTINGS, invitation_email_delivery=delivery)
+            create_app(
+                factory, auth_settings=SETTINGS,
+                invitation_email_delivery=delivery,
+                require_verified_invitations=strict,
+            )
         )
     with client_with() as client:
         project = client.post("/v1/projects", headers=headers, json={
@@ -268,3 +272,56 @@ def test_smtp_transport_requires_verified_tls_and_supports_secret_free_relay(mon
         to_email="receiver@example.com", subject="Invitation", text="Test message",
     )
     assert [item[0] for item in calls] == ["connect", "ehlo", "starttls", "ehlo", "sent"]
+
+
+def test_strict_policy_blocks_manual_issuance_and_redemption(env):
+    v = env
+    sender = MailRecorder()
+
+    # Previously issued manual links cannot be redeemed in strict mode.
+    with v["client_with"]() as permissive:
+        old = permissive.post(v["list_url"], headers=v["headers"], json={
+            "email": "oldmanual@example.com", "role": "viewer",
+        })
+        assert old.status_code == 201
+        old_token = old.json()["token"]
+
+    with v["client_with"](sender, strict=True) as client:
+        listing = client.get(v["list_url"], headers=v["headers"])
+        assert listing.status_code == 200
+        assert listing.json()["email_available"] is True
+        assert listing.json()["strict_email_only"] is True
+        denied = client.post(v["list_url"], headers=v["headers"], json={
+            "email": "newmanual@example.com",
+            "role": "viewer",
+            "delivery_method": "manual",
+        })
+        assert denied.status_code == 403
+        assert "requires verified email" in denied.json()["detail"]
+        denied_redeem = client.post("/v1/invitations/accept", json={
+            "token": old_token, "display_name": "Old Manual",
+            "password": "A valid long manual password",
+        })
+        assert denied_redeem.status_code == 400
+
+        sent = client.post(v["list_url"], headers=v["headers"], json={
+            "email": "verifiedstrict@example.com",
+            "role": "reviewer", "delivery_method": "email",
+        })
+        assert sent.status_code == 201
+        assert sent.json()["token"] is None
+        assert client.post("/v1/invitations/accept", json={
+            "token": _email_token(sender.messages[0][2]),
+            "display_name": "Verified Account",
+            "password": "A valid long verified password",
+        }).status_code == 200
+
+
+def test_strict_policy_requires_configured_delivery_at_startup(monkeypatch):
+    from pmwizard.api.app import create_default_app
+    monkeypatch.setenv("PMWIZARD_DATABASE_URL", "sqlite+pysqlite:///:memory:")
+    monkeypatch.setenv("PMWIZARD_AUTH_SECRET", "strict-mode-key-at-least-32-characters-long")
+    monkeypatch.setenv("PMWIZARD_INVITATION_EMAIL_ENABLED", "false")
+    monkeypatch.setenv("PMWIZARD_INVITATION_REQUIRE_EMAIL_VERIFICATION", "true")
+    with pytest.raises(RuntimeError, match="Strict invitation verification"):
+        create_default_app()
