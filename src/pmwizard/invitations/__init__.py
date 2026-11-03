@@ -251,6 +251,7 @@ class ProjectInvitationService:
     def accept(
         self, *, command: AcceptInvitationRequest,
         token_service: AccessTokenService,
+        require_email_verification: bool = False,
     ) -> InvitationAcceptance:
         if not _TOKEN_PATTERN.fullmatch(command.token):
             raise ValueError(INVALID_INVITE)
@@ -264,6 +265,7 @@ class ProjectInvitationService:
         if (
             row is None or row.status != "pending"
             or utc(row.expires_at) <= now
+            or (require_email_verification and row.delivery_method != "email")
         ):
             raise ValueError(INVALID_INVITE)
         project = self.session.scalar(
