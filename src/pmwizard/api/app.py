@@ -136,6 +136,7 @@ def create_app(
     allow_trusted_headers: bool = False,
     status_report_provider: StructuredGenerationProvider | None = None,
     invitation_email_delivery: InvitationEmailDelivery | None = None,
+    require_verified_invitations: bool = False,
 ) -> FastAPI:
     app = FastAPI(
         title="PMWizard API",
@@ -485,6 +486,11 @@ def create_app(
         session: Session = Depends(get_session),
     ) -> Response:
         require_member_manager(principal, project_id, session)
+        if require_verified_invitations and command.delivery_method != "email":
+            raise HTTPException(
+                status_code=403,
+                detail="This deployment requires verified email invitations.",
+            )
         try:
             created = ProjectInvitationService(session).create(
                 tenant_id=principal.tenant_id,
@@ -547,6 +553,7 @@ def create_app(
         try:
             accepted = ProjectInvitationService(session).accept(
                 command=command, token_service=token_service,
+                require_email_verification=require_verified_invitations,
             )
         except ValueError as exc:
             raise HTTPException(
@@ -1396,11 +1403,21 @@ def create_default_app() -> FastAPI:
             model=model,
         )
 
+    invitation_delivery = delivery_from_environment()
+    require_verified_invitations = os.getenv(
+        "PMWIZARD_INVITATION_REQUIRE_EMAIL_VERIFICATION", "false"
+    ).strip().lower() in {"1", "true", "yes"}
+    if require_verified_invitations and invitation_delivery is None:
+        raise RuntimeError(
+            "Strict invitation verification requires configured HTTPS + SMTP email delivery."
+        )
+
     engine = create_engine_from_url(database_url)
     return create_app(
         create_session_factory(engine),
         auth_settings=auth_settings,
         allow_trusted_headers=False,
         status_report_provider=status_report_provider,
-        invitation_email_delivery=delivery_from_environment(),
+        invitation_email_delivery=invitation_delivery,
+        require_verified_invitations=require_verified_invitations,
     )
