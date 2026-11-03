@@ -1,6 +1,6 @@
 """Track invitation email delivery and verified inbox possession.
 
-Revision ID: 0012_verified_email_invitations_v0
+Revision ID: 0012_verified_email_v0
 Revises: 0011_project_invitations_v0
 """
 
@@ -10,7 +10,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision: str = "0012_verified_email_invitations_v0"
+revision: str = "0012_verified_email_v0"
 down_revision: Union[str, None] = "0011_project_invitations_v0"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
