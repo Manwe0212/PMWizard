@@ -117,6 +117,14 @@ pytest -q
 CI also runs Python 3.11/3.12, Next.js lint/build and a full Docker demo
 smoke test. No new database tables or schema migration are required.
 
+## Invitation-only new-account onboarding (PR #29)
+
+If the intended colleague does not yet have an account in the tenant, use
+the **New-user invitations** section in Members & Roles. The one-time
+link permits creation of the named account and a project membership with
+the selected role; it must be shared manually and does not verify mailbox
+ownership. See [`PROJECT_INVITATIONS.md`](PROJECT_INVITATIONS.md).
+
 ## Not yet production-ready
 
 Full tenant-wide administrator roles, user invitations, secure account
