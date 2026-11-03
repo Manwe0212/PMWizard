@@ -472,6 +472,8 @@ def create_app(
             actor_id=principal.user_id,
             limit=limit,
             offset=offset,
+            email_available=invitation_email_delivery is not None,
+            strict_email_only=require_verified_invitations,
         )
 
     @app.post(
