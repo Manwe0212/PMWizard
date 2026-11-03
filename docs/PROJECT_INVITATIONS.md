@@ -1,5 +1,13 @@
 # PR #29 — User Invitations & Account Onboarding V0
 
+> **Update (PR #30):** Verified email invitation delivery is now optionally
+> supported with HTTPS + certificate-verified STARTTLS SMTP. Successful
+> redemption of an emailed link sets `email_verified_at`; manual links
+> remain unverified. For email-only onboarding configure the strict
+> verification flag. See [Verified Email Invitations](VERIFIED_EMAIL_INVITATIONS.md).
+>
+
+
 PMWizard now supports **invitation-only registration for a project in an
 existing tenant**. Project managers with `project:manage_members` may
 generate a seven-day, single-use link for a person who does **not yet have

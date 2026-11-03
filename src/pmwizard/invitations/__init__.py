@@ -10,6 +10,7 @@ import hashlib
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -24,10 +25,12 @@ from pmwizard.auth import (
 )
 from pmwizard.members import ProjectMemberService, ProjectRole, ROLE_PERMISSIONS
 from pmwizard.persistence.orm import (
+    AppUserORM,
     AuditLogORM,
     ProjectInvitationORM,
     ProjectORM,
 )
+from .email_delivery import InvitationEmailDelivery, InvitationDeliveryUnavailable
 
 INVITE_TTL = timedelta(days=7)
 MAX_PENDING_PER_PROJECT = 25
@@ -49,6 +52,7 @@ class CreateInvitationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     email: EmailStr
     role: ProjectRole = ProjectRole.VIEWER
+    delivery_method: Literal["manual", "email"] = "manual"
 
 
 class AcceptInvitationRequest(BaseModel):
@@ -67,12 +71,15 @@ class InvitationView(BaseModel):
     invited_by: UUID
     created_at: datetime
     expires_at: datetime
+    delivery_method: Literal["manual", "email"] = "manual"
+    delivery_status: Literal["not_applicable", "sent"] = "not_applicable"
+    delivered_at: datetime | None = None
 
 
 class InvitationCreated(BaseModel):
     model_config = ConfigDict(extra="forbid")
     invitation: InvitationView
-    token: str  # Delivered ONCE; must never appear in list, logs or audit
+    token: str | None  # Manual only; never returned for verified email delivery
 
 
 class InvitationPage(BaseModel):
@@ -80,6 +87,8 @@ class InvitationPage(BaseModel):
     items: list[InvitationView]
     count: int
     next_offset: int | None
+    email_available: bool = False
+    strict_email_only: bool = False
 
 
 class InvitationAcceptance(BaseModel):
@@ -107,11 +116,15 @@ class ProjectInvitationService:
             invited_by=invitation.invited_by,
             created_at=utc(invitation.created_at),
             expires_at=utc(invitation.expires_at),
+            delivery_method=invitation.delivery_method,
+            delivery_status=invitation.delivery_status,
+            delivered_at=utc(invitation.delivered_at) if invitation.delivered_at else None,
         )
 
     def list(
         self, *, tenant_id: UUID, project_id: UUID, actor_id: UUID,
         limit: int = 50, offset: int = 0,
+        email_available: bool = False, strict_email_only: bool = False,
     ) -> InvitationPage:
         ProjectMemberService(self.session)._authorize(tenant_id, project_id, actor_id)
         now = datetime.now(timezone.utc)
@@ -129,13 +142,18 @@ class ProjectInvitationService:
             items=[self._view(x, now) for x in rows[:limit]],
             count=min(limit, len(rows)),
             next_offset=offset + limit if len(rows) > limit else None,
+            email_available=email_available,
+            strict_email_only=strict_email_only,
         )
 
     def create(
         self, *, tenant_id: UUID, project_id: UUID, actor_id: UUID,
         command: CreateInvitationRequest,
+        email_delivery: InvitationEmailDelivery | None = None,
     ) -> InvitationCreated:
         ProjectMemberService(self.session)._authorize(tenant_id, project_id, actor_id, lock=True)
+        if command.delivery_method == "email" and email_delivery is None:
+            raise InvitationDeliveryUnavailable("Verified invitation email is not configured.")
         email = str(command.email).strip().casefold()
         now = datetime.now(timezone.utc)
         if self.auth.get_user_by_email(tenant_id, email) is not None:
@@ -165,6 +183,8 @@ class ProjectInvitationService:
             invited_by=actor_id,
             expires_at=now + INVITE_TTL,
             status="pending",
+            delivery_method=command.delivery_method,
+            delivery_status="not_applicable",
         )
         try:
             self.session.add(row)
@@ -178,14 +198,22 @@ class ProjectInvitationService:
                 entity_id=row.id,
                 previous_state=None,
                 proposed_state=None,
-                final_state={"status": "pending", "role": row.role},
+                final_state={"status": "pending", "role": row.role, "delivery_method": row.delivery_method},
                 evidence_ids=[],
             ))
+            if command.delivery_method == "email":
+                assert email_delivery is not None
+                email_delivery.send(email=email, token=token, role=row.role)
+                row.delivery_status = "sent"
+                row.delivered_at = datetime.now(timezone.utc)
             self.session.commit()
         except Exception:
             self.session.rollback()
             raise
-        return InvitationCreated(invitation=self._view(row, now), token=token)
+        return InvitationCreated(
+            invitation=self._view(row, now),
+            token=token if command.delivery_method == "manual" else None,
+        )
 
     def revoke(
         self, *, tenant_id: UUID, project_id: UUID, actor_id: UUID,
@@ -228,6 +256,7 @@ class ProjectInvitationService:
     def accept(
         self, *, command: AcceptInvitationRequest,
         token_service: AccessTokenService,
+        require_email_verification: bool = False,
     ) -> InvitationAcceptance:
         if not _TOKEN_PATTERN.fullmatch(command.token):
             raise ValueError(INVALID_INVITE)
@@ -241,6 +270,7 @@ class ProjectInvitationService:
         if (
             row is None or row.status != "pending"
             or utc(row.expires_at) <= now
+            or (require_email_verification and row.delivery_method != "email")
         ):
             raise ValueError(INVALID_INVITE)
         project = self.session.scalar(
@@ -264,6 +294,13 @@ class ProjectInvitationService:
                 display_name=command.display_name.strip(),
                 password_hash=password_hash,
             )
+            if row.delivery_method == "email":
+                if row.delivery_status != "sent":
+                    raise ValueError(INVALID_INVITE)
+                user_row = self.session.get(AppUserORM, user.id)
+                if user_row is None:
+                    raise ValueError(INVALID_INVITE)
+                user_row.email_verified_at = now
             self.auth.add_project_membership(
                 tenant_id=row.tenant_id,
                 project_id=row.project_id,
@@ -294,6 +331,6 @@ class ProjectInvitationService:
         return InvitationAcceptance(
             access_token=token_service.issue(user_id=user.id, tenant_id=row.tenant_id),
             expires_in=token_service.expires_in_seconds,
-            user=user,
+            user=self.auth.get_user(row.tenant_id, user.id),
             project_id=row.project_id,
         )

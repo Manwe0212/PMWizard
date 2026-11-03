@@ -117,6 +117,15 @@ pytest -q
 CI also runs Python 3.11/3.12, Next.js lint/build and a full Docker demo
 smoke test. No new database tables or schema migration are required.
 
+## Verified email delivery (PR #30)
+
+Managers can now send a new-user invitation directly to the specified
+email address when HTTPS + verified SMTP delivery are configured. The
+recipient's mailbox is marked verified on successful link redemption.
+Manual links remain unverified; strict email-only deployments can disable
+manual issuance and acceptance. See
+[`VERIFIED_EMAIL_INVITATIONS.md`](VERIFIED_EMAIL_INVITATIONS.md).
+
 ## Invitation-only new-account onboarding (PR #29)
 
 If the intended colleague does not yet have an account in the tenant, use

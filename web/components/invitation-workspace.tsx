@@ -11,15 +11,20 @@ type Invitation = {
   invited_by: string;
   created_at: string;
   expires_at: string;
+  delivery_method: "manual" | "email";
+  delivery_status: "not_applicable" | "sent";
+  delivered_at: string | null;
 };
 
 type InvitationPage = {
   items: Invitation[];
   count: number;
   next_offset: number | null;
+  email_available: boolean;
+  strict_email_only: boolean;
 };
 
-type Created = { invitation: Invitation; token: string };
+type Created = { invitation: Invitation; token: string | null };
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, { ...init, cache: "no-store" });
@@ -37,6 +42,9 @@ export function InvitationWorkspace() {
   const [offset, setOffset] = useState<number | null>(null);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<ProjectMemberRole>("viewer");
+  const [deliveryMethod, setDeliveryMethod] = useState<"manual" | "email">("email");
+  const [emailAvailable, setEmailAvailable] = useState(false);
+  const [strictEmailOnly, setStrictEmailOnly] = useState(false);
   const [newLink, setNewLink] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -56,6 +64,11 @@ export function InvitationWorkspace() {
         ],
       );
       setOffset(page.next_offset);
+      setEmailAvailable(page.email_available);
+      setStrictEmailOnly(page.strict_email_only);
+      setDeliveryMethod((current) => page.strict_email_only
+        ? "email"
+        : !page.email_available ? "manual" : current);
       setError(null);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Cannot load invitations.");
@@ -77,13 +90,17 @@ export function InvitationWorkspace() {
       const data = await requestJson<Created>("/api/invitations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), role }),
+        body: JSON.stringify({ email: email.trim(), role, delivery_method: deliveryMethod }),
       });
       // The token stays in component memory; the API never persists its value.
-      setNewLink(`${window.location.origin}/invite#token=${encodeURIComponent(data.token)}`);
+      setNewLink(data.token
+        ? `${window.location.origin}/invite#token=${encodeURIComponent(data.token)}`
+        : null);
       setEmail("");
       setRole("viewer");
-      setNotice("Invitation created. Copy the link now; it cannot be retrieved later.");
+      setNotice(data.invitation.delivery_method === "email"
+        ? "Invitation email submitted securely. The link was not exposed to your browser."
+        : "Invitation created. Copy the link now; it cannot be retrieved later.");
       await load();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to create invitation.");
@@ -123,10 +140,10 @@ export function InvitationWorkspace() {
         </button>
       </div>
       <p className="memberPermissionNotice">
-        Links are not sent by email automatically. Copy the link and deliver it
-        through a trusted channel to the intended recipient. Anyone holding a
-        valid link can create the invited account. The selected role determines
-        their permissions; Reviewer also has some operational privileges in V0.
+        Email delivery requires the server to have verified-TLS SMTP and a public
+        HTTPS address configured. Manual links remain available for development
+        and are not email-verified. Anyone holding a valid link can activate its
+        account. Reviewer has some operational privileges in V0.
       </p>
       <form className="memberAddForm" onSubmit={create}>
         <div><h3>Create an invitation</h3><p>For accounts not yet registered in this workspace.</p></div>
@@ -149,8 +166,15 @@ export function InvitationWorkspace() {
             <option value="project_manager">Project manager</option>
           </select>
         </label>
-        <button className="primaryButton" type="submit" disabled={busy || !email.trim()}>
-          {busy ? "Creating…" : "Create invite"}
+        <label>
+          Delivery
+          <select value={deliveryMethod} disabled={loading} onChange={(event) => setDeliveryMethod(event.target.value as "manual" | "email")}>
+            <option value="email" disabled={!emailAvailable}>Send by email (verified inbox){!emailAvailable ? " — not configured" : ""}</option>
+            <option value="manual" disabled={strictEmailOnly}>Copy link manually (unverified){strictEmailOnly ? " — disabled by policy" : ""}</option>
+          </select>
+        </label>
+        <button className="primaryButton" type="submit" disabled={busy || loading || !email.trim()}>
+          {busy ? "Creating…" : deliveryMethod === "email" ? "Send invitation" : "Create invite"}
         </button>
       </form>
 
@@ -192,7 +216,7 @@ export function InvitationWorkspace() {
           <div className="memberRow" key={item.id}>
             <div className="memberIdentity">
               <strong>{item.email}</strong>
-              <span>{item.role.replaceAll("_", " ")} · {item.status}</span>
+              <span>{item.role.replaceAll("_", " ")} · {item.status} · {item.delivery_method === "email" ? "email verified on acceptance" : "manual/unverified"}</span>
               <small>Expires {new Date(item.expires_at).toLocaleString()}</small>
             </div>
             {item.status === "pending" && (
