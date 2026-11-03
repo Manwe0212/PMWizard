@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 import { InboxClient } from "@/components/inbox-client";
@@ -231,7 +232,7 @@ export function AuthShell() {
               {authenticating ? "Signing in…" : "Sign in"}
             </button>
           </form>
-          <a href="/forgot-password" className="authRecoveryLink">Forgot your password?</a>
+          <Link href="/forgot-password" className="authRecoveryLink">Forgot your password?</Link>
 
           <div className="loginSecurity">
             <span>●</span>
