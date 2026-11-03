@@ -55,6 +55,20 @@ Initial work will focus on:
 
 PMWizard now includes governed Project Memory, deterministic Health, portfolio intelligence, human-reviewed AI suggestions, an Attention Center, Email/Teams notification delivery, an auditable Activity Timeline, and redacted CSV/JSON activity exports. PR #25 adds an explicitly gated **synthetic local demo** for reproducible first-run testing without real client data. These features are MVP modules, not a production-ready hosted service.
 
+## Account recovery and session safety (PR #31)
+
+After verified email has been configured (PR #30), operators can enable
+`PMWIZARD_PASSWORD_RESET_ENABLED=true`. The login screen then supports
+**Forgot your password?** for accounts with a verified email address.
+One-time links expire after 30 minutes, and resetting a password immediately
+invalidates all previous sessions. Normal sign-out revokes the current JWT;
+**Sign out all devices** invalidates all existing JWTs without resetting the
+password. Local demo recovery stays disabled by default.
+
+See [`docs/ACCOUNT_RECOVERY_SESSION_SECURITY.md`](docs/ACCOUNT_RECOVERY_SESSION_SECURITY.md)
+for API usage, test coverage, SMTP configuration, security guarantees and
+remaining requirements before exposing PMWizard to the Internet.
+
 ## Verified email invitations (PR #30)
 
 Optionally configure verified-TLS SMTP to send an expiring invitation link
