@@ -87,6 +87,8 @@ class InvitationPage(BaseModel):
     items: list[InvitationView]
     count: int
     next_offset: int | None
+    email_available: bool = False
+    strict_email_only: bool = False
 
 
 class InvitationAcceptance(BaseModel):
@@ -122,6 +124,7 @@ class ProjectInvitationService:
     def list(
         self, *, tenant_id: UUID, project_id: UUID, actor_id: UUID,
         limit: int = 50, offset: int = 0,
+        email_available: bool = False, strict_email_only: bool = False,
     ) -> InvitationPage:
         ProjectMemberService(self.session)._authorize(tenant_id, project_id, actor_id)
         now = datetime.now(timezone.utc)
@@ -139,6 +142,8 @@ class ProjectInvitationService:
             items=[self._view(x, now) for x in rows[:limit]],
             count=min(limit, len(rows)),
             next_offset=offset + limit if len(rows) > limit else None,
+            email_available=email_available,
+            strict_email_only=strict_email_only,
         )
 
     def create(
