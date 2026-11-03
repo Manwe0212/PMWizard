@@ -8,6 +8,7 @@ import { AutomationWorkspace } from "@/components/automation-workspace";
 import { ExecutiveDashboard } from "@/components/executive-dashboard";
 import { HealthWorkspace } from "@/components/health-workspace";
 import { MemoryWorkspace } from "@/components/memory-workspace";
+import { MembersWorkspace } from "@/components/members-workspace";
 import { PortfolioWorkspace } from "@/components/portfolio-workspace";
 import { SourcesWorkspace } from "@/components/sources-workspace";
 import { StatusReportWorkspace } from "@/components/status-report-workspace";
@@ -25,6 +26,7 @@ type Props = {
   projectId: string;
   projectName: string;
   projects: ProjectAccess[];
+  userId: string;
   userName: string;
   userEmail: string;
   onProjectChange: (projectId: string) => Promise<void>;
@@ -92,6 +94,7 @@ export function InboxClient({
   projectId,
   projectName,
   projects,
+  userId,
   userName,
   userEmail,
   onProjectChange,
@@ -112,7 +115,7 @@ export function InboxClient({
   const [reviewerNote, setReviewerNote] = useState("");
   const [attentionUnread, setAttentionUnread] = useState(0);
   const [activeView, setActiveView] = useState<
-    "executive" | "portfolio" | "attention" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources" | "activity"
+    "executive" | "portfolio" | "attention" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources" | "activity" | "members"
   >("executive");
 
   const loadInbox = useCallback(async () => {
@@ -209,6 +212,11 @@ export function InboxClient({
     () => items.filter((item) => item.review_status === "deferred").length,
     [items],
   );
+
+  const canManageMembers =
+    projects
+      .find((project) => project.project_id === projectId)
+      ?.permissions.includes("project:manage_members") ?? false;
 
   const canReviewProject =
     projects
@@ -346,6 +354,16 @@ export function InboxClient({
               <span className="navIcon">≡</span>
               Activity Timeline
             </button>
+            {canManageMembers && (
+              <button
+                className={`navItem ${activeView === "members" ? "active" : ""}`}
+                type="button"
+                onClick={() => setActiveView("members")}
+              >
+                <span className="navIcon">♙</span>
+                Members &amp; Roles
+              </button>
+            )}
             <button
               className={`navItem ${activeView === "memory" ? "active" : ""}`}
               type="button"
@@ -403,6 +421,8 @@ export function InboxClient({
                       ? "Project Inbox"
                     : activeView === "activity"
                       ? "Activity Timeline"
+                    : activeView === "members"
+                      ? "Members & Roles"
                     : activeView === "memory"
                       ? "Project Memory"
                       : "Sources"}
@@ -424,6 +444,8 @@ export function InboxClient({
                       ? "Review evidence-backed updates before they become project truth."
                     : activeView === "activity"
                       ? "Explore the ordered, evidence-aware record of project activity."
+                    : activeView === "members"
+                      ? "Manage existing project members and their scoped permissions."
                     : activeView === "memory"
                       ? "Inspect the governed project truth produced by authorized review."
                       : "Monitor authorized source health, sync history, and ingestion telemetry."}
@@ -844,6 +866,8 @@ export function InboxClient({
           </>
         ) : activeView === "activity" ? (
           <ActivityWorkspace canExport={canReviewProject} />
+        ) : activeView === "members" && canManageMembers ? (
+          <MembersWorkspace currentUserId={userId} />
         ) : activeView === "memory" ? (
           <MemoryWorkspace projectName={projectName} />
         ) : (

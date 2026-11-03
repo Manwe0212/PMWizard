@@ -34,7 +34,7 @@ DEMO_EMAIL = "demo@example.com"
 DEMO_DISPLAY_NAME = "PMWizard Demo Project Manager"
 DEMO_PROJECT_NAME = "Atlas Delivery — Synthetic Demo"
 DEMO_SOURCE = "pmwizard_local_demo_v0"
-DEMO_PERMISSIONS = ("project:read", "project:review")
+DEMO_PERMISSIONS = ("project:read", "project:review", "project:manage_members")
 
 
 def demo_id(label: str) -> UUID:

@@ -20,7 +20,7 @@ from pmwizard.persistence.orm import AuditLogORM
 from pmwizard.persistence.repositories import ProjectMemoryRepository
 
 
-CREATOR_PERMISSIONS = ("project:read", "project:review")
+CREATOR_PERMISSIONS = ("project:read", "project:review", "project:manage_members")
 
 
 class CreateProjectRequest(BaseModel):

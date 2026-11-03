@@ -63,7 +63,7 @@ def test_create_project_assigns_manager_membership_and_initial_audit(project_env
     assert payload["name"] == "Customer Enablement Launch"
     assert payload["role"] == "project_manager"
     assert payload["status"] == "planning"
-    assert payload["permissions"] == ["project:read", "project:review"]
+    assert payload["permissions"] == ["project:read", "project:review", "project:manage_members"]
     project_id = payload["project_id"]
     listed = client.get("/v1/projects", headers=headers)
     assert listed.status_code == 200
@@ -93,7 +93,7 @@ def test_create_project_assigns_manager_membership_and_initial_audit(project_env
         )
         assert membership.tenant_id == tenant
         assert membership.user_id == user.id
-        assert membership.permissions == ["project:read", "project:review"]
+        assert set(membership.permissions) == {"project:read", "project:review", "project:manage_members"}
         audits = session.scalars(
             select(AuditLogORM).where(AuditLogORM.project_id == UUID(project_id))
         ).all()

@@ -69,6 +69,13 @@ from pmwizard.inbox import (
     ReviewResponse,
 )
 from pmwizard.onboarding import CreateProjectRequest, ProjectOnboardingService
+from pmwizard.members import (
+    AddProjectMemberRequest,
+    ChangeProjectMemberRoleRequest,
+    MemberView,
+    MembersPage,
+    ProjectMemberService,
+)
 from pmwizard.notifications import (
     NotificationPreferenceCommand,
     NotificationPreferenceService,
@@ -324,6 +331,113 @@ def create_app(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=str(exc),
             ) from exc
+
+    def require_member_manager(
+        principal: ApiPrincipal,
+        project_id: UUID,
+        session: Session,
+    ) -> None:
+        # No tenant header impersonation for privileged membership changes.
+        if principal.auth_method != "bearer":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Project membership management requires Bearer authentication.",
+            )
+        permissions = project_permissions(principal, project_id, session)
+        require_permission(permissions, "project:manage_members")
+
+    @app.get(
+        "/v1/projects/{project_id}/members",
+        response_model=MembersPage,
+    )
+    def list_project_members(
+        project_id: UUID,
+        limit: int = Query(default=50, ge=1, le=100),
+        offset: int = Query(default=0, ge=0),
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> MembersPage:
+        require_member_manager(principal, project_id, session)
+        return ProjectMemberService(session).list_members(
+            tenant_id=principal.tenant_id,
+            project_id=project_id,
+            actor_id=principal.user_id,
+            limit=limit,
+            offset=offset,
+        )
+
+    @app.post(
+        "/v1/projects/{project_id}/members",
+        response_model=MemberView,
+        status_code=status.HTTP_201_CREATED,
+    )
+    def add_project_member(
+        project_id: UUID,
+        command: AddProjectMemberRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> MemberView:
+        require_member_manager(principal, project_id, session)
+        try:
+            return ProjectMemberService(session).add_member(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                actor_id=principal.user_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.patch(
+        "/v1/projects/{project_id}/members/{member_id}",
+        response_model=MemberView,
+    )
+    def change_project_member_role(
+        project_id: UUID,
+        member_id: UUID,
+        command: ChangeProjectMemberRoleRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> MemberView:
+        require_member_manager(principal, project_id, session)
+        try:
+            return ProjectMemberService(session).change_role(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                actor_id=principal.user_id,
+                member_id=member_id,
+                command=command,
+            )
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.delete(
+        "/v1/projects/{project_id}/members/{member_id}",
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
+    def remove_project_member(
+        project_id: UUID,
+        member_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> Response:
+        require_member_manager(principal, project_id, session)
+        try:
+            ProjectMemberService(session).remove_member(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                actor_id=principal.user_id,
+                member_id=member_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     @app.get(
         "/v1/executive/dashboard",

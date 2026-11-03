@@ -85,7 +85,7 @@ def test_demo_seed_creates_project_user_and_governed_usable_data(local_demo_env)
             )
         )
         assert membership is not None
-        assert sorted(membership.permissions) == ["project:read", "project:review"]
+        assert sorted(membership.permissions) == ["project:manage_members", "project:read", "project:review"]
         assert session.scalar(
             select(func.count()).select_from(ActionItemORM)
         ) == 3

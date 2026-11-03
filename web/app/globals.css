@@ -6572,3 +6572,164 @@ button:disabled {
   .projectCreationPanel { padding: 20px; }
   .projectCreationDates { grid-template-columns: 1fr; }
 }
+
+
+/* PR #28: governed members and roles workspace */
+.memberWorkspace {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.memberIntro,
+.memberListHeader,
+.memberActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.memberIntro h2 {
+  font-size: 22px;
+  margin: 5px 0 8px;
+}
+
+.memberIntro p,
+.memberAddForm p {
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 12px;
+  margin: 0;
+}
+
+.memberRoleLegend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.memberRoleLegend > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px;
+  background: #f5f8fc;
+  border-radius: 10px;
+}
+
+.memberRoleLegend strong { font-size: 12px; }
+.memberRoleLegend span,
+.memberListHeader span,
+.memberIdentity span,
+.memberIdentity small,
+.memberActions small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.memberAddForm {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) minmax(140px, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  padding: 18px;
+  background: #f8fafd;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.memberAddForm > div { grid-column: 1 / -1; }
+.memberAddForm h3, .memberListHeader h3 {
+  margin: 0 0 5px;
+  font-size: 15px;
+}
+
+.memberAddForm label,
+.memberActions label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.memberAddForm input,
+.memberAddForm select,
+.memberActions select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #c9d6e6;
+  border-radius: 9px;
+  background: #fff;
+  font: inherit;
+  color: var(--ink);
+}
+
+.memberRows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memberRow {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.memberIdentity {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.memberIdentity strong { font-size: 12px; }
+.memberIdentity span { overflow-wrap: anywhere; }
+.memberActions { justify-content: flex-end; flex-wrap: wrap; }
+.memberActions select { min-width: 170px; }
+.memberConfirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.memberConfirm span { font-size: 11px; }
+.memberNotice {
+  margin: 0;
+  padding: 12px;
+  border-radius: 9px;
+  border: 1px solid #cce2d4;
+  background: #f4faf6;
+  color: #1d6536;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+@media (max-width: 850px) {
+  .memberRoleLegend { grid-template-columns: 1fr; }
+  .memberAddForm { grid-template-columns: 1fr; }
+  .memberRow { align-items: stretch; flex-direction: column; }
+  .memberActions { justify-content: flex-start; }
+  .memberIntro { align-items: flex-start; flex-wrap: wrap; }
+}
+
+.memberPermissionNotice {
+  margin: 0;
+  border-left: 3px solid #e1ad56;
+  padding: 10px 14px;
+  background: #fffaf2;
+  color: #66502c;
+  line-height: 1.6;
+  font-size: 11px;
+}
