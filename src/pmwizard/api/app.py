@@ -335,11 +335,11 @@ def create_app(
 
     @app.post("/v1/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
     def revoke_current_session(
-        authorization: str = Header(alias="Authorization"),
+        authorization: str | None = Header(default=None, alias="Authorization"),
         principal: ApiPrincipal = Depends(get_principal),
         session: Session = Depends(get_session),
     ) -> Response:
-        if principal.auth_method != "bearer" or token_service is None:
+        if principal.auth_method != "bearer" or token_service is None or not authorization:
             raise HTTPException(status_code=403, detail="Bearer authentication required.")
         token = authorization.partition(" ")[2].strip()
         try:
@@ -350,11 +350,11 @@ def create_app(
 
     @app.post("/v1/auth/logout-all", status_code=status.HTTP_204_NO_CONTENT)
     def revoke_all_sessions(
-        authorization: str = Header(alias="Authorization"),
+        authorization: str | None = Header(default=None, alias="Authorization"),
         principal: ApiPrincipal = Depends(get_principal),
         session: Session = Depends(get_session),
     ) -> Response:
-        if principal.auth_method != "bearer" or token_service is None:
+        if principal.auth_method != "bearer" or token_service is None or not authorization:
             raise HTTPException(status_code=403, detail="Bearer authentication required.")
         token = authorization.partition(" ")[2].strip()
         try:
