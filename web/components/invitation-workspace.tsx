@@ -20,6 +20,8 @@ type InvitationPage = {
   items: Invitation[];
   count: number;
   next_offset: number | null;
+  email_available: boolean;
+  strict_email_only: boolean;
 };
 
 type Created = { invitation: Invitation; token: string | null };
@@ -41,6 +43,8 @@ export function InvitationWorkspace() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<ProjectMemberRole>("viewer");
   const [deliveryMethod, setDeliveryMethod] = useState<"manual" | "email">("email");
+  const [emailAvailable, setEmailAvailable] = useState(false);
+  const [strictEmailOnly, setStrictEmailOnly] = useState(false);
   const [newLink, setNewLink] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -60,6 +64,11 @@ export function InvitationWorkspace() {
         ],
       );
       setOffset(page.next_offset);
+      setEmailAvailable(page.email_available);
+      setStrictEmailOnly(page.strict_email_only);
+      setDeliveryMethod((current) => page.strict_email_only
+        ? "email"
+        : !page.email_available ? "manual" : current);
       setError(null);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Cannot load invitations.");
@@ -159,12 +168,12 @@ export function InvitationWorkspace() {
         </label>
         <label>
           Delivery
-          <select value={deliveryMethod} onChange={(event) => setDeliveryMethod(event.target.value as "manual" | "email")}>
-            <option value="email">Send by email (verified inbox)</option>
-            <option value="manual">Copy link manually (unverified)</option>
+          <select value={deliveryMethod} disabled={loading} onChange={(event) => setDeliveryMethod(event.target.value as "manual" | "email")}>
+            <option value="email" disabled={!emailAvailable}>Send by email (verified inbox){!emailAvailable ? " — not configured" : ""}</option>
+            <option value="manual" disabled={strictEmailOnly}>Copy link manually (unverified){strictEmailOnly ? " — disabled by policy" : ""}</option>
           </select>
         </label>
-        <button className="primaryButton" type="submit" disabled={busy || !email.trim()}>
+        <button className="primaryButton" type="submit" disabled={busy || loading || !email.trim()}>
           {busy ? "Creating…" : deliveryMethod === "email" ? "Send invitation" : "Create invite"}
         </button>
       </form>
