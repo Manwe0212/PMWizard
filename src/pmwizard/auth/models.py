@@ -16,6 +16,7 @@ class AppUser(BaseModel):
     email: EmailStr
     display_name: str = Field(min_length=1, max_length=255)
     is_active: bool = True
+    email_verified_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 
