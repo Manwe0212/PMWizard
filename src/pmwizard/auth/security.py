@@ -34,6 +34,7 @@ class TokenClaims(BaseModel):
     iat: int
     exp: int
     jti: UUID
+    ver: int = Field(default=0, ge=0)
 
 
 class PasswordService:
@@ -78,7 +79,7 @@ class AccessTokenService:
     def expires_in_seconds(self) -> int:
         return self.settings.access_token_minutes * 60
 
-    def issue(self, *, user_id: UUID, tenant_id: UUID) -> str:
+    def issue(self, *, user_id: UUID, tenant_id: UUID, auth_version: int = 0) -> str:
         now = datetime.now(timezone.utc)
         payload = {
             "sub": str(user_id),
@@ -90,6 +91,7 @@ class AccessTokenService:
                 (now + timedelta(minutes=self.settings.access_token_minutes)).timestamp()
             ),
             "jti": str(uuid4()),
+            "ver": auth_version,
         }
         return jwt.encode(
             payload,
