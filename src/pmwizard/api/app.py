@@ -47,6 +47,12 @@ from pmwizard.attention import (
     AttentionStateCommand,
     AttentionStateResponse,
 )
+from pmwizard.auth.recovery import (
+    PasswordRecoveryService,
+    PasswordResetConfirm,
+    PasswordResetMessage,
+    PasswordResetRequest,
+)
 from pmwizard.auth.schemas import (
     LoginRequest,
     LoginResponse,
@@ -137,6 +143,7 @@ def create_app(
     status_report_provider: StructuredGenerationProvider | None = None,
     invitation_email_delivery: InvitationEmailDelivery | None = None,
     require_verified_invitations: bool = False,
+    password_recovery_delivery: InvitationEmailDelivery | None = None,
 ) -> FastAPI:
     app = FastAPI(
         title="PMWizard API",
@@ -288,6 +295,73 @@ def create_app(
             expires_in=authenticated.expires_in,
             user=authenticated.user,
         )
+
+    @app.post(
+        "/v1/auth/password-reset/request",
+        response_model=PasswordResetMessage,
+        status_code=status.HTTP_202_ACCEPTED,
+    )
+    def request_password_reset(
+        command: PasswordResetRequest,
+        session: Session = Depends(get_session),
+    ) -> PasswordResetMessage:
+        if password_recovery_delivery is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Password recovery is not configured.",
+            )
+        PasswordRecoveryService(session, password_recovery_delivery).request(command)
+        # Generic response, regardless of unknown, unverified or throttled email.
+        return PasswordResetMessage()
+
+    @app.post("/v1/auth/password-reset/confirm", status_code=status.HTTP_200_OK)
+    def confirm_password_reset(
+        command: PasswordResetConfirm,
+        session: Session = Depends(get_session),
+    ) -> dict[str, str]:
+        if password_recovery_delivery is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Password recovery is not configured.",
+            )
+        try:
+            PasswordRecoveryService(session, password_recovery_delivery).confirm(command)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="Reset link is invalid, expired or already used.",
+            ) from exc
+        return {"status": "password_updated", "sessions": "revoked"}
+
+    @app.post("/v1/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
+    def revoke_current_session(
+        authorization: str = Header(alias="Authorization"),
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> Response:
+        if principal.auth_method != "bearer" or token_service is None:
+            raise HTTPException(status_code=403, detail="Bearer authentication required.")
+        token = authorization.partition(" ")[2].strip()
+        try:
+            AuthService(session, token_service).logout_token(token)
+        except AuthenticationError as exc:
+            raise unauthorized(str(exc)) from exc
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    @app.post("/v1/auth/logout-all", status_code=status.HTTP_204_NO_CONTENT)
+    def revoke_all_sessions(
+        authorization: str = Header(alias="Authorization"),
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> Response:
+        if principal.auth_method != "bearer" or token_service is None:
+            raise HTTPException(status_code=403, detail="Bearer authentication required.")
+        token = authorization.partition(" ")[2].strip()
+        try:
+            AuthService(session, token_service).logout_all(token)
+        except AuthenticationError as exc:
+            raise unauthorized(str(exc)) from exc
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     @app.get("/v1/auth/me", response_model=MeResponse)
     def me(
@@ -1406,6 +1480,13 @@ def create_default_app() -> FastAPI:
         )
 
     invitation_delivery = delivery_from_environment()
+    recovery_enabled = os.getenv(
+        "PMWIZARD_PASSWORD_RESET_ENABLED", "false"
+    ).strip().lower() in {"1", "true", "yes"}
+    if recovery_enabled and invitation_delivery is None:
+        raise RuntimeError(
+            "Password recovery requires verified HTTPS + SMTP invitation delivery."
+        )
     require_verified_invitations = os.getenv(
         "PMWIZARD_INVITATION_REQUIRE_EMAIL_VERIFICATION", "false"
     ).strip().lower() in {"1", "true", "yes"}
@@ -1422,4 +1503,5 @@ def create_default_app() -> FastAPI:
         status_report_provider=status_report_provider,
         invitation_email_delivery=invitation_delivery,
         require_verified_invitations=require_verified_invitations,
+        password_recovery_delivery=invitation_delivery if recovery_enabled else None,
     )
