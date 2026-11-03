@@ -93,10 +93,22 @@ export function AuthShell() {
   }
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    const response = await fetch("/api/auth/logout", { method: "POST" });
     setSession(null);
     setPassword("");
-    setError(null);
+    setError(response.ok ? null : "Signed out locally; server revocation could not be confirmed.");
+  }
+
+  async function logoutAll() {
+    if (!window.confirm("Revoke all PMWizard sessions for your account?")) return;
+    try {
+      await jsonRequest("/api/auth/logout-all", { method: "POST" });
+      setSession(null);
+      setPassword("");
+      setError(null);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Unable to revoke sessions.");
+    }
   }
 
   async function selectProject(projectId: string) {
@@ -219,6 +231,7 @@ export function AuthShell() {
               {authenticating ? "Signing in…" : "Sign in"}
             </button>
           </form>
+          <a href="/forgot-password" className="authRecoveryLink">Forgot your password?</a>
 
           <div className="loginSecurity">
             <span>●</span>
@@ -246,6 +259,9 @@ export function AuthShell() {
               <strong>{session.user.display_name}</strong>
               <span>{session.user.email}</span>
             </div>
+            <button type="button" onClick={() => void logoutAll()}>
+              Sign out all devices
+            </button>
             <button type="button" onClick={() => void logout()}>
               Sign out
             </button>
@@ -310,6 +326,7 @@ export function AuthShell() {
       userEmail={session.user.email}
       onProjectChange={selectProject}
       onLogout={logout}
+      onLogoutAll={logoutAll}
       projectSwitching={selecting}
       onNewProject={() => setShowCreateProject(true)}
     />
