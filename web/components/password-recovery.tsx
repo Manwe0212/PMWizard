@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
 export function PasswordResetRequestForm() {
@@ -83,7 +84,7 @@ export function PasswordResetRequestForm() {
           operator for manual recovery. For security, PMWizard does not
           confirm whether an account exists.
         </p>
-        <a href="/" className="authRecoveryLink">Back to sign in</a>
+        <Link href="/" className="authRecoveryLink">Back to sign in</Link>
       </section>
     </main>
   );
@@ -198,7 +199,7 @@ export function PasswordResetConfirmForm() {
             </button>
           </form>
         )}
-        <a href="/" className="authRecoveryLink">Back to sign in</a>
+        <Link href="/" className="authRecoveryLink">Back to sign in</Link>
       </section>
     </main>
   );
