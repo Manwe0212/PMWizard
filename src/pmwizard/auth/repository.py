@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from pmwizard.persistence.orm import (
     AppUserORM,
+    RevokedSessionORM,
     ProjectMembershipORM,
     ProjectORM,
 )
@@ -95,6 +97,64 @@ class AuthRepository:
         row.password_hash = password_hash
         row.updated_at = _now()
         self.session.flush()
+
+    def get_auth_version(self, tenant_id: UUID, user_id: UUID) -> int | None:
+        return self.session.scalar(
+            select(AppUserORM.auth_version).where(
+                AppUserORM.tenant_id == tenant_id,
+                AppUserORM.id == user_id,
+                AppUserORM.is_active.is_(True),
+            )
+        )
+
+    def bump_auth_version(self, tenant_id: UUID, user_id: UUID) -> int:
+        row = self.session.scalar(
+            select(AppUserORM).where(
+                AppUserORM.tenant_id == tenant_id,
+                AppUserORM.id == user_id,
+                AppUserORM.is_active.is_(True),
+            ).with_for_update()
+        )
+        if row is None:
+            raise LookupError("Active account not found")
+        row.auth_version += 1
+        row.updated_at = _now()
+        self.session.flush()
+        return row.auth_version
+
+    @staticmethod
+    def jti_digest(jti: UUID) -> str:
+        return hashlib.sha256(str(jti).encode("ascii")).hexdigest()
+
+    def is_token_revoked(self, tenant_id: UUID, user_id: UUID, jti: UUID) -> bool:
+        return self.session.scalar(
+            select(RevokedSessionORM.id).where(
+                RevokedSessionORM.tenant_id == tenant_id,
+                RevokedSessionORM.user_id == user_id,
+                RevokedSessionORM.jti_hash == self.jti_digest(jti),
+                RevokedSessionORM.expires_at > _now(),
+            )
+        ) is not None
+
+    def revoke_token(
+        self,
+        *, tenant_id: UUID, user_id: UUID, jti: UUID, expires_at: datetime,
+    ) -> None:
+        self.session.add(
+            RevokedSessionORM(
+                tenant_id=tenant_id,
+                user_id=user_id,
+                jti_hash=self.jti_digest(jti),
+                expires_at=expires_at,
+            )
+        )
+        # Prevent indefinite accumulation of expired JTIs during normal use.
+        self.session.execute(
+            delete(RevokedSessionORM).where(
+                RevokedSessionORM.expires_at <= _now(),
+            )
+        )
+        self.session.commit()
 
     def add_project_membership(
         self,
