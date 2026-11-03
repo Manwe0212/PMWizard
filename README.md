@@ -55,6 +55,17 @@ Initial work will focus on:
 
 PMWizard now includes governed Project Memory, deterministic Health, portfolio intelligence, human-reviewed AI suggestions, an Attention Center, Email/Teams notification delivery, an auditable Activity Timeline, and redacted CSV/JSON activity exports. PR #25 adds an explicitly gated **synthetic local demo** for reproducible first-run testing without real client data. These features are MVP modules, not a production-ready hosted service.
 
+## Verified email invitations (PR #30)
+
+Optionally configure verified-TLS SMTP to send an expiring invitation link
+directly to the invited email address. The manager receives **no link token**
+for email delivery; successful signup records when the email was verified
+through redemption of the emailed link. Manual invitation links remain
+unverified and are intended only for trusted/local workflows. Enable strict
+email-only onboarding with `PMWIZARD_INVITATION_REQUIRE_EMAIL_VERIFICATION=true`.
+See [`docs/VERIFIED_EMAIL_INVITATIONS.md`](docs/VERIFIED_EMAIL_INVITATIONS.md)
+for configuration, limitations and deployment safeguards.
+
 ## Invite new teammates (PR #29)
 
 Project managers with `project:manage_members` can issue seven-day,
