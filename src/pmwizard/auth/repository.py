@@ -196,6 +196,7 @@ class AuthRepository:
             email=row.email,
             display_name=row.display_name,
             is_active=row.is_active,
+            email_verified_at=row.email_verified_at,
             created_at=row.created_at,
             updated_at=row.updated_at,
         )
