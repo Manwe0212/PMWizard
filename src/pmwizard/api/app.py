@@ -61,6 +61,14 @@ from pmwizard.health import (
     ProjectHealthService,
     ProjectHealthSnapshot,
 )
+from pmwizard.invitations import (
+    AcceptInvitationRequest,
+    CreateInvitationRequest,
+    InvitationAcceptance,
+    InvitationCreated,
+    InvitationPage,
+    ProjectInvitationService,
+)
 from pmwizard.inbox import (
     InboxListResponse,
     InboxSuggestionDetail,
@@ -438,6 +446,106 @@ def create_app(
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    @app.get(
+        "/v1/projects/{project_id}/invitations",
+        response_model=InvitationPage,
+    )
+    def list_project_invitations(
+        project_id: UUID,
+        limit: int = Query(default=50, ge=1, le=100),
+        offset: int = Query(default=0, ge=0),
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> InvitationPage:
+        require_member_manager(principal, project_id, session)
+        return ProjectInvitationService(session).list(
+            tenant_id=principal.tenant_id,
+            project_id=project_id,
+            actor_id=principal.user_id,
+            limit=limit,
+            offset=offset,
+        )
+
+    @app.post(
+        "/v1/projects/{project_id}/invitations",
+        response_model=InvitationCreated,
+        status_code=status.HTTP_201_CREATED,
+    )
+    def create_project_invitation(
+        project_id: UUID,
+        command: CreateInvitationRequest,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> Response:
+        require_member_manager(principal, project_id, session)
+        try:
+            created = ProjectInvitationService(session).create(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                actor_id=principal.user_id,
+                command=command,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return Response(
+            content=created.model_dump_json(),
+            media_type="application/json",
+            status_code=status.HTTP_201_CREATED,
+            headers={"Cache-Control": "private, no-store"},
+        )
+
+    @app.delete(
+        "/v1/projects/{project_id}/invitations/{invitation_id}",
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
+    def revoke_project_invitation(
+        project_id: UUID,
+        invitation_id: UUID,
+        principal: ApiPrincipal = Depends(get_principal),
+        session: Session = Depends(get_session),
+    ) -> Response:
+        require_member_manager(principal, project_id, session)
+        try:
+            ProjectInvitationService(session).revoke(
+                tenant_id=principal.tenant_id,
+                project_id=project_id,
+                actor_id=principal.user_id,
+                invitation_id=invitation_id,
+            )
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    @app.post(
+        "/v1/invitations/accept",
+        response_model=InvitationAcceptance,
+    )
+    def accept_project_invitation(
+        command: AcceptInvitationRequest,
+        session: Session = Depends(get_session),
+    ) -> Response:
+        if token_service is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Authentication is not configured.",
+            )
+        try:
+            accepted = ProjectInvitationService(session).accept(
+                command=command, token_service=token_service,
+            )
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invitation is invalid, expired or already used.",
+            ) from exc
+        return Response(
+            content=accepted.model_dump_json(),
+            media_type="application/json",
+            headers={"Cache-Control": "private, no-store"},
+        )
 
     @app.get(
         "/v1/executive/dashboard",
