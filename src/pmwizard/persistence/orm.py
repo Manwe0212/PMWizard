@@ -202,6 +202,9 @@ class ProjectInvitationORM(Base, TimestampMixin, TenantMixin):
     accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     accepted_user_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True))
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delivery_method: Mapped[str] = mapped_column(String(16), nullable=False, default="manual")
+    delivery_status: Mapped[str] = mapped_column(String(20), nullable=False, default="not_applicable")
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class AppUserORM(Base, TimestampMixin, TenantMixin):
@@ -215,6 +218,7 @@ class AppUserORM(Base, TimestampMixin, TenantMixin):
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class ProjectMembershipORM(Base, TimestampMixin, TenantMixin):
