@@ -106,7 +106,16 @@ def run_suite(checks: list[dict[str, str]]) -> None:
         except Exception as error:
             # Error bodies are intentionally excluded. Never expose test data.
             checks.append({"id": label, "status": "failed"})
-            print(f"FAIL {label}: {type(error).__name__}", flush=True)
+            # Safe diagnostics: only HTTP status codes, never raw responses.
+            message = str(error)
+            reason = (
+                message
+                if isinstance(error, AssertionError)
+                and message.startswith("HTTP status ")
+                and len(message) < 65
+                else type(error).__name__
+            )
+            print(f"FAIL {label}: {reason}", flush=True)
             raise
 
     def service_health() -> None:
