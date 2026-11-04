@@ -120,3 +120,46 @@ jobs:
           if test -f .env.demo; then
             docker compose --env-file .env.demo -f compose.demo.yml down --volumes --remove-orphans
           fi
+
+
+  staging-config:
+    name: staging-private-config-and-web-image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Synthetic CI-only values; this job never starts SMTP or staging DB.
+      PMWIZARD_DB_USER: ci_private
+      PMWIZARD_DB_PASSWORD: FakeCIOnlyPasswordNotForDeployment2026
+      PMWIZARD_DB_NAME: ci_private
+      PMWIZARD_STAGING_DATABASE_URL: postgresql+psycopg://ci_private:FakeCIOnlyPasswordNotForDeployment2026@stage-db:5432/ci_private
+      PMWIZARD_AUTH_SECRET: CiOnly_64_characters_not_a_deployment_secret_ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      PMWIZARD_PUBLIC_BASE_URL: https://staging.example.org
+      PMWIZARD_NOTIFICATION_SMTP_HOST: smtp.example.org
+      PMWIZARD_NOTIFICATION_EMAIL_FROM: ci@example.org
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify staging Compose has no exposed DB or API and no demo seeder
+        run: |
+          docker compose -f compose.staging.yml config --quiet
+          python - <<'PY'
+          import json
+          import subprocess
+          raw = subprocess.check_output(
+              ["docker", "compose", "-f", "compose.staging.yml", "config", "--format", "json"],
+              text=True,
+          )
+          services = json.loads(raw)["services"]
+          assert set(services) == {"stage-db", "stage-migrate", "stage-api", "stage-web"}
+          for name in ("stage-db", "stage-migrate", "stage-api"):
+              assert not services[name].get("ports"), name
+          ports = services["stage-web"]["ports"]
+          assert len(ports) == 1
+          assert ports[0].get("host_ip") == "127.0.0.1"
+          assert str(ports[0].get("published")) == "3000"
+          assert services["stage-api"]["environment"]["PMWIZARD_ENV"] == "staging"
+          PY
+
+      - name: Build unprivileged production-mode Next.js staging image
+        run: docker build -f web/Dockerfile.staging -t pmwizard-web-staging-ci ./web
