@@ -53,6 +53,7 @@ class LocalClient:
     def request(
         self, path: str, *, method: str = "GET",
         body: dict | None = None,
+        origin: str | None = None,
     ) -> HttpResult:
         if not path.startswith("/") or path.startswith("//"):
             raise ValueError("UAT path must remain local")
@@ -62,7 +63,7 @@ class LocalClient:
             data = json.dumps(body).encode("utf-8")
             headers["Content-Type"] = "application/json"
         if method not in {"GET", "HEAD"}:
-            headers["Origin"] = self.base
+            headers["Origin"] = origin or self.base
         req = Request(self.base + path, data=data, method=method, headers=headers)
         try:
             response = self.opener.open(req, timeout=40)
@@ -133,6 +134,11 @@ def run_suite(checks: list[dict[str, str]]) -> None:
             "password": "incorrect synthetic password",
         })
         assert_status(wrong, 401)
+        forged = attacker.request("/api/auth/login", method="POST", body={
+            "tenant_id": TENANT, "email": "demo@example.com",
+            "password": "incorrect synthetic password",
+        }, origin="https://malicious.example")
+        assert_status(forged, 403)
 
     step("UAT-02-anonymous-access-denied", anonymous_denied)
 
