@@ -246,7 +246,7 @@ def run_suite(checks: list[dict[str, str]]) -> None:
     step("UAT-08-create-project-and-owner-access", create_project)
 
     invitation_token: str | None = None
-    synthetic_email = f"uat-{secrets.token_hex(8)}@example.invalid"
+    synthetic_email = f"uat-{secrets.token_hex(8)}@example.com"
     synthetic_password = secrets.token_urlsafe(24)
 
     def invite_viewer() -> None:
