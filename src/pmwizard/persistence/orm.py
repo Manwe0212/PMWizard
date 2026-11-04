@@ -222,6 +222,16 @@ class AppUserORM(Base, TimestampMixin, TenantMixin):
     auth_version: Mapped[int] = mapped_column(default=0, nullable=False)
 
 
+class AuthRateLimitORM(Base):
+    """HMAC-digested keys: no plaintext IP, tenant email or login identity."""
+
+    __tablename__ = "auth_rate_limits"
+
+    key_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    hits: Mapped[int] = mapped_column(nullable=False, default=0)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True, nullable=False)
+
+
 class PasswordResetORM(Base, TimestampMixin, TenantMixin):
     """Password reset material is hashed, one-use, time-bounded and tenant-scoped."""
 
