@@ -90,8 +90,7 @@ def demo_password() -> str:
     raise RuntimeError("Synthetic demo password unavailable")
 
 
-def run_suite() -> list[dict[str, str]]:
-    checks: list[dict[str, str]] = []
+def run_suite(checks: list[dict[str, str]]) -> None:
     api, owner, viewer, attacker = (
         LocalClient(base=API),
         LocalClient(base=WEB),
@@ -364,7 +363,6 @@ def run_suite() -> list[dict[str, str]]:
         assert_status(owner.request("/api/session"), 401)
 
     step("UAT-18-revoke-all-owner-sessions", owner_logout)
-    return checks
 
 
 def main() -> int:
@@ -389,15 +387,15 @@ def main() -> int:
         "manual_uat_status": "not_executed",
         "release_decision": "no_go_pending_manual_approval",
     }
+    checks: list[dict[str, str]] = []
     try:
-        checks = run_suite()
+        run_suite(checks)
         report["checks"] = checks
         report["automated_status"] = "passed"
         result = 0
     except Exception:
-        # run_suite tracks checks but an exception interrupts its return.
-        # A separate, non-sensitive failure marker prevents fake PASS.
-        report["checks"] = [{"id": "UAT-execution", "status": "failed"}]
+        # Preserve passed steps and the failing step, without sensitive responses.
+        report["checks"] = checks or [{"id": "UAT-bootstrap", "status": "failed"}]
         result = 1
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
