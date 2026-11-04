@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { getServerConfig } from "@/lib/server-config";
 import {
@@ -9,13 +9,24 @@ import {
   getAccessToken,
 } from "@/lib/session";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const origin = request.headers.get("origin");
+  if (origin && origin !== request.nextUrl.origin) {
+    return NextResponse.json({ detail: "Cross-origin request denied." }, { status: 403 });
+  }
+  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
+    return NextResponse.json({ detail: "JSON request required." }, { status: 415 });
+  }
+  const raw = await request.text();
+  if (raw.length > 1000) {
+    return NextResponse.json({ detail: "Project selection request too large." }, { status: 413 });
+  }
   const token = await getAccessToken();
   if (!token) {
     return NextResponse.json({ detail: "Authentication required." }, { status: 401 });
   }
 
-  const payload = await request.json().catch(() => null);
+  const payload = (() => { try { return JSON.parse(raw); } catch { return null; } })();
   const projectId =
     payload && typeof payload.project_id === "string"
       ? payload.project_id.trim()
@@ -51,14 +62,10 @@ export async function POST(request: Request) {
 
     (await cookies()).set(PROJECT_COOKIE, projectId, cookieOptions());
     return NextResponse.json({ project_id: projectId });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      {
-        detail: "PMWizard API is unavailable from the web server.",
-        diagnostic:
-          error instanceof Error ? error.message : "Unknown backend error",
-      },
-      { status: 502 },
+      { detail: "PMWizard project selection is temporarily unavailable." },
+      { status: 502, headers: { "Cache-Control": "no-store" } },
     );
   }
 }
