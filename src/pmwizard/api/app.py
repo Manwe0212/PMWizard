@@ -8,7 +8,7 @@ from typing import Literal
 from collections.abc import Callable, Iterator
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.responses import Response
 from sqlalchemy import text as sql_text
 from sqlalchemy.exc import SQLAlchemyError
@@ -116,6 +116,8 @@ from pmwizard.reports import (
     StatusReportRequest,
     UngroundedStatusReportError,
 )
+from pmwizard.security.rate_limits import AuthRateLimiter, RateLimitExceeded
+from pmwizard.security.deployment import validate_runtime_environment
 from pmwizard.sources import (
     BindSourceCredentialRequest,
     CreateSourceConnectionRequest,
@@ -156,6 +158,29 @@ def create_app(
     token_service = (
         AccessTokenService(auth_settings) if auth_settings is not None else None
     )
+    rate_limiter = (
+        AuthRateLimiter(auth_settings.secret_key) if auth_settings is not None else None
+    )
+
+    def enforce_auth_limit(
+        session: Session, request: Request, *,
+        route: str, identity: str | None = None,
+    ) -> None:
+        if rate_limiter is None:
+            return
+        # The API may be behind one trusted BFF or proxy. Do not trust
+        # X-Forwarded-For supplied by clients; deploy edge controls as well.
+        source = request.client.host if request.client else "unknown"
+        try:
+            rate_limiter.check(
+                session, route=route, source=source, identity=identity,
+            )
+        except RateLimitExceeded as exc:
+            raise HTTPException(
+                status_code=429,
+                detail="Too many attempts. Try again later.",
+                headers={"Retry-After": str(exc.retry_after)},
+            ) from exc
 
     def get_session() -> Iterator[Session]:
         session = session_factory()
@@ -274,6 +299,7 @@ def create_app(
     @app.post("/v1/auth/login", response_model=LoginResponse)
     def login(
         command: LoginRequest,
+        request: Request,
         session: Session = Depends(get_session),
     ) -> LoginResponse:
         if token_service is None:
@@ -281,6 +307,10 @@ def create_app(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Authentication is not configured.",
             )
+        enforce_auth_limit(
+            session, request, route="login",
+            identity=f"{command.tenant_id}:{str(command.email).casefold()}",
+        )
         try:
             authenticated = AuthService(session, token_service).login(
                 tenant_id=command.tenant_id,
@@ -303,6 +333,7 @@ def create_app(
     )
     def request_password_reset(
         command: PasswordResetRequest,
+        request: Request,
         session: Session = Depends(get_session),
     ) -> PasswordResetMessage:
         if password_recovery_delivery is None:
@@ -310,6 +341,10 @@ def create_app(
                 status_code=503,
                 detail="Password recovery is not configured.",
             )
+        enforce_auth_limit(
+            session, request, route="password_reset_request",
+            identity=f"{command.tenant_id}:{str(command.email).casefold()}",
+        )
         PasswordRecoveryService(session, password_recovery_delivery).request(command)
         # Generic response, regardless of unknown, unverified or throttled email.
         return PasswordResetMessage()
@@ -317,6 +352,7 @@ def create_app(
     @app.post("/v1/auth/password-reset/confirm", status_code=status.HTTP_200_OK)
     def confirm_password_reset(
         command: PasswordResetConfirm,
+        request: Request,
         session: Session = Depends(get_session),
     ) -> dict[str, str]:
         if password_recovery_delivery is None:
@@ -324,6 +360,7 @@ def create_app(
                 status_code=503,
                 detail="Password recovery is not configured.",
             )
+        enforce_auth_limit(session, request, route="password_reset_confirm")
         try:
             PasswordRecoveryService(session, password_recovery_delivery).confirm(command)
         except ValueError as exc:
@@ -619,6 +656,7 @@ def create_app(
     )
     def accept_project_invitation(
         command: AcceptInvitationRequest,
+        request: Request,
         session: Session = Depends(get_session),
     ) -> Response:
         if token_service is None:
@@ -626,6 +664,7 @@ def create_app(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Authentication is not configured.",
             )
+        enforce_auth_limit(session, request, route="invitation_accept")
         try:
             accepted = ProjectInvitationService(session).accept(
                 command=command, token_service=token_service,
@@ -1447,6 +1486,8 @@ def create_default_app() -> FastAPI:
         raise RuntimeError(
             "PMWIZARD_AUTH_SECRET is required to create the default API app."
         )
+
+    validate_runtime_environment(os.environ)
 
     auth_settings = AuthSettings(
         secret_key=secret,
