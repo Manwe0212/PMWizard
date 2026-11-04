@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { isSameOrigin } from "@/lib/request-origin";
 import { getServerConfig } from "@/lib/server-config";
 import { bearerHeaders, getAccessToken, getSelectedProjectId } from "@/lib/session";
 
@@ -21,8 +22,7 @@ async function requestScope(request: NextRequest, context: Context) {
   if (!UUID_FORMAT.test(memberId)) {
     return { error: NextResponse.json({ detail: "Invalid member ID." }, { status: 422 }) };
   }
-  const origin = request.headers.get("origin");
-  if (origin && origin !== request.nextUrl.origin) {
+  if (!isSameOrigin(request)) {
     return { error: NextResponse.json({ detail: "Cross-origin requests are not allowed." }, { status: 403 }) };
   }
   return { token, url: `${getServerConfig().apiUrl}/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(memberId)}` };
