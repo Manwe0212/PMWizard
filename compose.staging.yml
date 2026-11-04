@@ -1,0 +1,87 @@
+# Controlled private staging, NOT an internet-facing production deployment.
+# Do not mix with compose.demo.yml. No demo seeding or public API / DB ports.
+# Before running, configure .env.staging and a TLS reverse proxy on THIS host.
+name: pmwizard-staging
+
+services:
+  stage-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${PMWIZARD_DB_USER:?Set staging DB user}
+      POSTGRES_PASSWORD: ${PMWIZARD_DB_PASSWORD:?Set random staging DB password}
+      POSTGRES_DB: ${PMWIZARD_DB_NAME:?Set staging DB name}
+    volumes:
+      - stage_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PMWIZARD_DB_USER} -d ${PMWIZARD_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  stage-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      PMWIZARD_DATABASE_URL: ${PMWIZARD_STAGING_DATABASE_URL:?Set DB connection URL}
+    depends_on:
+      stage-db:
+        condition: service_healthy
+    restart: "no"
+
+  stage-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      PMWIZARD_ENV: staging
+      PMWIZARD_DATABASE_URL: ${PMWIZARD_STAGING_DATABASE_URL:?Set DB URL}
+      PMWIZARD_AUTH_SECRET: ${PMWIZARD_AUTH_SECRET:?Set independent strong signing key}
+      PMWIZARD_PUBLIC_BASE_URL: ${PMWIZARD_PUBLIC_BASE_URL:?Set public HTTPS origin}
+      PMWIZARD_INVITATION_EMAIL_ENABLED: "true"
+      PMWIZARD_INVITATION_REQUIRE_EMAIL_VERIFICATION: "true"
+      PMWIZARD_PASSWORD_RESET_ENABLED: "true"
+      PMWIZARD_NOTIFICATION_SMTP_HOST: ${PMWIZARD_NOTIFICATION_SMTP_HOST:?Set mail host}
+      PMWIZARD_NOTIFICATION_SMTP_PORT: ${PMWIZARD_NOTIFICATION_SMTP_PORT:-587}
+      PMWIZARD_NOTIFICATION_EMAIL_FROM: ${PMWIZARD_NOTIFICATION_EMAIL_FROM:?Set sender}
+      PMWIZARD_NOTIFICATION_SMTP_STARTTLS: "true"
+      PMWIZARD_NOTIFICATION_SMTP_CREDENTIAL_REF: ${PMWIZARD_NOTIFICATION_SMTP_CREDENTIAL_REF:-}
+      PMWIZARD_SECRET_SMTP_NOTIFICATIONS: ${PMWIZARD_SECRET_SMTP_NOTIFICATIONS:-}
+    depends_on:
+      stage-migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 10
+    restart: unless-stopped
+
+  stage-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.staging
+    environment:
+      NODE_ENV: production
+      PMWIZARD_API_URL: http://stage-api:8000
+      PMWIZARD_PUBLIC_BASE_URL: ${PMWIZARD_PUBLIC_BASE_URL:?Set public HTTPS origin}
+    # Access ONLY through a TLS-terminating reverse proxy on this host.
+    # No other service binds to a host interface.
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      stage-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 8s
+      start_period: 45s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  stage_pgdata:
