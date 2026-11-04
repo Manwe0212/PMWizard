@@ -55,6 +55,20 @@ Initial work will focus on:
 
 PMWizard now includes governed Project Memory, deterministic Health, portfolio intelligence, human-reviewed AI suggestions, an Attention Center, Email/Teams notification delivery, an auditable Activity Timeline, and redacted CSV/JSON activity exports. PR #25 adds an explicitly gated **synthetic local demo** for reproducible first-run testing without real client data. These features are MVP modules, not a production-ready hosted service.
 
+## MVP release candidate and acceptance testing (PR #33)
+
+The MVP release candidate adds **18 automated end-to-end HTTP acceptance
+checks** against the private Docker demo (login, project creation, evidence-
+backed AI review, invitations, role transitions, revocation and audit export).
+CI publishes a sanitized UAT artifact and verifies its completeness.
+
+A **real-world pilot GO is deliberately not automated**. Ten additional
+manual staging UAT cases, zero unresolved release blockers, a documented
+risk register and independent product/technical owner approval are still
+required. See [`docs/MVP_UAT_AND_RELEASE.md`](docs/MVP_UAT_AND_RELEASE.md)
+and `scripts/evaluate_mvp_release.py`. No release tag, public deployment
+or commercial launch is created by this PR.
+
 ## Security and controlled staging readiness (PR #32)
 
 Persistent, hashed rate-limit counters now protect login and recovery
