@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { isSameOrigin } from "@/lib/request-origin";
 import { getServerConfig } from "@/lib/server-config";
 import { bearerHeaders, getAccessToken } from "@/lib/session";
 
@@ -10,8 +11,7 @@ export async function POST(request: Request) {
   if (!token) {
     return NextResponse.json({ detail: "Authentication required." }, { status: 401 });
   }
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
+  if (!isSameOrigin(request)) {
     return NextResponse.json({ detail: "Cross-origin requests are not allowed." }, { status: 403 });
   }
   if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
