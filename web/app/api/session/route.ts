@@ -63,14 +63,10 @@ export async function GET() {
       projects: projects.items,
       selected_project_id: selectedValid ? selected : null,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      {
-        detail: "PMWizard API is unavailable from the web server.",
-        diagnostic:
-          error instanceof Error ? error.message : "Unknown backend error",
-      },
-      { status: 502 },
+      { detail: "PMWizard session service is temporarily unavailable." },
+      { status: 502, headers: { "Cache-Control": "private, no-store" } },
     );
   }
 }
