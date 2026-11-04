@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { isSameOrigin } from "@/lib/request-origin";
 import { getServerConfig } from "@/lib/server-config";
 import { bearerHeaders, getAccessToken, getSelectedProjectId } from "@/lib/session";
 
@@ -58,8 +59,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await scope();
   if (auth.error) return auth.error;
-  const origin = request.headers.get("origin");
-  if (origin && origin !== request.nextUrl.origin) {
+  if (!isSameOrigin(request)) {
     return NextResponse.json({ detail: "Cross-origin requests are not allowed." }, { status: 403 });
   }
   if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {

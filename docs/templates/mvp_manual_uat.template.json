@@ -1,0 +1,76 @@
+{
+  "schema_version": "pmwizard-mvp-human-uat-v0",
+  "environment": "private-staging-synthetic",
+  "tested_commit_sha": "",
+  "decision": "no_go",
+  "blockers": [
+    "Manual UAT not yet executed"
+  ],
+  "risk_register_ref": "",
+  "manual_scenarios": [
+    {
+      "id": "MAN-01-staging-dns-https-and-access",
+      "status": "pending",
+      "evidence_ref": ""
+    },
+    {
+      "id": "MAN-02-browser-login-project-navigation",
+      "status": "pending",
+      "evidence_ref": ""
+    },
+    {
+      "id": "MAN-03-invitation-email-and-inbox-proof",
+      "status": "pending",
+      "evidence_ref": ""
+    },
+    {
+      "id": "MAN-04-password-recovery-real-email",
+      "status": "pending",
+      "evidence_ref": ""
+    },
+    {
+      "id": "MAN-05-human-review-and-evidence-ux",
+      "status": "pending",
+      "evidence_ref": ""
+    },
+    {
+      "id": "MAN-06-connector-sandbox-authorizations",
+      "status": "pending",
+      "evidence_ref": ""
+    },
+    {
+      "id": "MAN-07-roles-revocation-and-audit-export",
+      "status": "pending",
+      "evidence_ref": ""
+    },
+    {
+      "id": "MAN-08-ai-guardrails-and-human-governance",
+      "status": "pending",
+      "evidence_ref": ""
+    },
+    {
+      "id": "MAN-09-backup-restore-and-rollback",
+      "status": "pending",
+      "evidence_ref": ""
+    },
+    {
+      "id": "MAN-10-security-monitoring-and-incident-response",
+      "status": "pending",
+      "evidence_ref": ""
+    }
+  ],
+  "approvals": [
+    {
+      "role": "product_owner",
+      "name": "",
+      "approved_at_utc": "",
+      "evidence_ref": ""
+    },
+    {
+      "role": "technical_owner",
+      "name": "",
+      "approved_at_utc": "",
+      "evidence_ref": ""
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { isSameOrigin } from "@/lib/request-origin";
 import { getServerConfig } from "@/lib/server-config";
 import { bearerHeaders, getAccessToken, getSelectedProjectId } from "@/lib/session";
 
@@ -19,8 +20,7 @@ export async function DELETE(request: NextRequest, context: Context) {
   if (!UUID.test(invitationId)) {
     return NextResponse.json({ detail: "Invalid invitation ID." }, { status: 422 });
   }
-  const origin = request.headers.get("origin");
-  if (origin && origin !== request.nextUrl.origin) {
+  if (!isSameOrigin(request)) {
     return NextResponse.json({ detail: "Cross-origin request denied." }, { status: 403 });
   }
   try {

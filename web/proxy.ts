@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isSameOrigin } from "./lib/request-origin";
 
 /**
  * Additional CSRF gate for the cookie-authenticated BFF.
@@ -13,16 +14,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const origin = request.headers.get("origin");
-  const production = process.env.NODE_ENV === "production";
-  const expected = production
-    ? process.env.PMWIZARD_PUBLIC_BASE_URL?.trim().replace(/\/+$/, "")
-    : request.nextUrl.origin;
-
-  if (
-    (production && (!origin || !expected || !expected.startsWith("https://"))) ||
-    (origin && origin !== expected)
-  ) {
+  if (!isSameOrigin(request)) {
     return NextResponse.json(
       { detail: "Cross-origin or unverifiable request denied." },
       { status: 403, headers: { "Cache-Control": "no-store" } },

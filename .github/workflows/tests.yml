@@ -108,6 +108,21 @@ jobs:
       - name: Smoke test authenticated local demo
         run: python scripts/smoke_demo_stack.py
 
+      - name: Run synthetic end-to-end MVP UAT (18 API + web acceptance steps)
+        run: python scripts/uat_demo_stack.py --output reports/uat/automated.json
+
+      - name: Verify automated UAT evidence is complete but never human-approved
+        run: python scripts/evaluate_mvp_release.py --automated reports/uat/automated.json --automated-only
+
+      - name: Preserve sanitized automated UAT evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmwizard-synthetic-uat-${{ github.run_id }}
+          path: reports/uat/automated.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Diagnose demo containers on failure
         if: failure()
         run: |

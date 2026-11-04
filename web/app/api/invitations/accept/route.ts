@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isSameOrigin } from "@/lib/request-origin";
 import { getServerConfig } from "@/lib/server-config";
 import { ACCESS_TOKEN_COOKIE, PROJECT_COOKIE, cookieOptions } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== request.nextUrl.origin) {
+  if (!isSameOrigin(request)) {
     return NextResponse.json({ detail: "Cross-origin request denied." }, { status: 403 });
   }
   if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
