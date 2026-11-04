@@ -219,3 +219,8 @@ __marimo__/
 
 # PR #26: generated local-only Docker demo credentials.
 .env.demo
+
+# PR #32: never commit private staging or deployment credentials.
+.env.staging
+.env.production
+.env.prod
