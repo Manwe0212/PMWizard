@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { isSameOrigin } from "@/lib/request-origin";
 import { getServerConfig } from "@/lib/server-config";
 import { bearerHeaders, getAccessToken, getSelectedProjectId } from "@/lib/session";
 
@@ -41,8 +42,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const context = await scope();
   if (context.error) return context.error;
-  const origin = request.headers.get("origin");
-  if (origin && origin !== request.nextUrl.origin) {
+  if (!isSameOrigin(request)) {
     return NextResponse.json({ detail: "Cross-origin request denied." }, { status: 403 });
   }
   if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
