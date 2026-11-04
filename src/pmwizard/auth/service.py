@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -93,6 +94,7 @@ class AuthService:
         token = self.token_service.issue(
             user_id=user.id,
             tenant_id=tenant_id,
+            auth_version=self.repository.get_auth_version(tenant_id, user.id) or 0,
         )
         return AuthenticatedSession(
             user=user,
@@ -105,7 +107,30 @@ class AuthService:
         user = self.repository.get_user(claims.tenant_id, claims.sub)
         if user is None or not user.is_active:
             raise AuthenticationError("Authenticated user is not active")
+        version = self.repository.get_auth_version(claims.tenant_id, claims.sub)
+        if version is None or claims.ver != version:
+            raise AuthenticationError("Session has been revoked")
+        if self.repository.is_token_revoked(claims.tenant_id, claims.sub, claims.jti):
+            raise AuthenticationError("Session has been revoked")
         return user
+
+    def logout_token(self, token: str) -> None:
+        """Invalidate only the current JWT, not the user's other sessions."""
+        self.authenticate_token(token)
+        claims = self.token_service.decode(token)
+        self.repository.revoke_token(
+            tenant_id=claims.tenant_id,
+            user_id=claims.sub,
+            jti=claims.jti,
+            expires_at=datetime.fromtimestamp(claims.exp, tz=timezone.utc),
+        )
+
+    def logout_all(self, token: str) -> None:
+        """Invalidate every issued access token via a DB-backed version change."""
+        self.authenticate_token(token)
+        claims = self.token_service.decode(token)
+        self.repository.bump_auth_version(claims.tenant_id, claims.sub)
+        self.session.commit()
 
     def list_projects(self, user: AppUser) -> list[ProjectAccess]:
         return self.repository.list_project_access(
