@@ -55,6 +55,23 @@ Initial work will focus on:
 
 PMWizard now includes governed Project Memory, deterministic Health, portfolio intelligence, human-reviewed AI suggestions, an Attention Center, Email/Teams notification delivery, an auditable Activity Timeline, and redacted CSV/JSON activity exports. PR #25 adds an explicitly gated **synthetic local demo** for reproducible first-run testing without real client data. These features are MVP modules, not a production-ready hosted service.
 
+## Security and controlled staging readiness (PR #32)
+
+Persistent, hashed rate-limit counters now protect login and recovery
+endpoints, and production-mode browser mutations enforce same-origin
+checks. The web sends anti-framing, no-sniff and no-referrer headers.
+Non-demo environments fail startup with weak/default credentials, HTTP
+origins, insecure mail settings or enabled demo seeding. A separate
+[`compose.staging.yml`](compose.staging.yml) uses a production-mode
+Next.js standalone image, no seeded demo users and loopback-only web
+publishing behind an operator-supplied HTTPS proxy.
+
+This is **readiness for private synthetic-data UAT**, not a public
+production launch. See
+[`docs/SECURITY_DEPLOYMENT_READINESS.md`](docs/SECURITY_DEPLOYMENT_READINESS.md)
+for the full staging runbook, strict configuration, limits and remaining
+security work.
+
 ## Account recovery and session safety (PR #31)
 
 After verified email has been configured (PR #30), operators can enable
