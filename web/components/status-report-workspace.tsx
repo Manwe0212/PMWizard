@@ -106,6 +106,7 @@ export function StatusReportWorkspace({ canGenerate }: Props) {
   const [generating, setGenerating] = useState(false);
   const [copyLabel, setCopyLabel] = useState("Copy report");
   const [error, setError] = useState<string | null>(null);
+  const [providerUnavailable, setProviderUnavailable] = useState(false);
 
   const factsById = useMemo(() => {
     if (!draft) return new Map<string, GroundFact>();
@@ -113,18 +114,23 @@ export function StatusReportWorkspace({ canGenerate }: Props) {
   }, [draft]);
 
   async function onGenerate() {
-    if (!canGenerate) return;
+    if (!canGenerate || providerUnavailable) return;
     setGenerating(true);
     setError(null);
     try {
       setDraft(await generateDraft(lookbackDays, audience));
     } catch (requestError) {
       setDraft(null);
-      setError(
+      const message =
         requestError instanceof Error
           ? requestError.message
-          : "Unable to generate status report.",
-      );
+          : "Unable to generate status report.";
+      if (message.includes("provider is not configured")) {
+        setProviderUnavailable(true);
+        setError(null);
+      } else {
+        setError(message);
+      }
     } finally {
       setGenerating(false);
     }
@@ -185,18 +191,53 @@ export function StatusReportWorkspace({ canGenerate }: Props) {
           <button
             className="primaryButton reportGenerateButton"
             type="button"
-            disabled={!canGenerate || generating}
+            disabled={!canGenerate || generating || providerUnavailable}
             onClick={() => void onGenerate()}
             title={
-              canGenerate
-                ? "Generate a grounded AI draft"
-                : "Project review permission is required to generate reports"
+              providerUnavailable
+                ? "Optional provider is not connected in this environment"
+                : canGenerate
+                  ? "Generate a grounded AI draft (requires API credentials)"
+                  : "Project review permission is required to generate reports"
             }
           >
-            {generating ? "Generating…" : "✦ Generate draft"}
+            {generating
+              ? "Generating…"
+              : providerUnavailable
+                ? "Provider not connected"
+                : "✦ Generate draft"}
           </button>
         </div>
       </div>
+
+      <section className="reportIntegrationGuide" aria-label="AI report integration overview">
+        <div className="reportIntegrationHeading">
+          <div>
+            <span className="reportIntegrationEyebrow">TECHNICAL ASSESSMENT · OPTIONAL INTEGRATION</span>
+            <h3>How AI status reporting works</h3>
+            <p>
+              PMWizard already organizes governed project facts. An optional
+              OpenAI API connection can turn those facts into a structured
+              executive report, with human review before distribution.
+            </p>
+          </div>
+          <span className="reportIntegrationTag">
+            {providerUnavailable ? "Provider not connected" : "API connection required"}
+          </span>
+        </div>
+        <div className="reportIntegrationSteps">
+          <div><strong>01 · Collect</strong><span>Authorized Project Memory, RAID, decisions and delivery status.</span></div>
+          <div><strong>02 · Explain</strong><span>Deterministic health scores, trend snapshots and data coverage.</span></div>
+          <div><strong>03 · Generate</strong><span>A configured API model drafts sections citing the supplied fact IDs.</span></div>
+          <div><strong>04 · Govern</strong><span>Validate citations and numbers; a project manager reviews the output.</span></div>
+        </div>
+        <p className="reportIntegrationNote">
+          This is an integration walkthrough, not a generated report.
+          ChatGPT Plus does not provide an API key or API credits.
+          Live generation requires separately configured credentials and may incur usage charges.
+          No external AI request is made by this explanation.
+        </p>
+      </section>
 
       {!canGenerate && (
         <div className="reportPermissionNote">
@@ -215,7 +256,7 @@ export function StatusReportWorkspace({ canGenerate }: Props) {
         </div>
       )}
 
-      {!draft && !error && (
+      {!draft && !error && !providerUnavailable && (
         <div className="reportEmpty">
           <div className="reportEmptyMark">✦</div>
           <h3>Generate a grounded project update</h3>
@@ -234,6 +275,18 @@ export function StatusReportWorkspace({ canGenerate }: Props) {
             <b>→</b>
             <span>AI Draft</span>
           </div>
+        </div>
+      )}
+
+      {providerUnavailable && !draft && (
+        <div className="reportProviderNotice" role="status">
+          <strong>Live report generation is not connected in this environment.</strong>
+          <p>
+            The report workflow is implemented, but an API provider must be
+            configured before a real draft can be generated. The steps above
+            describe the intended integration; no sample output is presented
+            as AI-generated evidence.
+          </p>
         </div>
       )}
 

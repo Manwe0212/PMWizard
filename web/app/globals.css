@@ -6777,3 +6777,93 @@ button:disabled {
   flex-wrap: wrap;
   gap: 10px;
 }
+
+/* Technical assessment: provider-neutral report integration explanation. */
+.reportIntegrationGuide {
+  margin: 18px 0;
+  border: 1px solid #cbdcf6;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f6f9ff, #fff);
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(19, 88, 213, 0.04);
+}
+.reportIntegrationHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.reportIntegrationHeading h3 {
+  font-size: 19px;
+  margin: 7px 0;
+  color: #14213d;
+}
+.reportIntegrationHeading p {
+  max-width: 720px;
+  margin: 0;
+  line-height: 1.55;
+  color: #475569;
+  font-size: 13px;
+}
+.reportIntegrationEyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  color: #1654cf;
+  letter-spacing: .08em;
+}
+.reportIntegrationTag {
+  border: 1px solid #cbdcf6;
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: #1e40af;
+  background: white;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.reportIntegrationSteps {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.reportIntegrationSteps > div {
+  background: white;
+  border: 1px solid #e0e9f7;
+  border-radius: 11px;
+  padding: 14px 12px;
+  display: grid;
+  gap: 7px;
+}
+.reportIntegrationSteps strong {
+  color: #164ab1;
+  font-size: 12px;
+}
+.reportIntegrationSteps span,
+.reportIntegrationNote,
+.reportProviderNotice p {
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.reportIntegrationNote {
+  margin: 16px 0 0;
+  font-size: 11px;
+}
+.reportProviderNotice {
+  border: 1px solid #f4d698;
+  background: #fffbeb;
+  border-radius: 14px;
+  padding: 22px;
+  color: #78350f;
+}
+.reportProviderNotice strong {font-size: 14px;}
+.reportProviderNotice p {margin: 8px 0 0;}
+@media (max-width: 1000px) {
+  .reportIntegrationSteps {grid-template-columns: repeat(2, minmax(0, 1fr));}
+}
+@media (max-width: 620px) {
+  .reportIntegrationHeading {flex-direction: column;}
+  .reportIntegrationSteps {grid-template-columns: 1fr;}
+  .reportIntegrationGuide {padding: 16px;}
+}
