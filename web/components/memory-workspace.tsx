@@ -16,6 +16,7 @@ type MemoryTab = "actions" | "raid" | "decisions";
 
 type Props = {
   projectName: string;
+  initialTab?: MemoryTab;
 };
 
 function titleCase(value: string): string {
@@ -63,9 +64,9 @@ async function getMemory(): Promise<ProjectMemorySnapshot> {
   return payload as ProjectMemorySnapshot;
 }
 
-export function MemoryWorkspace({ projectName }: Props) {
+export function MemoryWorkspace({ projectName, initialTab = "actions" }: Props) {
   const [snapshot, setSnapshot] = useState<ProjectMemorySnapshot | null>(null);
-  const [tab, setTab] = useState<MemoryTab>("actions");
+  const [tab, setTab] = useState<MemoryTab>(initialTab);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
