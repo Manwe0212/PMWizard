@@ -1,0 +1,26 @@
+# PR #38 — single-host private synthetic staging reverse proxy.
+# Copy to a secure Caddy configuration location on your Linux staging host.
+# Caddy resolves {$PMWIZARD_PUBLIC_HOST} from its own service environment.
+# Example host: staging.example.org — replace with a DNS name YOU CONTROL.
+# HTTPS certificates require DNS to resolve and ports 80/443 to reach Caddy.
+#
+# Never proxy directly to stage-api or stage-db; only the Next.js BFF is
+# published on 127.0.0.1:3000 by compose.staging.yml.
+
+{$PMWIZARD_PUBLIC_HOST} {
+    encode zstd gzip
+
+    reverse_proxy 127.0.0.1:3000 {
+        # Do not forward client-provided proxy provenance to the application.
+        header_up -X-Forwarded-For
+        header_up -X-Forwarded-Host
+        header_up -X-Forwarded-Proto
+        header_up -X-Real-IP
+        header_up X-Forwarded-Proto https
+        header_up X-Forwarded-Host {host}
+    }
+
+    # Caddy handles certificate provisioning and HTTPS redirection.
+    # Keep security response headers, including CSP and HSTS, under
+    # Next.js ownership (web/next.config.ts).
+}
