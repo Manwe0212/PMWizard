@@ -45,11 +45,17 @@ function statusClass(status: string): string {
 
 function dateLabel(value: string | null): string {
   if (!value) return "—";
+  // Date-only governed values must not shift to the previous day
+  // for users west of UTC (for example America/Bogota).
+  const day = value.slice(0, 10);
+  const parsed = new Date(day + "T12:00:00Z");
+  if (Number.isNaN(parsed.getTime())) return "Date unavailable";
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(value));
+    timeZone: "UTC",
+  }).format(parsed);
 }
 
 async function getMemory(): Promise<ProjectMemorySnapshot> {
