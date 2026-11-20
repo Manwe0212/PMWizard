@@ -6984,3 +6984,60 @@ button:disabled {
   .executivePriorityHeading { flex-direction: column; }
   .executivePriorityGrid { grid-template-columns: 1fr; }
 }
+
+
+/* PR #37 — governed Delivery Intelligence, no simulated predictive metrics. */
+.deliverySurface { display:grid;gap:18px; }
+.deliveryHero {
+  display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
+  padding:24px;border:1px solid #d7e3f6;border-radius:16px;
+  background:linear-gradient(120deg,#edf4ff,#fff 74%);
+}
+.deliveryHero h2 {font-size:23px;color:#14213d;margin:8px 0;}
+.deliveryHero p {font-size:13px;line-height:1.55;color:#52647c;margin:0;max-width:730px;}
+.deliveryHero button {flex-shrink:0;}
+.deliveryKpiGrid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+.deliveryKpi {display:grid;gap:6px;padding:18px;background:#fff;border:1px solid #e1e8f3;border-top:3px solid #9ab0cb;border-radius:12px;min-width:0;}
+.deliveryKpi.critical {border-top-color:#c24137;}
+.deliveryKpi.attention {border-top-color:#d59b16;}
+.deliveryKpi.good {border-top-color:#15803d;}
+.deliveryKpi span {font-size:11px;color:#5f728a;font-weight:700;}
+.deliveryKpi strong {font-size:28px;line-height:1.2;color:#162a4b;}
+.deliveryKpi small {font-size:11px;color:#697991;line-height:1.4;}
+.deliveryDetailsGrid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.deliverySchedule {padding:20px;background:#fff;border:1px solid #e1e8f3;border-radius:14px;}
+.deliverySchedule h3 {font-size:16px;margin:8px 0 14px;color:#14213d;}
+.deliverySchedule dl {margin:0;}
+.deliverySchedule dl div {display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #edf1f7;padding:10px 0;}
+.deliverySchedule dt {color:#64748b;font-size:12px;}
+.deliverySchedule dd {margin:0;color:#213957;font-size:12px;font-weight:700;text-align:right;}
+.deliverySchedule p {font-size:11px;line-height:1.5;color:#667992;margin:13px 0 0;}
+.deliverySchedule > strong {font-size:14px;color:#1648a0;}
+.deliveryTrack {height:10px;border-radius:999px;background:#e9eff8;overflow:hidden;margin:14px 0;}
+.deliveryTrack > div {height:100%;background:#2668d9;border-radius:999px;}
+.deliverySignalHeader {display:flex;align-items:flex-end;justify-content:space-between;gap:16px;}
+.deliverySignalHeader h3 {font-size:18px;margin:0 0 5px;color:#14213d;}
+.deliverySignalHeader p {font-size:12px;color:#64748b;margin:0;}
+.deliverySignalFilters {display:flex;flex-wrap:wrap;gap:6px;}
+.deliverySignalFilters button {padding:8px 11px;border-radius:9px;border:1px solid #d7e3f4;background:#fff;color:#4e6180;font-size:11px;font-weight:700;}
+.deliverySignalFilters button.active {background:#eaf2ff;border-color:#81a9ef;color:#0e47a3;}
+.deliverySignalList {display:grid;gap:9px;}
+.deliverySignalItem {display:grid;grid-template-columns:125px minmax(0,1fr) auto;align-items:center;gap:13px;padding:14px 16px;border:1px solid #e0e8f3;border-left:4px solid #d59b16;background:#fff;border-radius:11px;}
+.deliverySignalItem.critical {border-left-color:#c24137;}
+.deliverySignalPill {font-size:10px;font-weight:800;color:#556a88;line-height:1.4;}
+.deliverySignalItem h4 {font-size:13px;color:#152b4f;margin:0 0 6px;overflow-wrap:anywhere;}
+.deliverySignalItem p {font-size:11px;color:#687b91;margin:0;line-height:1.4;overflow-wrap:anywhere;}
+.deliveryUrgency {font-size:10px;font-weight:800;color:#9c6514;text-transform:uppercase;}
+.deliverySignalItem.critical .deliveryUrgency {color:#b42318;}
+.deliveryEmpty {background:#fff;border:1px dashed #c7d8f4;border-radius:12px;padding:22px;color:#4e6883;font-size:12px;}
+.deliveryShowAll {justify-self:start;}
+.deliveryReadOnlyNote {border:1px solid #d9e5f4;border-radius:12px;background:#f6f9ff;padding:16px 18px;color:#294062;}
+.deliveryReadOnlyNote strong {font-size:12px;}
+.deliveryReadOnlyNote p {font-size:11px;color:#60738a;line-height:1.55;margin:6px 0 0;}
+@media(max-width:1050px){.deliveryKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:740px){
+  .deliveryHero,.deliverySignalHeader{flex-direction:column;align-items:flex-start;}
+  .deliveryDetailsGrid{grid-template-columns:1fr;}
+  .deliverySignalItem{grid-template-columns:1fr;gap:7px;}
+}
+@media(max-width:480px){.deliveryKpiGrid{grid-template-columns:1fr;}}
