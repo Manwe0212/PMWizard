@@ -6,6 +6,7 @@ import { ActivityWorkspace } from "@/components/activity-workspace";
 import { AttentionCenterWorkspace } from "@/components/attention-center-workspace";
 import { AutomationWorkspace } from "@/components/automation-workspace";
 import { ExecutiveDashboard } from "@/components/executive-dashboard";
+import { DeliveryWorkspace } from "@/components/delivery-workspace";
 import { HealthWorkspace } from "@/components/health-workspace";
 import { MemoryWorkspace } from "@/components/memory-workspace";
 import { MembersWorkspace } from "@/components/members-workspace";
@@ -117,7 +118,7 @@ export function InboxClient({
   const [reviewerNote, setReviewerNote] = useState("");
   const [attentionUnread, setAttentionUnread] = useState(0);
   const [activeView, setActiveView] = useState<
-    "executive" | "portfolio" | "attention" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources" | "activity" | "members"
+    "executive" | "portfolio" | "attention" | "delivery" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources" | "activity" | "members"
   >("executive");
 
   const loadInbox = useCallback(async () => {
@@ -316,6 +317,14 @@ export function InboxClient({
               )}
             </button>
             <button
+              className={`navItem ${activeView === "delivery" ? "active" : ""}`}
+              type="button"
+              onClick={() => setActiveView("delivery")}
+            >
+              <span className="navIcon">▤</span>
+              Delivery Intelligence
+            </button>
+            <button
               className={`navItem ${activeView === "health" ? "active" : ""}`}
               type="button"
               onClick={() => setActiveView("health")}
@@ -413,7 +422,9 @@ export function InboxClient({
                   ? "Program & Portfolio"
                   : activeView === "attention"
                     ? "Attention Center"
-                    : activeView === "health"
+                    : activeView === "delivery"
+                    ? "Delivery Intelligence"
+                  : activeView === "health"
                   ? "Project Health"
                   : activeView === "reports"
                     ? "Status Reports"
@@ -436,7 +447,9 @@ export function InboxClient({
                   ? "Roll up authorized project health, trends, hierarchy, and shared signals."
                   : activeView === "attention"
                     ? "Prioritize active project conditions without changing governed truth."
-                    : activeView === "health"
+                    : activeView === "delivery"
+                    ? "Identify blockers, overdue commitments and decisions from governed delivery records."
+                  : activeView === "health"
                   ? "Understand project health through deterministic, explainable signals."
                   : activeView === "reports"
                     ? "Generate grounded AI status-report drafts from governed project truth."
@@ -535,6 +548,8 @@ export function InboxClient({
             onNavigate={(target) => setActiveView(target)}
             onUnreadChange={setAttentionUnread}
           />
+        ) : activeView === "delivery" ? (
+          <DeliveryWorkspace />
         ) : activeView === "health" ? (
           <HealthWorkspace canCapture={canReviewProject} />
         ) : activeView === "reports" ? (
