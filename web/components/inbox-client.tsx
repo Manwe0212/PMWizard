@@ -122,9 +122,11 @@ export function InboxClient({
   >("executive");
   const [memoryTab, setMemoryTab] = useState<"actions" | "raid" | "decisions">("actions");
   const [memoryNavigationId, setMemoryNavigationId] = useState(0);
+  const [returnToDelivery, setReturnToDelivery] = useState(false);
 
   const openMemorySection = (section: "actions" | "raid" | "decisions") => {
     setMemoryTab(section);
+    setReturnToDelivery(true);
     setMemoryNavigationId((current) => current + 1);
     setActiveView("memory");
   };
@@ -387,7 +389,7 @@ export function InboxClient({
             <button
               className={`navItem ${activeView === "memory" ? "active" : ""}`}
               type="button"
-              onClick={() => setActiveView("memory")}
+              onClick={() => { setReturnToDelivery(false); setActiveView("memory"); }}
             >
               <span className="navIcon">◇</span>
               Project Memory
@@ -542,6 +544,7 @@ export function InboxClient({
           <ExecutiveDashboard
             onOpenProject={async (nextProjectId, target) => {
               await onProjectChange(nextProjectId);
+              setReturnToDelivery(false);
               setActiveView(target);
             }}
           />
@@ -904,7 +907,7 @@ export function InboxClient({
         ) : activeView === "members" && canManageMembers ? (
           <MembersWorkspace currentUserId={userId} />
         ) : activeView === "memory" ? (
-          <MemoryWorkspace key={`${projectId}-${memoryNavigationId}`} projectName={projectName} initialTab={memoryTab} />
+          <MemoryWorkspace key={`${projectId}-${memoryNavigationId}`} projectName={projectName} initialTab={returnToDelivery ? memoryTab : "actions"} onBackToDelivery={returnToDelivery ? () => { setReturnToDelivery(false); setActiveView("delivery"); } : undefined} />
         ) : (
           <SourcesWorkspace canManage={canReviewProject} />
         )}

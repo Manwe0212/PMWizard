@@ -7022,7 +7022,14 @@ button:disabled {
 .deliverySignalFilters button {padding:8px 11px;border-radius:9px;border:1px solid #d7e3f4;background:#fff;color:#4e6180;font-size:11px;font-weight:700;}
 .deliverySignalFilters button.active {background:#eaf2ff;border-color:#81a9ef;color:#0e47a3;}
 .deliverySignalList {display:grid;gap:9px;}
-.deliverySignalItem {display:grid;grid-template-columns:125px minmax(0,1fr) auto;align-items:center;gap:13px;padding:14px 16px;border:1px solid #e0e8f3;border-left:4px solid #d59b16;background:#fff;border-radius:11px;}
+.deliverySignalItem {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px;padding:14px 18px;border:1px solid #e0e8f3;border-left:4px solid #d59b16;background:#fff;border-radius:11px;}
+.deliverySignalCopy {display:grid;grid-template-columns:125px minmax(0,1fr);align-items:center;gap:13px;min-width:0;}
+.deliverySignalControls {display:flex;align-items:center;justify-content:flex-end;gap:15px;flex-wrap:wrap;}
+.deliveryInspectButton {white-space:nowrap;font-size:11px;line-height:1.25;}
+.deliveryInspectButton span {margin-left:3px;}
+.deliveryNavigationActions {display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.memoryHeroActions {display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.memoryOverviewItem small {display:block;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.35;}
 .deliverySignalItem.critical {border-left-color:#c24137;}
 .deliverySignalPill {font-size:10px;font-weight:800;color:#556a88;line-height:1.4;}
 .deliverySignalItem h4 {font-size:13px;color:#152b4f;margin:0 0 6px;overflow-wrap:anywhere;}
@@ -7034,10 +7041,14 @@ button:disabled {
 .deliveryReadOnlyNote {border:1px solid #d9e5f4;border-radius:12px;background:#f6f9ff;padding:16px 18px;color:#294062;}
 .deliveryReadOnlyNote strong {font-size:12px;}
 .deliveryReadOnlyNote p {font-size:11px;color:#60738a;line-height:1.55;margin:6px 0 0;}
+@media(max-width:1180px){.deliverySignalItem{grid-template-columns:1fr;gap:10px;}.deliverySignalControls{justify-content:space-between;}.deliveryInspectButton{white-space:normal;}}
 @media(max-width:1050px){.deliveryKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:740px){
   .deliveryHero,.deliverySignalHeader{flex-direction:column;align-items:flex-start;}
   .deliveryDetailsGrid{grid-template-columns:1fr;}
-  .deliverySignalItem{grid-template-columns:1fr;gap:7px;}
+  .deliverySignalItem{grid-template-columns:1fr;gap:9px;}
+  .deliverySignalCopy{grid-template-columns:1fr;gap:5px;}
+  .deliverySignalControls{justify-content:space-between;align-items:center;}
+  .memoryHeroActions{justify-content:flex-start;}
 }
 @media(max-width:480px){.deliveryKpiGrid{grid-template-columns:1fr;}}

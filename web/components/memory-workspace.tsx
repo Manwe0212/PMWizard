@@ -17,6 +17,7 @@ type MemoryTab = "actions" | "raid" | "decisions";
 type Props = {
   projectName: string;
   initialTab?: MemoryTab;
+  onBackToDelivery?: () => void;
 };
 
 function titleCase(value: string): string {
@@ -44,11 +45,17 @@ function statusClass(status: string): string {
 
 function dateLabel(value: string | null): string {
   if (!value) return "—";
+  // Date-only governed values must not shift to the previous day
+  // for users west of UTC (for example America/Bogota).
+  const day = value.slice(0, 10);
+  const parsed = new Date(day + "T12:00:00Z");
+  if (Number.isNaN(parsed.getTime())) return "Date unavailable";
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(value));
+    timeZone: "UTC",
+  }).format(parsed);
 }
 
 async function getMemory(): Promise<ProjectMemorySnapshot> {
@@ -64,7 +71,7 @@ async function getMemory(): Promise<ProjectMemorySnapshot> {
   return payload as ProjectMemorySnapshot;
 }
 
-export function MemoryWorkspace({ projectName, initialTab = "actions" }: Props) {
+export function MemoryWorkspace({ projectName, initialTab = "actions", onBackToDelivery }: Props) {
   const [snapshot, setSnapshot] = useState<ProjectMemorySnapshot | null>(null);
   const [tab, setTab] = useState<MemoryTab>(initialTab);
   const [loading, setLoading] = useState(true);
@@ -153,9 +160,16 @@ export function MemoryWorkspace({ projectName, initialTab = "actions" }: Props) 
               "Governed Action Items, RAID and Decisions for this project."}
           </p>
         </div>
-        <button className="secondaryButton" type="button" onClick={() => void load()}>
-          ↻ Refresh memory
-        </button>
+        <div className="memoryHeroActions">
+          {onBackToDelivery && (
+            <button className="secondaryButton" type="button" onClick={onBackToDelivery}>
+              ← Back to Delivery Intelligence
+            </button>
+          )}
+          <button className="secondaryButton" type="button" onClick={() => void load()}>
+            ↻ Refresh memory
+          </button>
+        </div>
       </div>
 
       <div className="memoryMetricGrid">
@@ -206,8 +220,9 @@ export function MemoryWorkspace({ projectName, initialTab = "actions" }: Props) 
           <strong>{project.methodology || "Not set"}</strong>
         </div>
         <div className="memoryOverviewItem">
-          <span>Forecast end</span>
-          <strong>{dateLabel(project.forecast_end_date || project.planned_end_date)}</strong>
+          <span>Planned finish</span>
+          <strong>{project.planned_end_date ? dateLabel(project.planned_end_date) : "Not recorded"}</strong>
+          <small>Forecast: {project.forecast_end_date ? dateLabel(project.forecast_end_date) : "Not recorded"}</small>
         </div>
       </div>
 

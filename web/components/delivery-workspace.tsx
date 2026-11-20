@@ -226,14 +226,14 @@ export function DeliveryWorkspace({ onOpenMemory, onOpenAttention }: Props) {
           <h3>Delivery dates</h3>
           <dl>
             <div><dt>Planned finish</dt><dd>{dateLabel(project.planned_end_date)}</dd></div>
-            <div><dt>Current forecast</dt><dd>{dateLabel(project.forecast_end_date)}</dd></div>
+            <div><dt>Forecast finish</dt><dd>{project.forecast_end_date ? dateLabel(project.forecast_end_date) : "Not recorded"}</dd></div>
             <div><dt>Forecast variance</dt><dd>{
               forecastVariance === null ? "Not available" :
                 forecastVariance === 0 ? "No variance" :
                 (forecastVariance > 0 ? "+" : "") + forecastVariance + " calendar day(s)"
             }</dd></div>
           </dl>
-          <p>Variance compares recorded dates only; it is not a prediction. Milestone-level schedule tracking is not available in this MVP view.</p>
+          <p>Planned and forecast dates are separate governed fields. Variance is available only when both are recorded; it is not a prediction. Milestone-level tracking is not available in this MVP view.</p>
         </article>
         <article className="deliverySchedule">
           <span className="executivePriorityEyebrow">EXECUTION STATUS</span>
@@ -263,12 +263,18 @@ export function DeliveryWorkspace({ onOpenMemory, onOpenAttention }: Props) {
       <div className="deliverySignalList">
         {display.length ? display.map((flag) =>
           <article className={`deliverySignalItem ${flag.urgency}`} key={flag.id}>
-            <span className="deliverySignalPill">{flag.type}</span>
-            <div><h4>{flag.title}</h4><p>{flag.detail}</p></div>
-            <span className="deliveryUrgency">{label(flag.urgency)}</span>
-            <button className="secondaryButton" type="button" onClick={() => onOpenMemory(sectionForFlag(flag.type))} aria-label={`Inspect ${flag.type.toLowerCase()} in Project Memory: ${flag.title}`}>
-              Inspect in Project Memory →
-            </button>
+            <div className="deliverySignalCopy">
+              <span className="deliverySignalPill">{flag.type}</span>
+              <div><h4>{flag.title}</h4><p>{flag.detail}</p></div>
+            </div>
+            <div className="deliverySignalControls">
+              <span className="deliveryUrgency">{label(flag.urgency)}</span>
+              <button className="secondaryButton deliveryInspectButton" type="button"
+                onClick={() => onOpenMemory(sectionForFlag(flag.type))}
+                aria-label={`Inspect ${flag.type.toLowerCase()} in Project Memory: ${flag.title}`}>
+                Inspect in Project Memory <span aria-hidden="true">→</span>
+              </button>
+            </div>
           </article>
         ) : <div className="deliveryEmpty">No matching governed follow-up signals. This does not guarantee the project has no delivery risks.</div>}
       </div>
