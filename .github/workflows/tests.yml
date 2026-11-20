@@ -176,5 +176,12 @@ jobs:
           assert services["stage-api"]["environment"]["PMWIZARD_ENV"] == "staging"
           PY
 
+      - name: Validate single-host Caddy HTTPS proxy configuration
+        run: |
+          docker run --rm \
+            -e PMWIZARD_PUBLIC_HOST=staging.example.org \
+            -v "${{ github.workspace }}/deploy/Caddyfile.example:/etc/caddy/Caddyfile:ro" \
+            caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
       - name: Build unprivileged production-mode Next.js staging image
         run: docker build -f web/Dockerfile.staging -t pmwizard-web-staging-ci ./web
