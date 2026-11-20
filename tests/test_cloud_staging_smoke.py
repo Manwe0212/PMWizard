@@ -1,10 +1,16 @@
 """PR #38 — test non-destructive cloud smoke validation without network calls."""
 
 from email.message import Message
+from pathlib import Path
+from runpy import run_path
 
 import pytest
 
-from scripts.smoke_cloud_staging import check_headers, validated_origin
+# The operator script is standalone, not part of the installed Python package.
+# Load it by its checked-in path so pytest works in isolated CI environments.
+_smoke = run_path(str(Path(__file__).resolve().parents[1] / "scripts" / "smoke_cloud_staging.py"))
+check_headers = _smoke["check_headers"]
+validated_origin = _smoke["validated_origin"]
 
 
 @pytest.mark.parametrize("origin", [
