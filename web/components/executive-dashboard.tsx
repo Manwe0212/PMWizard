@@ -166,6 +166,57 @@ export function ExecutiveDashboard({ onOpenProject }: Props) {
   }
 
   const { summary } = dashboard;
+  const priorityActions: Array<{
+    key: string;
+    label: string;
+    subject: string;
+    rationale: string;
+    action: string;
+    projectId: string;
+    target: ProjectViewTarget;
+    tone: "critical" | "attention";
+  }> = [
+    ...dashboard.critical_raid.slice(0, 2).map((item) => ({
+      key: `raid-${item.entity_type}-${item.entity_id}`,
+      label: "Critical RAID",
+      subject: item.title,
+      rationale: `${item.project_name} · ${item.reason}`,
+      action: "Inspect governed RAID",
+      projectId: item.project_id,
+      target: "memory" as const,
+      tone: "critical" as const,
+    })),
+    ...dashboard.pending_decisions.slice(0, 1).map((item) => ({
+      key: `decision-${item.decision_id}`,
+      label: "Decision awaiting resolution",
+      subject: item.title,
+      rationale: `${item.project_name} · ${item.expected_impact || "Impact not documented"}`,
+      action: "Review decision",
+      projectId: item.project_id,
+      target: "memory" as const,
+      tone: "attention" as const,
+    })),
+    ...dashboard.inbox_items.slice(0, 1).map((item) => ({
+      key: `review-${item.suggestion_id}`,
+      label: "Human review required",
+      subject: titleCase(item.suggestion_type),
+      rationale: `${item.project_name} · ${item.reason}`,
+      action: "Open Project Inbox",
+      projectId: item.project_id,
+      target: "inbox" as const,
+      tone: "attention" as const,
+    })),
+    ...dashboard.source_alerts.slice(0, 1).map((item) => ({
+      key: `source-${item.source_id}`,
+      label: "Source health requires attention",
+      subject: item.display_name,
+      rationale: `${item.project_name} · ${titleCase(item.health)}`,
+      action: "Inspect source",
+      projectId: item.project_id,
+      target: "sources" as const,
+      tone: "attention" as const,
+    })),
+  ].slice(0, 3);
 
   return (
     <section className="executiveSurface">
@@ -259,6 +310,48 @@ export function ExecutiveDashboard({ onOpenProject }: Props) {
           tone={summary.cross_project_signals ? "attention" : "default"}
         />
       </div>
+
+      <section className="executivePrioritySection" aria-label="Executive action priorities">
+        <div className="executivePriorityHeading">
+          <div>
+            <span className="executivePriorityEyebrow">DECISION SUPPORT · GOVERNED SIGNALS</span>
+            <h3>What needs attention next?</h3>
+            <p>
+              A focused view of visible RAID, decision, review and source signals.
+              Open the underlying record before taking action.
+            </p>
+          </div>
+          <span className="executivePriorityCount">
+            {priorityActions.length} highlighted
+          </span>
+        </div>
+        {priorityActions.length ? (
+          <div className="executivePriorityGrid">
+            {priorityActions.map((priority) => (
+              <article className={`executivePriorityCard ${priority.tone}`} key={priority.key}>
+                <span className="executivePriorityLabel">{priority.label}</span>
+                <h4>{priority.subject}</h4>
+                <p>{priority.rationale}</p>
+                <button
+                  type="button"
+                  onClick={() => void onOpenProject(priority.projectId, priority.target)}
+                >
+                  {priority.action} <span aria-hidden="true">→</span>
+                </button>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="executivePriorityEmpty">
+            No critical RAID, pending decisions, review suggestions or source
+            alerts are visible across your authorized projects.
+          </div>
+        )}
+        <p className="executivePriorityNote">
+          These are presentation priorities from current governed records,
+          not AI-generated recommendations or automatic changes.
+        </p>
+      </section>
 
       <div className="executivePrimaryGrid">
         <DashboardPanel
