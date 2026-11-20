@@ -133,7 +133,7 @@ export function ExecutiveDashboard({ onOpenProject }: Props) {
     return parts.join(" · ");
   }, [dashboard]);
 
-  if (loading) {
+  if (loading && !dashboard) {
     return (
       <section className="executiveSurface">
         <div className="memoryLoading">
@@ -150,7 +150,7 @@ export function ExecutiveDashboard({ onOpenProject }: Props) {
     );
   }
 
-  if (error || !dashboard) {
+  if (!dashboard) {
     return (
       <section className="executiveSurface">
         <div className="memoryError">
@@ -219,7 +219,13 @@ export function ExecutiveDashboard({ onOpenProject }: Props) {
   ].slice(0, 3);
 
   return (
-    <section className="executiveSurface">
+    <section className="executiveSurface" aria-busy={loading}>
+      {error && (
+        <div className="demoStaleNotice" role="alert">
+          <div><strong>Executive Dashboard refresh failed</strong><p>Showing the last successfully loaded snapshot. Figures may be outdated. {error}</p></div>
+          <button type="button" className="secondaryButton" disabled={loading} onClick={() => void load()}>Retry refresh</button>
+        </div>
+      )}
       <div className="executiveHero">
         <div className="executiveHealthBlock">
           <div className={`executiveScoreRing ${summary.health.band}`}>
@@ -265,7 +271,7 @@ export function ExecutiveDashboard({ onOpenProject }: Props) {
         </div>
 
         <div className="executiveHeroActions">
-          <button className="secondaryButton" type="button" onClick={() => void load()}>
+          <button className="secondaryButton" type="button" disabled={loading} onClick={() => void load()}>
             ↻ Refresh
           </button>
           <small>Generated {formatTimestamp(dashboard.generated_at)}</small>
