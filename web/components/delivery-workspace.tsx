@@ -180,8 +180,8 @@ export function DeliveryWorkspace({ onOpenMemory, onOpenAttention }: Props) {
     );
   }, [snapshot, today]);
 
-  if (loading) return <section className="deliverySurface" aria-busy="true"><div className="memoryLoading">Loading governed delivery intelligence…</div></section>;
-  if (!snapshot || error) {
+  if (loading && !snapshot) return <section className="deliverySurface" aria-busy="true"><div className="memoryLoading">Loading governed delivery intelligence…</div></section>;
+  if (!snapshot) {
     return <section className="deliverySurface"><div className="memoryError">
       <h2>Delivery Intelligence unavailable</h2><p>{error ?? "No project information available"}</p>
       <button className="primaryButton" type="button" onClick={() => void refresh()}>Retry</button>
@@ -203,14 +203,20 @@ export function DeliveryWorkspace({ onOpenMemory, onOpenAttention }: Props) {
   const display = showAll ? visible : visible.slice(0, 8);
 
   return (
-    <section className="deliverySurface">
+    <section className="deliverySurface" aria-busy={loading}>
+      {error && (
+        <div className="demoStaleNotice" role="alert">
+          <div><strong>Delivery Intelligence refresh failed</strong><p>Showing the last successfully loaded snapshot. Signals may be outdated. {error}</p></div>
+          <button className="secondaryButton" type="button" disabled={loading} onClick={() => void refresh()}>Retry refresh</button>
+        </div>
+      )}
       <div className="deliveryHero">
         <div>
           <span className="executivePriorityEyebrow">DELIVERY INTELLIGENCE · GOVERNED PROJECT MEMORY</span>
           <h2>{project.name} — Delivery pulse</h2>
           <p>Spot blockers, overdue commitments, decisions and execution pressure. All signals come from authorized project records, not an AI prediction.</p>
         </div>
-        <button className="secondaryButton" type="button" onClick={() => void refresh()}>↻ Refresh</button>
+        <button className="secondaryButton" type="button" disabled={loading} onClick={() => void refresh()}>↻ Refresh</button>
       </div>
 
       <div className="deliveryKpiGrid">
