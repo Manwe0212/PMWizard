@@ -13,7 +13,7 @@ import {
 export async function GET() {
   const token = await getAccessToken();
   if (!token) {
-    return NextResponse.json({ detail: "Authentication required." }, { status: 401 });
+    return NextResponse.json({ detail: "Authentication required." }, { status: 401, headers: { "Cache-Control": "private, no-store" } });
   }
 
   const config = getServerConfig();
@@ -36,14 +36,14 @@ export async function GET() {
       jar.delete(PROJECT_COOKIE);
       return NextResponse.json(
         { detail: "Session expired. Sign in again." },
-        { status: 401 },
+        { status: 401, headers: { "Cache-Control": "private, no-store" } },
       );
     }
 
     if (!meResponse.ok || !projectsResponse.ok) {
       return NextResponse.json(
         { detail: "Unable to load authenticated PMWizard session." },
-        { status: 502 },
+        { status: 502, headers: { "Cache-Control": "private, no-store" } },
       );
     }
 
@@ -62,7 +62,7 @@ export async function GET() {
       user: me.user,
       projects: projects.items,
       selected_project_id: selectedValid ? selected : null,
-    });
+    }, { headers: { "Cache-Control": "private, no-store" } });
   } catch {
     return NextResponse.json(
       { detail: "PMWizard session service is temporarily unavailable." },
