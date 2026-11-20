@@ -107,7 +107,7 @@ export function MemoryWorkspace({ projectName, initialTab = "actions", onBackToD
     );
   }, [snapshot]);
 
-  if (loading) {
+  if (loading && !snapshot) {
     return (
       <section className="memorySurface">
         <div className="memoryLoading">
@@ -124,7 +124,7 @@ export function MemoryWorkspace({ projectName, initialTab = "actions", onBackToD
     );
   }
 
-  if (error || !snapshot) {
+  if (!snapshot) {
     return (
       <section className="memorySurface">
         <div className="memoryError">
@@ -142,7 +142,13 @@ export function MemoryWorkspace({ projectName, initialTab = "actions", onBackToD
   const { project, summary } = snapshot;
 
   return (
-    <section className="memorySurface">
+    <section className="memorySurface" aria-busy={loading}>
+      {error && (
+        <div className="demoStaleNotice" role="alert">
+          <div><strong>Project Memory refresh failed</strong><p>Showing the last successfully loaded snapshot. Figures may be outdated. {error}</p></div>
+          <button type="button" className="secondaryButton" disabled={loading} onClick={() => void load()}>Retry refresh</button>
+        </div>
+      )}
       <div className="memoryHero">
         <div>
           <div className="detailBadges">
@@ -166,7 +172,7 @@ export function MemoryWorkspace({ projectName, initialTab = "actions", onBackToD
               ← Back to Delivery Intelligence
             </button>
           )}
-          <button className="secondaryButton" type="button" onClick={() => void load()}>
+          <button className="secondaryButton" type="button" disabled={loading} onClick={() => void load()}>
             ↻ Refresh memory
           </button>
         </div>
