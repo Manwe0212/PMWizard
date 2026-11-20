@@ -7052,3 +7052,26 @@ button:disabled {
   .memoryHeroActions{justify-content:flex-start;}
 }
 @media(max-width:480px){.deliveryKpiGrid{grid-template-columns:1fr;}}
+
+/* PR #43 — non-destructive demo refresh recovery: never hide stale state. */
+.demoStaleNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e8bd66;
+  border-left: 4px solid #c88313;
+  background: #fff8e8;
+  border-radius: 11px;
+  color: #684512;
+}
+.demoStaleNotice strong {font-size: 13px;}
+.demoStaleNotice p {font-size: 11px;line-height: 1.5;margin: 4px 0 0;}
+.demoStaleNotice .secondaryButton {flex-shrink: 0;}
+@media (max-width: 740px) {
+  .demoStaleNotice {align-items: stretch;}
+  .demoStaleNotice .secondaryButton {width: 100%;}
+}
