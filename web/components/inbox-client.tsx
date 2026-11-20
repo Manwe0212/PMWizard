@@ -120,6 +120,15 @@ export function InboxClient({
   const [activeView, setActiveView] = useState<
     "executive" | "portfolio" | "attention" | "delivery" | "health" | "reports" | "automations" | "inbox" | "memory" | "sources" | "activity" | "members"
   >("executive");
+  const [memoryTab, setMemoryTab] = useState<"actions" | "raid" | "decisions">("actions");
+  const [memoryNavigationId, setMemoryNavigationId] = useState(0);
+
+  const openMemorySection = (section: "actions" | "raid" | "decisions") => {
+    setMemoryTab(section);
+    setMemoryNavigationId((current) => current + 1);
+    setActiveView("memory");
+  };
+
 
   const loadInbox = useCallback(async () => {
     setLoading(true);
@@ -549,7 +558,7 @@ export function InboxClient({
             onUnreadChange={setAttentionUnread}
           />
         ) : activeView === "delivery" ? (
-          <DeliveryWorkspace />
+          <DeliveryWorkspace onOpenMemory={openMemorySection} onOpenAttention={() => setActiveView("attention")} />
         ) : activeView === "health" ? (
           <HealthWorkspace canCapture={canReviewProject} />
         ) : activeView === "reports" ? (
@@ -895,7 +904,7 @@ export function InboxClient({
         ) : activeView === "members" && canManageMembers ? (
           <MembersWorkspace currentUserId={userId} />
         ) : activeView === "memory" ? (
-          <MemoryWorkspace projectName={projectName} />
+          <MemoryWorkspace key={`${projectId}-${memoryNavigationId}`} projectName={projectName} initialTab={memoryTab} />
         ) : (
           <SourcesWorkspace canManage={canReviewProject} />
         )}
