@@ -50,6 +50,7 @@ Initial work will focus on:
 - [`docs/SOURCE_CONNECTION_ADMIN.md`](docs/SOURCE_CONNECTION_ADMIN.md) — governed creation/editing, worker-executed connection tests, and safe checkpoint reset
 - [`docs/ATTENTION_CENTER.md`](docs/ATTENTION_CENTER.md) — deterministic project attention signals with per-user seen, acknowledge, and snooze receipts
 - [`docs/NOTIFICATION_DELIVERY.md`](docs/NOTIFICATION_DELIVERY.md) — secure Email/Teams delivery, user preferences, deduplication, and sanitized history
+- [`docs/RAILWAY_ZERO_SPEND_STAGING_PR40.md`](docs/RAILWAY_ZERO_SPEND_STAGING_PR40.md) — planned Railway staging deployment with zero-resource provisioning policy; no live URL or cloud costs authorized
 
 ## Project status
 
