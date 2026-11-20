@@ -51,7 +51,7 @@ function daysUntil(due: string | null, today: string): number | null {
 }
 
 function actionFlags(items: ActionItemView[], today: string): DeliveryFlag[] {
-  return items.flatMap((item) => {
+  return items.flatMap<DeliveryFlag>((item) => {
     if (!active(item.status)) return [];
     const delta = daysUntil(item.due_date, today);
     if (normalize(item.status) === "blocked") {
