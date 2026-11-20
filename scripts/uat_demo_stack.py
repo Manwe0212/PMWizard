@@ -172,8 +172,21 @@ def run_suite(checks: list[dict[str, str]]) -> None:
         session = owner.request("/api/session").json()
         if session["selected_project_id"] != seeded_id:
             raise AssertionError("Project picker did not persist")
-        assert_status(owner.request("/api/memory"), 200)
+        memory = owner.request("/api/memory")
+        assert_status(memory, 200)
+        governed = memory.json()
+        for collection in ("action_items", "risks", "issues", "dependencies", "decisions"):
+            if not isinstance(governed.get(collection), list):
+                raise AssertionError("Delivery Intelligence requires governed collections")
         assert_status(owner.request("/api/health"), 200)
+        executive = owner.request("/api/executive/dashboard")
+        assert_status(executive, 200)
+        if "summary" not in executive.json():
+            raise AssertionError("Executive summary missing")
+        attention = owner.request("/api/attention")
+        assert_status(attention, 200)
+        if "summary" not in attention.json():
+            raise AssertionError("Attention summary missing")
 
     step("UAT-04-project-selection-and-memory", select_seeded)
 

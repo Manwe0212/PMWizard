@@ -131,7 +131,20 @@ async function loadMemory(): Promise<ProjectMemorySnapshot> {
   return payload as ProjectMemorySnapshot;
 }
 
-export function DeliveryWorkspace() {
+type MemorySection = "actions" | "raid" | "decisions";
+
+type Props = {
+  onOpenMemory: (section: MemorySection) => void;
+  onOpenAttention: () => void;
+};
+
+function sectionForFlag(type: DeliveryFlag["type"]): MemorySection {
+  if (type === "Overdue action" || type === "Blocked action") return "actions";
+  if (type === "Decision needed") return "decisions";
+  return "raid";
+}
+
+export function DeliveryWorkspace({ onOpenMemory, onOpenAttention }: Props) {
   const [snapshot, setSnapshot] = useState<ProjectMemorySnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -253,13 +266,20 @@ export function DeliveryWorkspace() {
             <span className="deliverySignalPill">{flag.type}</span>
             <div><h4>{flag.title}</h4><p>{flag.detail}</p></div>
             <span className="deliveryUrgency">{label(flag.urgency)}</span>
+            <button className="secondaryButton" type="button" onClick={() => onOpenMemory(sectionForFlag(flag.type))} aria-label={`Inspect ${flag.type.toLowerCase()} in Project Memory: ${flag.title}`}>
+              Inspect in Project Memory →
+            </button>
           </article>
         ) : <div className="deliveryEmpty">No matching governed follow-up signals. This does not guarantee the project has no delivery risks.</div>}
       </div>
       {!showAll && visible.length > 8 && <button className="secondaryButton deliveryShowAll" type="button" onClick={() => setShowAll(true)}>Show all {visible.length} signals</button>}
       <div className="deliveryReadOnlyNote">
         <strong>Read-only delivery intelligence</strong>
-        <p>Open Project Memory or Attention Center to inspect the complete records. Changes to governed truth still require authorized review; no automatic remediation or external integration is performed here.</p>
+        <p>Inspect the complete records in Project Memory or review personal signals in Attention Center. Section links do not automatically select an individual record. Changes to governed truth still require authorized review.</p>
+        <div className="deliveryNavigationActions">
+          <button className="secondaryButton" type="button" onClick={() => onOpenMemory("actions")}>Open Project Memory</button>
+          <button className="secondaryButton" type="button" onClick={onOpenAttention}>Open Attention Center</button>
+        </div>
       </div>
     </section>
   );
