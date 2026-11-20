@@ -69,3 +69,8 @@ def test_readiness_fails_unexpected_status_or_cacheable_anonymous_response():
     assert not run(FakeOpener(status=500), "API ready", "http://127.0.0.1:8000/health/ready", 200)[0]
     assert not run(FakeOpener(status=401, cache="public, max-age=300"),
                    "Anonymous session rejected", "http://127.0.0.1:3000/api/session", 401)[0]
+
+
+def test_session_responses_explicitly_prevent_caching():
+    route = source("app/api/session/route.ts")
+    assert route.count('"Cache-Control": "private, no-store"') >= 5
